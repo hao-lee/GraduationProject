@@ -1,7 +1,8 @@
 package ServerSide;
 
-import java.util.HashMap;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class DefineConstant {
 	public final static int PLAYVIDEO = 1;
@@ -9,28 +10,37 @@ public class DefineConstant {
 	public final static int STOPVTHREAD = 3;
 }
 
-final class HASHMAP {
-	//原计划用端口来识别一个发送线程并将之终止，但是没成功
-	//目前改为用sdpName去直接终止ffmpeg线程，这个HashMap暂时没用上
-	private static final HashMap<Integer, Future<Integer>> portFutureMap = new HashMap<>();
-
-	public static boolean isInPortFutureMap(Integer port) {
-		if (portFutureMap.containsKey(port) == true)
+final class MountPoint{
+	private static List<String> mountPointList = 
+			Collections.synchronizedList(new ArrayList<>());
+	private static List<String> usedPointList = 
+			Collections.synchronizedList(new ArrayList<>());
+	
+	//初始化挂载点存储列表
+	public static void initMountPointList() {
+		mountPointList.add("1.sdp");
+	}
+	
+	//一次只允许一个线程前来取得挂载点，这个函数称作临界区，是线程安全的
+	synchronized public static String getMountPoint() {
+		if(mountPointList.isEmpty())
+			return "";
+		else{
+			String mp = mountPointList.remove(0);
+			usedPointList.add(mp);
+			return mp;
+		}
+	}//getMountPoint
+	
+	//释放挂载点，同理必须是线程安全的
+	synchronized public static boolean releaseMountPoint(String mp){
+		if(usedPointList.remove(mp)){
+			mountPointList.add(mp);//将挂载点释放到资源库中
 			return true;
-		else
+		}else{//仅仅是为了以防万一
+			System.out.println("\nFatal Error:Can't Release MountPoint!\n");
 			return false;
-	}
-	//根据port返回正在使用此端口的线程Future对象
-	public static Future<Integer> getFutureByPort(int port) {
-		return portFutureMap.get(port);
-	}
-	// add to portFutureMap
-	synchronized public static void putToMap(Integer port, Future<Integer> future) {
-		portFutureMap.put(port, future);
-	}// function putToMap
-		// remove from portFutureMap
-
-	synchronized public static void removeFromMap(Integer port) {
-		if(portFutureMap.containsKey(port))portFutureMap.remove(port);
-	}
-}
+		}
+	}//releaseMountPoint
+	
+}//class MountPoint

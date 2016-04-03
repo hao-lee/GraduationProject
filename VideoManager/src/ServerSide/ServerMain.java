@@ -11,10 +11,12 @@ import java.net.Socket;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class ServerMain {
 	public static void main(String[] args) {
+		//初始化挂载点集合
+		MountPoint.initMountPointList();
+		//启动服务器监听
 		Server server = new Server();
 		server.startServer();
 		server.listenAccept();
@@ -31,7 +33,7 @@ class Server {
 	public void startServer() {
 		try {
 			serverSocket = new ServerSocket(port);// start
-			// create a ThreadPool
+			// 初始化线程池
 			executorService = Executors.newCachedThreadPool();
 			System.out.println("Server started...");
 		} catch (IOException e) {
@@ -49,11 +51,8 @@ class Server {
 		while (true) {
 			try {
 				socketToClient = serverSocket.accept();
-				Future<Integer> future = executorService.submit(new ServerCallable(socketToClient));
-				// add to portFutureMap,
-				// it will be used to kill a thread which has certain port.
-				// two thread's port must be different
-				HASHMAP.putToMap(socketToClient.getPort(), future);
+				//"Future<Integer> future = " is not needed
+				executorService.submit(new ServerCallable(socketToClient));
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("Exception in listenAccetp!");
@@ -81,16 +80,9 @@ class ServerCallable implements Callable<Integer> {
 			printToClient = new PrintWriter(outputStream, true);// auto flush
 			//分析客户端请求
 			String msg = readFromClient.readLine();
-			String[] msgField = msg.split("\\|");// reqCode|videoName|sdpName
+			String[] msgField = msg.split("\\|");// reqCode|videoName or sdpName
 			int requestCode = Integer.valueOf(msgField[0]);
-			String videoName = "",sdpName = "";
-			if (msgField.length > 1) {
-				//如果是GETVIDEOLIST，那么后两个参数为空，split操作后msgField只有0号元素
-				//此时要取出元素1和2会在此处异常，所以要检测一下，若参数存在则覆盖一下
-				//若是STOPVTHREAD，因为第三个参数存在，所以第二个参数也会存在，只不过是空串
-				videoName = msgField[1];
-				sdpName = msgField[2];
-			}
+			String vmName = msgField[1];//可能是视频名或sdp挂载点名，此为变量复用
 			//getInetAddress获得的IP形如/111.111.111.111，多了斜杠，去掉它
 			String clientIP = socketToClient.getInetAddress().toString().substring(1);
 			//传入printToClient给getVideoList和playVideo，最终printToClient依然由本函数关闭
@@ -98,22 +90,26 @@ class ServerCallable implements Callable<Integer> {
 				//查询视频列表，此处videoName和sdpName参数没用
 				new ShellCmd("", "", clientIP, printToClient).getVideoList();
 			} else if (requestCode == DefineConstant.PLAYVIDEO) {
-				new ShellCmd(videoName,sdpName,clientIP,printToClient).playVideo();
+				String mountpoint = MountPoint.getMountPoint();
+				if (mountpoint == "") {
+					System.out.println("Can't get mountpoint. The mountpoint is not enough.");
+				}else{
+					new ShellCmd(vmName,mountpoint,clientIP,printToClient).playVideo();
+					//视频发送完毕，释放挂载点
+					MountPoint.releaseMountPoint(mountpoint);
+				}
 			}else if(requestCode == DefineConstant.STOPVTHREAD){
-				new ShellCmd("", sdpName, clientIP, printToClient).stopProcess();
+				new ShellCmd("", vmName, clientIP, printToClient).stopProcess();
 				printToClient.println("stopProcess() has been executed!");
-				//原计划用sdp查出客户端port，让服务器终止和这个port通信的线程，可惜这么做没成功，
-				//cancel函数返回的是成功，但是线程并没有取消。现在服务器使用Linux命令直接干掉使用sdpName的进程
-				//这样在服务端向sdpName发数据的线程就会因为内建shell进程的终止而从playVideo函数返回，
+				//现在服务器使用Linux命令直接干掉使用name这个挂载点的进程
+				//这样在服务端向该挂载点发数据的线程就会因为内建shell进程的终止而从playVideo函数返回，
 				//进而正常结束call函数，线程正常结束。
 			}
-		} catch (IOException e) {
-			// e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Client and its socket have exited!");
 		} finally {
 			try {
-				// 线程结束时自己把port-future映射对从HASHMAP里面移除
-				HASHMAP.removeFromMap(socketToClient.getPort());
 				if (readFromClient != null)
 					readFromClient.close();
 				if (printToClient != null)

@@ -32,8 +32,6 @@ class CLICallable implements Callable<Integer>{
 		Socket socketToServer = null;
 		try {
 			socketToServer = new Socket(serverIP,serverPort);//open socket
-			//加入sdp-port映射对，用于查找某个sdp对应的客户端port
-			HASHMAP.putToMap(sdpName, socketToServer.getLocalPort());
 			//打开输入输出流
 			InputStream inputStream = socketToServer.getInputStream();
 			OutputStream outputStream = socketToServer.getOutputStream();
@@ -52,8 +50,6 @@ class CLICallable implements Callable<Integer>{
 		} finally {
 			try {
 				//线程结束前，将本线程对应的future从HASHMAP里移除
-				HASHMAP.removeFromSdpFutureMap(sdpName);
-				HASHMAP.removeFromSdpPortMap(sdpName);
 				if(readFromServer != null)readFromServer.close();
 				if(printToServer != null)printToServer.close();
 				if(socketToServer != null)socketToServer.close();

@@ -18,18 +18,16 @@ import javax.swing.table.DefaultTableModel;
 public class GUICallable implements Callable<Integer>{
 	String serverIP = null;
 	int serverPort = -1;
-	String videoName = null;
-	String sdpName = null;
+	String vmName = null;//复用为视频名或挂载点名
 	int reqCode = 0;
 	//图形控件,可能是defaulttablemodel也可能是jtextarea。
 	//前者是显示视频列表，后者显示视频播放状态。因为不确定是什么，所以使用造型转换。
 	Object disComp = null;
 	public GUICallable(String ip,int port,int reqCode,
-			String videoName, String sdpName, Object disComp) {
+			String vmName, Object disComp) {
 		this.serverIP = ip;
 		this.serverPort = port;
-		this.videoName = videoName;
-		this.sdpName = sdpName;
+		this.vmName = vmName;
 		this.reqCode = reqCode;
 		this.disComp = disComp;//图形控件
 	}
@@ -40,15 +38,13 @@ public class GUICallable implements Callable<Integer>{
 		Socket socketToServer = null;
 		try {
 			socketToServer = new Socket(serverIP,serverPort);//客户端暂时不用设置SO_REUSEADDR
-			//加入sdp-port映射对，用于查找某个sdp对应的客户端port
-			HASHMAP.putToMap(sdpName, socketToServer.getLocalPort());
 			//打开输入输出流
 			InputStream inputStream = socketToServer.getInputStream();
 			OutputStream outputStream = socketToServer.getOutputStream();
 			readFromServer = new BufferedReader(new InputStreamReader(inputStream));
 			printToServer = new PrintWriter(outputStream,true);//auto flush
 			//向服务器发送请求
-			printToServer.println(reqCode+"|"+videoName+"|"+sdpName);
+			printToServer.println(reqCode+"|"+vmName);
 			//读取服务器的状态回应,如果服务端线程死亡，socket中断，这里不会报异常，原因未知
 			String response = null;
 			while((response = readFromServer.readLine()) != null){
@@ -76,9 +72,6 @@ public class GUICallable implements Callable<Integer>{
 			System.out.println("Server is stoped or IP:port is wrong");
 		} finally {
 			try {
-				//线程结束前，将本线程对应的future从HASHMAP里移除
-				HASHMAP.removeFromSdpFutureMap(sdpName);
-				HASHMAP.removeFromSdpPortMap(sdpName);
 				if(readFromServer != null)readFromServer.close();
 				if(printToServer != null)printToServer.close();
 				if(socketToServer != null)socketToServer.close();

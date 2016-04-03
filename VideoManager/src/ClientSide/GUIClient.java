@@ -22,24 +22,24 @@ import javax.swing.JMenuItem;
 
 // main function
 public class GUIClient {
-	private static String serverIP = "127.0.0.1";
-	private static int serverPort = 10000;
-	private static ExecutorService executorService = null;
-	private static JFrame mainFrame = null;
-	private static JTable jtableVideoList;
-	private static String sdpName = "test.sdp";// default sdp name
+	private String serverIP = "127.0.0.1";
+	private int serverPort = 10000;
+	private ExecutorService executorService = null;
+	private JFrame mainFrame = null;
+	private JTable jtableVideoList;
 	public static void main(String[] args) {
-		// create a ThreadPool
-		executorService = Executors.newCachedThreadPool();
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				createMainInterface();
+				new GUIClient().createMainInterface();
 			}
 		});
 	}//main
 	//create main interface
-	public static void createMainInterface() {
+	public void createMainInterface() {
+		// create a ThreadPool
+		executorService = Executors.newCachedThreadPool();
+		//user-interface
 		mainFrame = new JFrame("Main Interface");
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainFrame.setBounds(300, 200, 547, 433);
@@ -75,7 +75,7 @@ public class GUIClient {
 				//注意，向列表输出数据是输出到defaultTableModel上，而非JTable
 				Callable<Integer> callable = new GUICallable(
 						serverIP, serverPort, DefineConstant.GETVIDEOLIST,
-						"", "",defaultTableModel);
+						"", defaultTableModel);
 				executorService.submit(callable);//不需要收集返回值
 			}
 		});//addActionListener
@@ -98,19 +98,10 @@ public class GUIClient {
 				//现在在EDT里面已经是线程安全的，直接new即可
 				SubThreadFrame subThreadFrame = new SubThreadFrame("Video Playing Status");
 				//将子窗口句柄传入子线程，子线程会连接服务器并将数据输出到子窗口
-				if (HASHMAP.isInSdpFutureMap(sdpName) == true){
-					System.out.println("This sdp has been occupied!"
-						+ " Nothing to do.");
-					JOptionPane.showMessageDialog(null, "This sdp has been occupied!",
-							"Alert", JOptionPane.ERROR_MESSAGE);
-					}
-				else {
-					Callable<Integer> callable = new GUICallable(
-						serverIP,serverPort, DefineConstant.PLAYVIDEO, 
-						videoName, sdpName,subThreadFrame.getJTextArea());
-					Future<Integer> future = executorService.submit(callable);
-					HASHMAP.putToMap(sdpName, future);
-				}
+				Callable<Integer> callable = new GUICallable(
+					serverIP,serverPort, DefineConstant.PLAYVIDEO, 
+					videoName, subThreadFrame.getJTextArea());
+				executorService.submit(callable);
 			}//actionPerformed
 		});//addActionListener
 		btnPlayVideo.setBounds(380, 37, 107, 25);
@@ -127,15 +118,6 @@ public class GUIClient {
 		
 		JMenu menuSetting = new JMenu("Setting");
 		menuBar.add(menuSetting);
-		
-		JMenuItem mntmSdpName = new JMenuItem("Sdp Name");
-		mntmSdpName.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String str = JOptionPane.showInputDialog(mainFrame,"Enter sdp name","test.sdp");
-				sdpName = (str == null?"test.sdp":str);
-			}
-		});
-		menuSetting.add(mntmSdpName);
 		
 		JMenuItem mntmServerIp = new JMenuItem("Server IP");
 		mntmServerIp.addActionListener(new ActionListener() {
@@ -162,16 +144,10 @@ public class GUIClient {
 		mntmStopPlaying.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String str = JOptionPane.showInputDialog(mainFrame,"Enter sdp name that you want to stop relay","sdp name");
-				sdpName = (str == null?"test.sdp":str);
-				if(HASHMAP.isInSdpFutureMap(sdpName) == false){
-					JOptionPane.showMessageDialog(null, "This sdp is not used! Can't stop.",
-							"Alert", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
 				SubThreadFrame subThreadFrame = new SubThreadFrame("Stop Relay Status");
 				Callable<Integer> callable = new GUICallable(
 						serverIP, serverPort, DefineConstant.STOPVTHREAD,
-						"", sdpName,subThreadFrame.getJTextArea());
+						"", subThreadFrame.getJTextArea());
 				executorService.submit(callable);//不需要收集返回值
 				//原计划用sdp查出客户端port，让服务器终止和这个port通信的线程，可惜这么做没成功，
 				//cancel函数返回的是成功，但是线程并没有取消。现在服务器使用Linux命令直接干掉使用sdpName的进程
