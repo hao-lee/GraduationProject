@@ -27,8 +27,8 @@ public class GUICallable implements Callable<Integer>{
 			String vmName, Object disComp) {
 		this.serverIP = ip;
 		this.serverPort = port;
-		this.vmName = vmName;
 		this.reqCode = reqCode;
+		this.vmName = vmName;
 		this.disComp = disComp;//图形控件
 	}
 	@Override
@@ -56,6 +56,7 @@ public class GUICallable implements Callable<Integer>{
 					@Override
 					public void run() {
 						if(disComp instanceof DefaultTableModel){
+							//如果播放状态窗口subThreadFrame被关闭，那么在此EDT内继续向disComp写数据不会发生异常。
 							DefaultTableModel defaultTableModel = (DefaultTableModel)disComp;
 							defaultTableModel.addRow(new String[]{response_tmp,"-","-"});
 						}else if (disComp instanceof JTextArea) {

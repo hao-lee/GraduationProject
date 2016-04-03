@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -21,24 +20,30 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 // main function
-public class GUIClient {
+public class Client {
 	private String serverIP = "127.0.0.1";
 	private int serverPort = 10000;
 	private ExecutorService executorService = null;
 	private JFrame mainFrame = null;
 	private JTable jtableVideoList;
+	
 	public static void main(String[] args) {
+		Client client = new Client();
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				new GUIClient().createMainInterface();
+				client.createMainInterface();
 			}
 		});
 	}//main
-	//create main interface
-	public void createMainInterface() {
+	
+	//构造函数，同时初始化线程池
+	public Client() {
 		// create a ThreadPool
 		executorService = Executors.newCachedThreadPool();
+	}
+	//创建客户端主界面
+	public void createMainInterface() {
 		//user-interface
 		mainFrame = new JFrame("Main Interface");
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -48,9 +53,21 @@ public class GUIClient {
 		mainFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(null);
 		
+		/*
+		 * 表格上面的名字标签
+		 * */
+		JLabel lblVideolist = new JLabel("Video List");
+		lblVideolist.setBounds(12, 74, 83, 15);
+		mainPanel.add(lblVideolist);
+		/*
+		 * 新建滚动面板
+		 * */
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(12, 101, 519, 288);
 		mainPanel.add(scrollPane);
+		/*
+		 * 新建表格模型
+		 * */
 		DefaultTableModel defaultTableModel = new DefaultTableModel(
 			new Object[][] {
 			},
@@ -58,6 +75,9 @@ public class GUIClient {
 				"VideoName", "Col2", "Col3"
 			}
 		);
+		/*
+		 * 以刚才的表格模型为基准新建表格控件，并将之添加到滚动面板上
+		 * */
 		jtableVideoList = new JTable(defaultTableModel){
 			private static final long serialVersionUID = 1L;
 			@Override
@@ -67,11 +87,15 @@ public class GUIClient {
 		jtableVideoList.setFillsViewportHeight(true);
 		scrollPane.setViewportView(jtableVideoList);
 		
+		/*
+		 * 获取视频列表
+		 * */
 		JButton btnGetVideoList = new JButton("GetList");
+		btnGetVideoList.setBounds(12, 37, 107, 25);
+		mainPanel.add(btnGetVideoList);
 		btnGetVideoList.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				defaultTableModel.setRowCount(0);//清空表和原先的内容
-				//在界面中会用进度条保证用户不能多次点击get list。所以此处不需要检测线程是否能够开启
+				defaultTableModel.setRowCount(0);//清空表中原先的内容
 				//注意，向列表输出数据是输出到defaultTableModel上，而非JTable
 				Callable<Integer> callable = new GUICallable(
 						serverIP, serverPort, DefineConstant.GETVIDEOLIST,
@@ -79,11 +103,13 @@ public class GUIClient {
 				executorService.submit(callable);//不需要收集返回值
 			}
 		});//addActionListener
-		btnGetVideoList.setBounds(12, 37, 107, 25);
-		mainPanel.add(btnGetVideoList);
 		
-		//PlayVideo
+		/*
+		 * 播放视频
+		 * */
 		JButton btnPlayVideo = new JButton("PlayVideo");
+		btnPlayVideo.setBounds(380, 37, 107, 25);
+		mainPanel.add(btnPlayVideo);
 		btnPlayVideo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//获取当前被选择的行就不能用tablemodel了，需要用jtable
@@ -104,43 +130,39 @@ public class GUIClient {
 				executorService.submit(callable);
 			}//actionPerformed
 		});//addActionListener
-		btnPlayVideo.setBounds(380, 37, 107, 25);
 		
-		mainPanel.add(btnPlayVideo);
-		
-		JLabel lblVideolist = new JLabel("Video List");
-		lblVideolist.setBounds(12, 74, 83, 15);
-		mainPanel.add(lblVideolist);
-		
+		/*
+		 * 设置菜单控件
+		 * */
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBounds(8, 0, 228, 21);
 		mainPanel.add(menuBar);
 		
+		JMenu menuMain = new JMenu("Main");
+		menuBar.add(menuMain);
+		
 		JMenu menuSetting = new JMenu("Setting");
 		menuBar.add(menuSetting);
-		
-		JMenuItem mntmServerIp = new JMenuItem("Server IP");
-		mntmServerIp.addActionListener(new ActionListener() {
+		/*
+		 * 获取当前服务器端视频的播放状态
+		 * */
+		JMenuItem mntmGetStatus = new JMenuItem("Get Status");
+		menuMain.add(mntmGetStatus);
+		mntmGetStatus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String str = JOptionPane.showInputDialog(mainFrame,"Enter server ip","127.0.0.1");
-				serverIP = (str == null?"127.0.0.1":str);
+				SubThreadFrame subThreadFrame = new SubThreadFrame("Videos that are Playing");
+				Callable<Integer> callable = new GUICallable(
+						serverIP, serverPort, DefineConstant.GETVIDEOSTATUS,
+						"", subThreadFrame.getJTextArea());
+				executorService.submit(callable);
 			}
 		});
-		menuSetting.add(mntmServerIp);
 		
-		JMenuItem mntmServerPort = new JMenuItem("Server Port");
-		mntmServerPort.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String str = JOptionPane.showInputDialog(mainFrame,"Enter server port","10000");
-				serverPort = (str == null?10000:Integer.valueOf(str));
-			}
-		});
-		menuSetting.add(mntmServerPort);
-		
-		JMenu menuStop = new JMenu("Stop");
-		menuBar.add(menuStop);
-		
-		JMenuItem mntmStopPlaying = new JMenuItem("Stop playing");
+		/*
+		 * 停止播放某个视频
+		 * */
+		JMenuItem mntmStopPlaying = new JMenuItem("Stop Playing");
+		menuMain.add(mntmStopPlaying);
 		mntmStopPlaying.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String str = JOptionPane.showInputDialog(mainFrame,"Enter sdp name that you want to stop relay","sdp name");
@@ -155,7 +177,34 @@ public class GUIClient {
 				//进而正常结束call函数，线程正常结束。
 			}
 		});
-		menuStop.add(mntmStopPlaying);;
+		
+		/*
+		 * 更改要连接的服务器IP地址
+		 * */
+		JMenuItem mntmServerIp = new JMenuItem("Server IP");
+		menuSetting.add(mntmServerIp);
+		mntmServerIp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String str = JOptionPane.showInputDialog(mainFrame,"Enter server ip","127.0.0.1");
+				serverIP = (str == null?"127.0.0.1":str);
+			}
+		});
+		
+		/*
+		 * 更改要连接的服务器Port端口
+		 * */
+		JMenuItem mntmServerPort = new JMenuItem("Server Port");
+		menuSetting.add(mntmServerPort);;
+		mntmServerPort.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String str = JOptionPane.showInputDialog(mainFrame,"Enter server port","10000");
+				serverPort = (str == null?10000:Integer.valueOf(str));
+			}
+		});
+		
+		/*
+		 * 显示主窗口
+		 * */
 		mainFrame.setVisible(true);
 	}//create
 }//class
