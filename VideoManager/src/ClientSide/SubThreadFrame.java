@@ -9,52 +9,49 @@ import javax.swing.JScrollPane;
 
 //继承了JFrame
 
-public class SubThreadFrame extends JFrame {
+public class SubThreadFrame {
 	private static final long serialVersionUID = -4932178739506938652L;
-	private JPanel contentPane;
-	JTextArea jtextArea = null;
-	/**
-	 * Test the application.
-	 */
-//	public static void main(String[] args) {
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
-//				try {
-//					SubThreadFrame frame = new SubThreadFrame();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		});
-//	}
+	private JFrame subFrame = null;
+	private JPanel contentPane = null;
+	private JTextArea jtextArea = null;
 
 	/**
 	 * Create the frame.
 	 */
-	public SubThreadFrame(String title) {
-		setBounds(300, 200, 547, 356);
+	public JFrame createSubFrame() {
+		subFrame = new JFrame();
+		subFrame.setBounds(300, 200, 547, 356);
 		contentPane = new JPanel();
+		subFrame.getContentPane().add(contentPane, BorderLayout.CENTER);
+		contentPane.setLayout(null);
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
-		setContentPane(contentPane);
-		setTitle(title);
-		//不可用EXIT_ON_CLOSE，否则整个程序直接关闭。我们只需要这个子窗口关闭
-		//参考: http://www.singlex.net/2273.html
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		JPanel panel = new JPanel();
-		getContentPane().add(panel, BorderLayout.CENTER);
-		panel.setLayout(null);
-		
+
+		// 不可用EXIT_ON_CLOSE，否则整个程序直接关闭。我们只需要这个子窗口关闭
+		// 参考: http://www.singlex.net/2273.html
+		subFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(12, 12, 509, 290);
-		panel.add(scrollPane);
-		
+		contentPane.add(scrollPane);
+
 		jtextArea = new JTextArea();
 		jtextArea.setEditable(false);
 		scrollPane.setViewportView(jtextArea);
-		setVisible(true);
+		subFrame.setVisible(true);
+		return subFrame;
 	}
+
+	/*
+	 * 获取显示组件
+	 */
 	public JTextArea getJTextArea() {
 		return jtextArea;
+	}
+
+	/*
+	 * 获取窗口框架对象
+	 */
+	public JFrame getJFrame() {
+		return subFrame;
 	}
 }

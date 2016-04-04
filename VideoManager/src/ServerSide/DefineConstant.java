@@ -20,6 +20,8 @@ final class MountPoint{
 	//初始化挂载点存储列表
 	public static void initMountPointList() {
 		mountPointList.add("1.sdp");
+		mountPointList.add("2.sdp");
+		mountPointList.add("3.sdp");
 	}
 	
 	//一次只允许一个线程前来取得挂载点，这个函数称作临界区，是线程安全的
