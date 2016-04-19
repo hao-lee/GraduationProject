@@ -88,7 +88,7 @@ class ServerCallable implements Callable<Integer> {
 			// 传入printToClient给getVideoList和playVideo，最终printToClient依然由本函数关闭
 			if (requestCode == DefineConstant.GETVIDEOLIST) {
 				// 查询视频列表，此时不许要vmName参数，也不需要获取挂载点，也不需要传递客户端IP
-				new ShellCmd("", "", "", printToClient).getVideoList();
+				new ShellCmd("", "", printToClient).getVideoList();
 			} else if (requestCode == DefineConstant.PLAYVIDEO) {
 				// 获取可用目标挂载点
 				String mountpoint = MountPoint.getMountPoint();
@@ -102,14 +102,14 @@ class ServerCallable implements Callable<Integer> {
 					printToClient.println("Can't get mountpoint. The mountpoint is not enough.");
 				} else {
 					// 此时vmName为视频名
-					new ShellCmd(vmName, mountpoint, clientIP, printToClient).playVideo();
+					new ShellCmd(vmName, mountpoint, printToClient).playVideo();
 					// 视频发送过程完毕，释放挂载点
 					MountPoint.releaseMountPoint(mountpoint);
 				}
 			} else if (requestCode == DefineConstant.STOPVTHREAD) {
 				printToClient.println("Stop Playing:");// 子窗口的标题
 				// 此时vmName复用为“要被停止的”挂载点名称
-				new ShellCmd("", vmName, "", printToClient).stopProcess();
+				new ShellCmd("", vmName, printToClient).stopProcess();
 				printToClient.println("stopProcess() has been executed!");
 				// 现在服务器使用Linux命令直接干掉使用name这个挂载点的进程
 				// 这样在服务端向该挂载点发数据的线程就会因为内建shell进程的终止而从playVideo函数返回，
@@ -117,7 +117,7 @@ class ServerCallable implements Callable<Integer> {
 			} else if (requestCode == DefineConstant.GETVIDEOSTATUS) {
 				printToClient.println("Video Status:");// 子窗口的标题
 				printToClient.println("Videos that are playing:\n");
-				new ShellCmd("", "", "", printToClient).getPlayingVideoList();
+				new ShellCmd("", "", printToClient).getPlayingVideoList();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -140,7 +140,6 @@ class ServerCallable implements Callable<Integer> {
 class ShellCmd {
 	private String videoName = null;
 	private String mountPoint = null;
-	private String clientIP = null;
 	private InputStream inputFromShell = null;
 	private PrintWriter printToClient = null;
 	String[] cmd1 = { "sh", "-c", "ping -c 20 111.1.1.1" };
@@ -152,15 +151,12 @@ class ShellCmd {
 	 *            视频名
 	 * @param mountPoint
 	 *            被停止的挂载点，仅用于停止视频
-	 * @param clientIP
-	 *            客户端IP，仅用于播放视频
 	 * @param pwr
 	 *            printToClient
 	 */
-	public ShellCmd(String videoname, String mountPoint, String clientIP, PrintWriter pwr) {
+	public ShellCmd(String videoname, String mountPoint, PrintWriter pwr) {
 		this.videoName = videoname;
 		this.mountPoint = mountPoint;
-		this.clientIP = clientIP;
 		this.printToClient = pwr;
 	}
 
@@ -209,7 +205,7 @@ class ShellCmd {
 			Process pc = null;
 			ProcessBuilder pb = null;
 			String[] cmd = { "sh", "-c",
-					"ffmpeg -re -i /usr/local/movies/" + videoName + " -f rtsp rtsp://" + clientIP + "/" + mountPoint };
+					"ffmpeg -re -i /usr/local/movies/" + videoName + " -c copy -f rtsp rtsp://" + "127.0.0.1" + "/" + mountPoint };
 			pb = new ProcessBuilder(cmd);
 			System.out.println(cmd[2]);//
 			pb.redirectErrorStream(true);
@@ -252,7 +248,7 @@ class ShellCmd {
 		try {
 			Process pc = null;
 			ProcessBuilder pb = null;
-			String[] cmd = { "sh", "-c", "ps aux | grep ffmpeg | grep -v grep | awk '{print $14,$17}'" };
+			String[] cmd = { "sh", "-c", "ps aux | grep ffmpeg | grep -v grep | awk '{print $14,$19}'" };
 			pb = new ProcessBuilder(cmd);
 			pb.redirectErrorStream(true);
 			pc = pb.start();
