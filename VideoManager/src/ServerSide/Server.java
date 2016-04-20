@@ -19,8 +19,6 @@ public class Server {
 	private ExecutorService executorService = null;
 
 	public static void main(String[] args) {
-		// 初始化挂载点集合
-		MountPoint.initMountPointList();
 		// 启动服务器监听
 		Server server = new Server();
 		server.startServer();
@@ -80,36 +78,23 @@ class ServerCallable implements Callable<Integer> {
 			String msg = readFromClient.readLine();
 			String[] msgField = msg.split("\\|");// reqCode|videoName or sdpName
 			int requestCode = Integer.valueOf(msgField[0]);
-			// vmName可能是视频名或sdp挂载点名，此为变量复用。
+			// vName可能是视频名或sdp挂载点名，此为变量复用。
 			// 如果reqCode是播放视频那么msgField[]不存在index=1的元素，这里检测下防止数组越界访问
-			String vmName = (msgField.length == 2 ? msgField[1] : "");
+			String videoName = (msgField.length == 2 ? msgField[1] : "");
 			// getInetAddress获得的IP形如/111.111.111.111，多了斜杠，去掉它
-			String clientIP = socketToClient.getInetAddress().toString().substring(1);
+			//String clientIP = socketToClient.getInetAddress().toString().substring(1);
 			// 传入printToClient给getVideoList和playVideo，最终printToClient依然由本函数关闭
 			if (requestCode == DefineConstant.GETVIDEOLIST) {
-				// 查询视频列表，此时不许要vmName参数，也不需要获取挂载点，也不需要传递客户端IP
-				new ShellCmd("", "", printToClient).getVideoList();
+				// 查询视频列表，此时不许要videoName参数
+				new ShellCmd("", printToClient).getVideoList();
 			} else if (requestCode == DefineConstant.PLAYVIDEO) {
-				// 获取可用目标挂载点
-				String mountpoint = MountPoint.getMountPoint();
-				// 先发送一行信息，客户端将之作为子窗口的标题
-				printToClient.println("Video Name: " + vmName + " Mount Point: " + mountpoint);
-				if (mountpoint == "") {
-					// System.out.println("Can't get mountpoint. The mountpoint
-					// is not enough.");
-					printToClient.println("Video Playing Error!");// SubFrame's
-																	// Title
-					printToClient.println("Can't get mountpoint. The mountpoint is not enough.");
-				} else {
-					// 此时vmName为视频名
-					new ShellCmd(vmName, mountpoint, printToClient).playVideo();
-					// 视频发送过程完毕，释放挂载点
-					MountPoint.releaseMountPoint(mountpoint);
-				}
+				ShellCmd sCmd =	new ShellCmd(videoName, printToClient);
+				sCmd.setSocketToClient(socketToClient);//设入连接客户端的套接字，便于后面检测客户端死亡。
+				sCmd.playVideo();
 			} else if (requestCode == DefineConstant.STOPVTHREAD) {
 				printToClient.println("Stop Playing:");// 子窗口的标题
-				// 此时vmName复用为“要被停止的”挂载点名称
-				new ShellCmd("", vmName, printToClient).stopProcess();
+				// 此时videoName复用为“要被停止的”挂载点名称
+				new ShellCmd(videoName, printToClient).stopProcess();
 				printToClient.println("stopProcess() has been executed!");
 				// 现在服务器使用Linux命令直接干掉使用name这个挂载点的进程
 				// 这样在服务端向该挂载点发数据的线程就会因为内建shell进程的终止而从playVideo函数返回，
@@ -117,7 +102,7 @@ class ServerCallable implements Callable<Integer> {
 			} else if (requestCode == DefineConstant.GETVIDEOSTATUS) {
 				printToClient.println("Video Status:");// 子窗口的标题
 				printToClient.println("Videos that are playing:\n");
-				new ShellCmd("", "", printToClient).getPlayingVideoList();
+				new ShellCmd("", printToClient).getPlayingVideoList();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -142,21 +127,23 @@ class ShellCmd {
 	private String mountPoint = null;
 	private InputStream inputFromShell = null;
 	private PrintWriter printToClient = null;
+	private Socket socketToClient = null;
 	String[] cmd1 = { "sh", "-c", "ping -c 20 111.1.1.1" };
 	String[] cmd2 = { "sh", "-c", "ping -c 20 127.0.0.1" };
 
+	//用于在调用playvideo前将socket传递进去，便于判断客户端何时掉线
+	public void setSocketToClient(Socket s) {
+		this.socketToClient = s;
+	}
 	/**
 	 * 
 	 * @param videoname
 	 *            视频名
-	 * @param mountPoint
-	 *            被停止的挂载点，仅用于停止视频
 	 * @param pwr
 	 *            printToClient
 	 */
-	public ShellCmd(String videoname, String mountPoint, PrintWriter pwr) {
+	public ShellCmd(String videoname, PrintWriter pwr) {
 		this.videoName = videoname;
-		this.mountPoint = mountPoint;
 		this.printToClient = pwr;
 	}
 
@@ -204,8 +191,17 @@ class ShellCmd {
 		try {
 			Process pc = null;
 			ProcessBuilder pb = null;
+			int stream = MountPoint.getStreamName();
+			// 先发送一行信息，客户端将之作为子窗口的标题
+			if(stream == -1){
+				printToClient.println("Video Playing Error!");// SubFrame's Title
+				printToClient.println("Can't get mountpoint. The mountpoint is not enough.");
+				return;
+			}
+			//title
+			printToClient.println("Video Name: " + videoName + " Mount Point: " + stream);
 			String[] cmd = { "sh", "-c",
-					"ffmpeg -re -i /usr/local/movies/" + videoName + " -c copy -f rtsp rtsp://" + "127.0.0.1" + "/" + mountPoint };
+					"ffmpeg -re -i /usr/local/movies/" + videoName + " -c copy -f rtsp rtsp://" + "127.0.0.1" + "/live/" + stream };
 			pb = new ProcessBuilder(cmd);
 			System.out.println(cmd[2]);//
 			pb.redirectErrorStream(true);
@@ -220,13 +216,14 @@ class ShellCmd {
 				while ((tmp_in = inFromShell.readLine()) != null) {
 					System.out.println(tmp_in);
 					printToClient.println(tmp_in);
+					socketToClient.sendUrgentData(0xFF);//如果客户端死了，此处必然异常
 				}
 				// 捕获异常是为了当客户端断掉socket时，本服务端线程不会跳过pc.waitFor()
 				// 从而可以继续视频传输，等待ffmpeg结束后本线程再结束
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			pc.waitFor();// 若出现客户端断开socket的意外，此语句可以保证shell程序继续执行完毕
+			//pc.waitFor();// 若出现客户端断开socket的意外，此语句可以保证shell程序继续执行完毕
 			pc.destroy();
 		} catch (Exception e) {
 			e.printStackTrace();

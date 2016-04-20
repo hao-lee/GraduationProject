@@ -17,6 +17,7 @@ public class SubThreadFrame {
 
 	/**
 	 * Create the frame.
+	 * @wbp.parser.entryPoint
 	 */
 	public JFrame createSubFrame() {
 		subFrame = new JFrame();

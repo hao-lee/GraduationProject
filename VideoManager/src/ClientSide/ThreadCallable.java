@@ -20,7 +20,7 @@ public class ThreadCallable implements Callable<Integer> {
 	private String serverIP = null;
 	private int serverPort = -1;
 	private int reqCode = 0;
-	private String vmName = null;// 复用为视频名或挂载点名
+	private String vsName = null;// 复用为视频名或挂载点名
 	/*
 	 * 图形控件defaulttablemodel用于向主界面输出视频列表 jtextarea用于向子窗口输出状态信息
 	 * jFrame仅用于改变子窗口的标题栏信息
@@ -59,7 +59,7 @@ public class ThreadCallable implements Callable<Integer> {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
 		this.reqCode = reqCode;
-		this.vmName = vmName;
+		this.vsName = vmName;
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class ThreadCallable implements Callable<Integer> {
 			readFromServer = new BufferedReader(new InputStreamReader(inputStream));
 			printToServer = new PrintWriter(outputStream, true);// auto flush
 			// 向服务器发送请求
-			printToServer.println(reqCode + "|" + vmName);
+			printToServer.println(reqCode + "|" + vsName);
 			// 读取服务器的状态回应,如果服务端线程死亡，socket中断，这里不会报异常，原因未知
 			String response = null;
 			boolean setTitleOnce = false;// 使子窗口标题设置语句只执行一次

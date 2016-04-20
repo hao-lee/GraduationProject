@@ -2,6 +2,7 @@ package ServerSide;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class DefineConstant {
@@ -12,38 +13,18 @@ public class DefineConstant {
 }
 
 final class MountPoint{
-	private static List<String> mountPointList = 
-			Collections.synchronizedList(new ArrayList<>());
-	private static List<String> usedPointList = 
-			Collections.synchronizedList(new ArrayList<>());
+	private static int MAX = 65535;
+	private static int stream = 0;
+	private static HashSet<Integer> streamNameSet = new HashSet<>();
 	
-	//初始化挂载点存储列表
-	public static void initMountPointList() {
-		mountPointList.add("1.sdp");
-		mountPointList.add("2.sdp");
-		mountPointList.add("3.sdp");
+	//
+	public static int getStreamName() {
+		while(true){
+			stream = (stream+1)%MAX;
+			if(streamNameSet.add(stream))
+				return stream;
+			if (streamNameSet.size() == MAX)
+				return -1;//如果集合满了说明当前达到了视频流数量的极限，返回-1
+		}
 	}
-	
-	//一次只允许一个线程前来取得挂载点，这个函数称作临界区，是线程安全的
-	synchronized public static String getMountPoint() {
-		if(mountPointList.isEmpty())
-			return "";
-		else{
-			String mp = mountPointList.remove(0);
-			usedPointList.add(mp);
-			return mp;
-		}
-	}//getMountPoint
-	
-	//释放挂载点，同理必须是线程安全的
-	synchronized public static boolean releaseMountPoint(String mp){
-		if(usedPointList.remove(mp)){
-			mountPointList.add(mp);//将挂载点释放到资源库中
-			return true;
-		}else{//仅仅是为了以防万一
-			System.out.println("\nFatal Error:Can't Release MountPoint!\n");
-			return false;
-		}
-	}//releaseMountPoint
-	
 }//class MountPoint
