@@ -1,9 +1,6 @@
 package ServerSide;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 
 public class DefineConstant {
 	public final static int PLAYVIDEO = 1;
@@ -17,7 +14,7 @@ final class MountPoint{
 	private static int stream = 0;
 	private static HashSet<Integer> streamNameSet = new HashSet<>();
 	
-	//
+	//获取可用的数据流名字
 	public static int getStreamName() {
 		while(true){
 			stream = (stream+1)%MAX;
@@ -26,5 +23,9 @@ final class MountPoint{
 			if (streamNameSet.size() == MAX)
 				return -1;//如果集合满了说明当前达到了视频流数量的极限，返回-1
 		}
+	}
+	//释放用完的数据流名字
+	public static void releaseStreamName(int sname) {
+		streamNameSet.remove(sname);
 	}
 }//class MountPoint

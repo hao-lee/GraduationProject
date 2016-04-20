@@ -46,7 +46,6 @@ public class Server {
 		while (true) {
 			try {
 				socketToClient = serverSocket.accept();
-				// "Future<Integer> future = " is not needed
 				executorService.submit(new ServerCallable(socketToClient));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -56,7 +55,7 @@ public class Server {
 		} // while
 	}// function listenAccept
 }// class end
-	// 这个类用于连接客户端，回传数据
+// 这个类用于连接客户端，回传数据
 
 class ServerCallable implements Callable<Integer> {
 	private Socket socketToClient = null;
@@ -76,14 +75,15 @@ class ServerCallable implements Callable<Integer> {
 			printToClient = new PrintWriter(outputStream, true);// auto flush
 			// 分析客户端请求
 			String msg = readFromClient.readLine();
-			String[] msgField = msg.split("\\|");// reqCode|videoName or sdpName
+			String[] msgField = msg.split("\\|");// reqCode|videoName or streamName
 			int requestCode = Integer.valueOf(msgField[0]);
-			// vName可能是视频名或sdp挂载点名，此为变量复用。
-			// 如果reqCode是播放视频那么msgField[]不存在index=1的元素，这里检测下防止数组越界访问
+			// 如果reqCode是获取列表，那么msgField[]不存在index=1的元素，这里检测下防止数组越界访问
 			String videoName = (msgField.length == 2 ? msgField[1] : "");
-			// getInetAddress获得的IP形如/111.111.111.111，多了斜杠，去掉它
-			//String clientIP = socketToClient.getInetAddress().toString().substring(1);
-			// 传入printToClient给getVideoList和playVideo，最终printToClient依然由本函数关闭
+			
+			/* getInetAddress获得的IP形如/111.111.111.111，多了斜杠，去掉它
+			* String clientIP = socketToClient.getInetAddress().toString().substring(1);
+			* 传入printToClient给getVideoList和playVideo，最终printToClient依然由本函数关闭
+			*/
 			if (requestCode == DefineConstant.GETVIDEOLIST) {
 				// 查询视频列表，此时不许要videoName参数
 				new ShellCmd("", printToClient).getVideoList();
@@ -92,7 +92,6 @@ class ServerCallable implements Callable<Integer> {
 				sCmd.setSocketToClient(socketToClient);//设入连接客户端的套接字，便于后面检测客户端死亡。
 				sCmd.playVideo();
 			} else if (requestCode == DefineConstant.STOPVTHREAD) {
-				printToClient.println("Stop Playing:");// 子窗口的标题
 				// 此时videoName复用为“要被停止的”挂载点名称
 				new ShellCmd(videoName, printToClient).stopProcess();
 				printToClient.println("stopProcess() has been executed!");
@@ -100,9 +99,8 @@ class ServerCallable implements Callable<Integer> {
 				// 这样在服务端向该挂载点发数据的线程就会因为内建shell进程的终止而从playVideo函数返回，
 				// 进而正常结束call函数，线程正常结束。
 			} else if (requestCode == DefineConstant.GETVIDEOSTATUS) {
-				printToClient.println("Video Status:");// 子窗口的标题
 				printToClient.println("Videos that are playing:\n");
-				new ShellCmd("", printToClient).getPlayingVideoList();
+				new ShellCmd("", printToClient).getPlayingStatus();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -159,10 +157,10 @@ class ShellCmd {
 			pb.redirectErrorStream(true);
 			pc = pb.start();
 			inputFromShell = pc.getInputStream();
-			BufferedReader inFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
+			BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
 			String tmp_in = null;
 			try {
-				while ((tmp_in = inFromShell.readLine()) != null) {
+				while ((tmp_in = readFromShell.readLine()) != null) {
 					// System.out.println(tmp_in);
 					printToClient.println(tmp_in);
 				}
@@ -171,7 +169,7 @@ class ShellCmd {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			pc.waitFor();// 若出现客户端断开socket的意外，此语句可以保证shell程序继续执行完毕
+			//pc.waitFor();// 若出现客户端断开socket的意外，此语句可以保证shell程序继续执行完毕
 			pc.destroy();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -191,29 +189,30 @@ class ShellCmd {
 		try {
 			Process pc = null;
 			ProcessBuilder pb = null;
-			int stream = MountPoint.getStreamName();
+			int streamName = MountPoint.getStreamName();
 			// 先发送一行信息，客户端将之作为子窗口的标题
-			if(stream == -1){
+			if(streamName == -1){
 				printToClient.println("Video Playing Error!");// SubFrame's Title
 				printToClient.println("Can't get mountpoint. The mountpoint is not enough.");
 				return;
 			}
-			//title
-			printToClient.println("Video Name: " + videoName + " Mount Point: " + stream);
+			//回复给客户端当前视频流的名字
+			printToClient.println(streamName);
+			
 			String[] cmd = { "sh", "-c",
-					"ffmpeg -re -i /usr/local/movies/" + videoName + " -c copy -f rtsp rtsp://" + "127.0.0.1" + "/live/" + stream };
+					"ffmpeg -re -i /usr/local/movies/" + videoName + " -c copy -f rtsp rtsp://" + "127.0.0.1" + "/live/" + streamName };
 			pb = new ProcessBuilder(cmd);
 			System.out.println(cmd[2]);//
 			pb.redirectErrorStream(true);
 			pc = pb.start();
 			inputFromShell = pc.getInputStream();
-			BufferedReader inFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
+			BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
 			String tmp_in = null;
 			// 如果接收方挂了，底层socket不会关闭，所以发送方不会出现异常。但是客户端立即重启的话就会
 			// 得不到端口而报异常，除非设置端口重用选项。实际测试中并未出现问题，
 			// 所以客户端暂时不用设置SO_REUSEADDR。
 			try {
-				while ((tmp_in = inFromShell.readLine()) != null) {
+				while ((tmp_in = readFromShell.readLine()) != null) {
 					System.out.println(tmp_in);
 					printToClient.println(tmp_in);
 					socketToClient.sendUrgentData(0xFF);//如果客户端死了，此处必然异常
@@ -225,6 +224,7 @@ class ShellCmd {
 			}
 			//pc.waitFor();// 若出现客户端断开socket的意外，此语句可以保证shell程序继续执行完毕
 			pc.destroy();
+			MountPoint.releaseStreamName(streamName);//释放数据流名字
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -241,7 +241,7 @@ class ShellCmd {
 	/*
 	 * 获取当前正在播放的视频列表
 	 */
-	public void getPlayingVideoList() {
+	public void getPlayingStatus() {
 		try {
 			Process pc = null;
 			ProcessBuilder pb = null;
@@ -250,10 +250,10 @@ class ShellCmd {
 			pb.redirectErrorStream(true);
 			pc = pb.start();
 			inputFromShell = pc.getInputStream();
-			BufferedReader inFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
+			BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
 			String tmp_in = null;
 			try {
-				while ((tmp_in = inFromShell.readLine()) != null) {
+				while ((tmp_in = readFromShell.readLine()) != null) {
 					// System.out.println(tmp_in);
 					printToClient.println(tmp_in);
 				}
@@ -262,7 +262,7 @@ class ShellCmd {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			pc.waitFor();// 若出现客户端断开socket的意外，此语句可以保证shell程序继续执行完毕
+			//pc.waitFor();// 若出现客户端断开socket的意外，此语句可以保证shell程序继续执行完毕
 			pc.destroy();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -291,17 +291,17 @@ class ShellCmd {
 			pb.redirectErrorStream(true);
 			pc = pb.start();
 			inputFromShell = pc.getInputStream();
-			BufferedReader inFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
+			BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
 			String tmp_in = null;
 			try {
-				while ((tmp_in = inFromShell.readLine()) != null) {
+				while ((tmp_in = readFromShell.readLine()) != null) {
 					System.out.println(tmp_in);
 					printToClient.println(tmp_in);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			pc.waitFor();
+			//pc.waitFor();
 			pc.destroy();
 		} catch (Exception e) {
 			e.printStackTrace();
