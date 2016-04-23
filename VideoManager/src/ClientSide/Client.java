@@ -118,11 +118,8 @@ public class Client {
 				// 此处需要新弹出一个窗口，用于输出服务端的返回结果，每个线程的输出各自独立
 				// 这里本身就在EDT里面，所以可以不用invokeAndWait等待子窗口创建，否则会死锁
 				// 现在在EDT里面已经是线程安全的，直接new即可
-				SubThreadFrame subThreadFrame = new SubThreadFrame();
-				subThreadFrame.createSubFrame();
 				// 将子窗口句柄传入子线程，子线程会连接服务器并将数据输出到子窗口
 				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.PLAYVIDEO, videoName);
-				callable.setJtaFrame(subThreadFrame.getJTextArea(), subThreadFrame.getJFrame());
 				executorService.submit(callable);
 			}// actionPerformed
 		});// addActionListener
@@ -149,7 +146,6 @@ public class Client {
 				SubThreadFrame subThreadFrame = new SubThreadFrame();
 				subThreadFrame.createSubFrame();
 				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.GETVIDEOSTATUS, "");
-				callable.setJtaFrame(subThreadFrame.getJTextArea(), subThreadFrame.getJFrame());
 				executorService.submit(callable);
 			}
 		});
@@ -167,7 +163,6 @@ public class Client {
 				SubThreadFrame subThreadFrame = new SubThreadFrame();
 				subThreadFrame.createSubFrame();
 				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.STOPVTHREAD, stopMP);
-				callable.setJtaFrame(subThreadFrame.getJTextArea(), subThreadFrame.getJFrame());
 				executorService.submit(callable);// 不需要收集返回值
 				// 原计划用sdp查出客户端port，让服务器终止和这个port通信的线程，可惜这么做没成功，
 				// cancel函数返回的是成功，但是线程并没有取消。现在服务器使用Linux命令直接干掉使用sdpName的进程

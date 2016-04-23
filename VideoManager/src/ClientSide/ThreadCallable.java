@@ -10,10 +10,6 @@ import java.net.Socket;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
@@ -23,29 +19,15 @@ public class ThreadCallable implements Callable<Integer> {
 	private int serverPort = -1;
 	private int requestCode = 0;
 	private String videoName = null;// 复用为视频名或挂载点名
-	/*
-	 * 图形控件defaulttablemodel用于向主界面输出视频列表 jtextarea用于向子窗口输出状态信息
-	 * jFrame仅用于改变子窗口的标题栏信息
-	 */
-	private int mainORsub;// mainORsub = 0 表示向主窗口输出，==1是向子窗口输出
+
 	private DefaultTableModel defaultTableModel = null;
-	private JTextArea jTextArea = null;
-	private JFrame jFrame = null;
 
 	/*
 	 * 不再使用造型转换，转而使用setter将数据注入
 	 */
 	public void setTableModel(DefaultTableModel dtm) {
 		this.defaultTableModel = dtm;
-		this.mainORsub = 0;
 	}
-
-	public void setJtaFrame(JTextArea jta, JFrame jFrame) {
-		this.jTextArea = jta;
-		this.jFrame = jFrame;
-		this.mainORsub = 1;
-	}
-
 	/**
 	 * 
 	 * @param ip
@@ -80,64 +62,60 @@ public class ThreadCallable implements Callable<Integer> {
 			printToServer.println(requestCode + "|" + videoName);
 			// 读取服务器的状态回应,如果服务端线程死亡，socket中断，这里不会报异常，原因未知
 			String response = null;
-			String streamName = null, subFrameTitle = null;
-			//确定子窗口的标题栏内容字符串
-			if(requestCode == DefineConstant.PLAYVIDEO){
-				try {
-					streamName = readFromServer.readLine();
-					subFrameTitle = "Video Name:"+videoName+"Stream Name:"+streamName;
-				} catch (IOException e) {e.printStackTrace();}}
-			else if(requestCode == DefineConstant.STOPVTHREAD)
-				subFrameTitle = "Stop Playing Video";
-			else if(requestCode == DefineConstant.GETVIDEOSTATUS)
-				subFrameTitle = "Get Playing Status";
-			else if(requestCode == DefineConstant.GETVIDEOLIST)
-				subFrameTitle = null;//对于获取列表功能，没有子窗口标题需要设置
-			//设置子窗口标题栏
-			final String finalTitle = subFrameTitle;
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					if(finalTitle != null)jFrame.setTitle(finalTitle);
+			
+			if (requestCode == DefineConstant.PLAYVIDEO) {//播放视频
+				String streamName = null;
+				//读取服务器发来的视频流名字，本次接收不需要发送心跳应答
+				streamName = readFromServer.readLine();
+				//
+				while ((response = readFromServer.readLine()) != null){
+					//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
+					if(Integer.valueOf(response) == DefineConstant.WAIT){
+						printToServer.println("I am alive.");//该字符串任意
+						continue;	
+					}else{//收到OK消息，跳出循环
+						printToServer.println("I am alive.");
+						break;
+					}
 				}
-			});
-			//如果此时是在请求播放视频，那么开启ffplay视频播放线程
-			Future<Integer> ffplayFuture = null;
-			if (requestCode == DefineConstant.PLAYVIDEO) {
+				//根据服务端的指示，现在可以开启ffplay放视频了
 				FFplayCallable ffplayCallable = new FFplayCallable("rtsp://"
 									+serverIP+"/live/"+streamName);
-				ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);
-			}
-
-			while ((response = readFromServer.readLine()) != null) {
+				Future<Integer> ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);
+				//播放器线程已经启动，现在继续收发消息，让服务器知道客户端还活着
+				while ((response = readFromServer.readLine()) != null){
+					printToServer.println("I am alive.");
+					/*
+					 * 检测ffplay进程所在的线程是否已经结束，如果是，那么本线程也就没有继续执行的必要了
+					 * */
+					if (requestCode == DefineConstant.PLAYVIDEO 
+							&& ffplayFuture.isDone()) break;
+				}
 				/*
-				 * 如果这个线程的任务是播放视频，那么检测ffplay进程所在的线程是否已经结束，
-				 * 如果是，那么本线程也就没有继续执行的必要了
+				 * 注意，上面的循环正常结束的原因就是服务器不再发送数据，可能是视频传输完毕，
+				 * 也可能服务器因为未知原因异常终止，但是这种情况基本不会出现。
 				 */
-				if (requestCode == DefineConstant.PLAYVIDEO 
-						&& ffplayFuture.isDone()) break;
+			}else if(requestCode == DefineConstant.GETVIDEOLIST){//获取列表
 				/*
-				 * System.out.println(response);
+				 * 这种情况很简单，服务器和客户端不需要使用心跳包，服务器将数据发送完，
+				 * 客户端再慢慢接收
+				 * */
+				while ((response = readFromServer.readLine()) != null) {
+				/*
 				 * 该将数据输出到table_videolist上了，不能直接去写控件，而是交给事件调度线程去做
 				 * response不是final变量，不能在匿名内部类使用，所以传递一下
 				 */
-				final String finalString = response;
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						if (mainORsub == 0) {
+					final String finalString = response;
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
 							defaultTableModel.addRow(new String[] { finalString, "-", "-" });
-						} else if (mainORsub == 1) {// subFrame
-							// 如果播放状态窗口subThreadFrame被关闭，那么在此EDT内继续向disComp写数据不会发生异常。
-							jTextArea.append(finalString + "\n");
-						}
-					}// run
-				});
-			} // while
+						}// run
+					});
+				} // while
+			}//else
 		} catch (Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Server is stoped or IP:port is wrong", "Alert",
-					JOptionPane.ERROR_MESSAGE);
 			System.out.println("Server is stoped or IP:port is wrong");
 		} finally {
 			try {
@@ -165,16 +143,24 @@ class FFplayCallable implements Callable<Integer>{
 		try {
 			Process pc = null;
 			ProcessBuilder pb = null;
-			String[] cmd = { "ffplay", rtspURL};
+			String[] cmd = new String[2];
+			String os = System.getProperty("os.name");
+			if(os.toLowerCase().startsWith("win"))
+				{cmd[0] = "ffplay.exe";cmd[1]=rtspURL;}
+			else{cmd[0] = "ffplay";cmd[1] = rtspURL;}
+			
 			pb = new ProcessBuilder(cmd);
 			pb.redirectErrorStream(true);
 			pc = pb.start();
 			InputStream inputFFplayStatus = pc.getInputStream();
 			BufferedReader readFFplayStatus = new BufferedReader(new InputStreamReader(inputFFplayStatus));
+			StringBuffer stringBuffer = new StringBuffer();
+			stringBuffer.append(cmd[0]+cmd[1]);
 			try {
 				String tmp_in = null;
 				while ((tmp_in = readFFplayStatus.readLine()) != null) {
 					System.out.println(tmp_in);
+					stringBuffer.append(tmp_in+"\n");
 				}
 			} catch (Exception e) {e.printStackTrace();
 			}finally {
