@@ -143,8 +143,6 @@ public class Client {
 		menuMain.add(mntmGetStatus);
 		mntmGetStatus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				SubThreadFrame subThreadFrame = new SubThreadFrame();
-				subThreadFrame.createSubFrame();
 				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.GETVIDEOSTATUS, "");
 				executorService.submit(callable);
 			}
@@ -160,8 +158,6 @@ public class Client {
 				String stopMP = JOptionPane.showInputDialog(mainFrame,
 						"Enter the mount point that you want to stop relay", "mountpoint");
 				if(stopMP == null) return;
-				SubThreadFrame subThreadFrame = new SubThreadFrame();
-				subThreadFrame.createSubFrame();
 				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.STOPVTHREAD, stopMP);
 				executorService.submit(callable);// 不需要收集返回值
 				// 原计划用sdp查出客户端port，让服务器终止和这个port通信的线程，可惜这么做没成功，
