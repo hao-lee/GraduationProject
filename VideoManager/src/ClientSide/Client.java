@@ -1,22 +1,28 @@
 package ClientSide;
-
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import javax.swing.SwingUtilities;
+
+import CommonPackage.VideoInfo;
+
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.awt.event.ActionEvent;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.JScrollPane;
-import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JComboBox;
+import javax.swing.JRadioButton;
 
 // main function
 public class Client {
@@ -25,8 +31,12 @@ public class Client {
 	private ExecutorService executorService = null;
 	private JFrame mainFrame = null;
 	private JTable jtableVideoList;
-	private DefaultTableModel defaultTableModel;
-
+	JComboBox<String> categoryComboBox = null;
+	private int mode = DefineConstant.MODE_LIVE;//播放模式初始值
+	//起始序号和步长
+	private int videoDisplayStart = 0;//行数从0计
+	private int videoDisplayStep = 9;
+	
 	public static void main(String[] args) {
 		Client client = new Client();
 		SwingUtilities.invokeLater(new Runnable() {
@@ -45,134 +55,157 @@ public class Client {
 
 	// 创建客户端主界面
 	private void createMainInterface() {
+		int windowWidth = 1000;
+		int windowHeight = 500;
+		int menuBarHeight = 21;
+		int btnPanelHeight = 40;
+		int scrollPaneHeight = windowHeight-menuBarHeight-btnPanelHeight;
 		// user-interface
 		mainFrame = new JFrame("Main Interface");
+		mainFrame.setResizable(false);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		mainFrame.setBounds(300, 200, 547, 433);
+		mainFrame.setBounds(300, 200, windowWidth, windowHeight);
 
-		JPanel mainPane = new JPanel();
-		mainFrame.getContentPane().add(mainPane, BorderLayout.CENTER);
-		mainPane.setLayout(null);
-
+		/* frame的内容面板 */
+		JPanel contentPane = new JPanel(null);//绝对布局
+		mainFrame.setContentPane(contentPane);
 		/*
-		 * 表格上面的名字标签
-		 */
-		JLabel lblVideolist = new JLabel("Video List");
-		lblVideolist.setBounds(12, 74, 83, 15);
-		mainPane.add(lblVideolist);
+		 * 内容面板上 可以添加 按钮面板 和 滚动面板（主面板）以及 菜单条
+		 * */
+		/*设置菜单控件*/
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.setBounds(0, 0, windowWidth, menuBarHeight);//大小和位置
+		contentPane.add(menuBar);
+		
+		/*新建按钮面板*/
+		JPanel btnPanel = new JPanel(new FlowLayout());
+		/* 将按钮面板加到内容面板上 */
+		contentPane.add(btnPanel);
+		btnPanel.setBounds(0, 0+menuBarHeight, windowWidth, btnPanelHeight);//大小和位置
+		
+		/*新建滚动面板,滚动面板唯一地做用是为主面板提供滚动条功能*/
+		JScrollPane jScrollPane = new JScrollPane();
+		/* 将滚动面板加到内容面板上 */
+		contentPane.add(jScrollPane);
+		/*滚动面板和内容面板（去掉菜单剩下的）一样大即可，后面的主面板要和内容一样大*/
+		jScrollPane.setBounds(0, 0+menuBarHeight+btnPanelHeight, windowWidth, scrollPaneHeight);//大小和位置
+		
 		/*
-		 * 新建滚动面板
-		 */
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(12, 101, 519, 288);
-		mainPane.add(scrollPane);
+		 * 新建主面板，并使之具备滚动功能
+		 * */
+		JPanel mainPanel = new JPanel(new FlowLayout
+				(FlowLayout.LEFT, 5, 5));/*主面板上可以添加显示块*/
+		jScrollPane.setViewportView(mainPanel);//具备滚动功能
+		jScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		jScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		/*主面板不用锁定位置，因为有背后的滚动面板来协调，这里秩序根据实际内容的高度设置主面板高度即可*/
+		mainPanel.setPreferredSize(new Dimension(windowWidth, 
+					DisplayBlock.getTotalHeight()+menuBarHeight+btnPanelHeight));
+		/*视频播放模式，直播和点播*/
+		ButtonGroup buttonGroup = new ButtonGroup();
+		JRadioButton liveRButton = new JRadioButton("直播");
+		JRadioButton vodRButton = new JRadioButton("点播");
+		buttonGroup.add(liveRButton);
+		buttonGroup.add(vodRButton);
+		btnPanel.add(vodRButton);
+		btnPanel.add(liveRButton);
+		liveRButton.setSelected(true);
+		/*视频分类下拉列表*/
+		categoryComboBox = new JComboBox<>();
+		categoryComboBox.setPreferredSize(new Dimension(100, 25));
+		btnPanel.add(categoryComboBox);
 		/*
-		 * 新建表格模型
-		 */
-		defaultTableModel = new DefaultTableModel(new Object[][] {}, new String[] { "VideoName", "Col2", "Col3" });
+		 * 获取分类
+		 * */
+		getCategoryManually(categoryComboBox);
 		/*
-		 * 以刚才的表格模型为基准新建表格控件，并将之添加到滚动面板上
-		 */
-		jtableVideoList = new JTable(defaultTableModel) {
-			private static final long serialVersionUID = 1L;
-
+		 * 显示块要追加到主面板mainPanel上，
+		 * 不要搞成contentPane，contentPane使命到此完成
+		 * */
+		/*
+		 * 设置播放模式
+		 * */
+		liveRButton.addItemListener(new ItemListener() {
 			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
+			public void itemStateChanged(ItemEvent e) {
+				mode = DefineConstant.MODE_LIVE;
 			}
-		};
-		jtableVideoList.setFillsViewportHeight(true);
-		scrollPane.setViewportView(jtableVideoList);
-
+		});
+		vodRButton.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				mode = DefineConstant.MODE_VOD;
+			}
+		});
 		/*
-		 * 获取视频列表
-		 */
-		JButton btnGetVideoList = new JButton("GetList");
-		btnGetVideoList.setBounds(12, 37, 107, 25);
-		mainPane.add(btnGetVideoList);
-		btnGetVideoList.addActionListener(new ActionListener() {
+		 * 刷新视频列表
+		 * */
+		JButton btnRefreshVideoList = new JButton("刷新");
+		btnRefreshVideoList.setPreferredSize(new Dimension(107, 25));
+		btnPanel.add(btnRefreshVideoList);
+		btnRefreshVideoList.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				defaultTableModel.setRowCount(0);// 清空表中原先的内容
-				// 注意，向列表输出数据是输出到defaultTableModel上，而非JTable
-				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.GETVIDEOLIST, "");
-				callable.setTableModel(defaultTableModel);
+				/*先刷新主面板*/
+				mainPanel.removeAll();
+				mainPanel.revalidate();
+				mainPanel.repaint();
+				/*复位被选择视频块*/
+				SelectBlock.resetLastBlock();
+				/*获取被选择的列表是哪个*/
+				String selectedCategory = (String) categoryComboBox.getSelectedItem();//取被选目录
+				ClientCallable callable = new ClientCallable(serverIP, serverPort
+						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
+						,videoDisplayStart,videoDisplayStep);
+				callable.setMainPanel(mainPanel);
 				executorService.submit(callable);// 不需要收集返回值
+				//videoDisplayStart += videoDisplayStep;//递增起点
 			}
-		});// addActionListener
+		});
 
 		/*
 		 * 播放视频
 		 */
-		JButton btnPlayVideo = new JButton("PlayVideo");
-		btnPlayVideo.setBounds(380, 37, 107, 25);
-		mainPane.add(btnPlayVideo);
+		JButton btnPlayVideo = new JButton("播放视频");
+		btnPlayVideo.setPreferredSize(new Dimension(107, 25));
+		btnPanel.add(btnPlayVideo);
 		btnPlayVideo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// 获取当前被选择的行就不能用tablemodel了，需要用jtable
-				int rowIndex = jtableVideoList.getSelectedRow();
-				if (rowIndex == -1) {
-					JOptionPane.showMessageDialog(null, "No item is selected", "Alert", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				String videoName = (String) jtableVideoList.getValueAt(rowIndex, 0);
-				// 此处需要新弹出一个窗口，用于输出服务端的返回结果，每个线程的输出各自独立
-				// 这里本身就在EDT里面，所以可以不用invokeAndWait等待子窗口创建，否则会死锁
-				// 现在在EDT里面已经是线程安全的，直接new即可
-				// 将子窗口句柄传入子线程，子线程会连接服务器并将数据输出到子窗口
-				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.PLAYVIDEO, videoName);
-				executorService.submit(callable);
-			}// actionPerformed
+		public void actionPerformed(ActionEvent e) {
+			ClientCallable callable = null;
+			if(mode==DefineConstant.MODE_VOD)
+				callable = new ClientCallable(serverIP, 
+					serverPort,DefineConstant.ACTION_PLAYVOD);
+			else//live
+				callable = new ClientCallable(serverIP, 
+						serverPort,DefineConstant.ACTION_PLAYLIVE);
+			executorService.submit(callable);
+		}// actionPerformed
 		});// addActionListener
 
-		/*
-		 * 设置菜单控件
-		 */
-		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBounds(8, 0, 228, 21);
-		mainPane.add(menuBar);
 
 		JMenu menuMain = new JMenu("Main");
 		menuBar.add(menuMain);
 
 		JMenu menuSetting = new JMenu("Setting");
 		menuBar.add(menuSetting);
-		/*
-		 * 获取当前服务器端视频的播放状态
-		 */
-		JMenuItem mntmGetStatus = new JMenuItem("Get Status");
-		menuMain.add(mntmGetStatus);
-		mntmGetStatus.addActionListener(new ActionListener() {
+
+		/*手动获取分类*/
+		JMenuItem mntmGetCategory = new JMenuItem("get");
+		menuMain.add(mntmGetCategory);
+		mntmGetCategory.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
-				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.GETVIDEOSTATUS, "");
-				executorService.submit(callable);
+				getCategoryManually(categoryComboBox);
 			}
 		});
-
-		/*
-		 * 停止播放某个视频
-		 */
-		JMenuItem mntmStopPlaying = new JMenuItem("Stop Playing");
-		menuMain.add(mntmStopPlaying);
-		mntmStopPlaying.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String stopMP = JOptionPane.showInputDialog(mainFrame,
-						"Enter the mount point that you want to stop relay", "mountpoint");
-				if(stopMP == null) return;
-				ThreadCallable callable = new ThreadCallable(serverIP, serverPort, DefineConstant.STOPVTHREAD, stopMP);
-				executorService.submit(callable);// 不需要收集返回值
-				// 原计划用sdp查出客户端port，让服务器终止和这个port通信的线程，可惜这么做没成功，
-				// cancel函数返回的是成功，但是线程并没有取消。现在服务器使用Linux命令直接干掉使用sdpName的进程
-				// 这样在服务端向sdpName发数据的线程就会因为内建shell进程的终止而从playVideo函数返回，
-				// 进而正常结束call函数，线程正常结束。
-			}
-		});
-
+		
 		/*
 		 * 更改要连接的服务器IP地址
 		 */
 		JMenuItem mntmServerIp = new JMenuItem("Server IP");
 		menuSetting.add(mntmServerIp);
 		mntmServerIp.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				String str = JOptionPane.showInputDialog(mainFrame, "Enter server ip", "127.0.0.1");
 				serverIP = (str == null ? "127.0.0.1" : str);
@@ -186,6 +219,7 @@ public class Client {
 		menuSetting.add(mntmServerPort);
 		;
 		mntmServerPort.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				String str = JOptionPane.showInputDialog(mainFrame, "Enter server port", "10000");
 				serverPort = (str == null ? 10000 : Integer.valueOf(str));
@@ -198,10 +232,12 @@ public class Client {
 		mainFrame.setVisible(true);
 	}// create
 
-	/*
-	 * 获取显示组件
-	 */
-	public DefaultTableModel getTableModel() {
-		return defaultTableModel;
+	//刷新分类列表
+	private void getCategoryManually(JComboBox<String> categoryComboBox){
+		categoryComboBox.removeAllItems();//先清掉之前的项
+		ClientCallable callable = new ClientCallable(serverIP, serverPort
+				,DefineConstant.ACTION_GETCATEGORY, mode,categoryComboBox);
+		executorService.submit(callable);// 不需要收集返回值
 	}
+	
 }// class

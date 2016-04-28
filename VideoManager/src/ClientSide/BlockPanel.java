@@ -1,35 +1,27 @@
 package ClientSide;
 
-import java.awt.BorderLayout;
+import CommonPackage.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 
 import javax.imageio.ImageIO;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.Scrollable;
 
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.Label;
-import java.awt.Paint;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.Buffer;
-import java.util.HashMap;
-import java.util.jar.Attributes.Name;
 
-public class UIDesign {
+public class BlockPanel {
 
 	private JFrame frame;
 
@@ -40,7 +32,7 @@ public class UIDesign {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					UIDesign window = new UIDesign();
+					BlockPanel window = new BlockPanel();
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -52,7 +44,7 @@ public class UIDesign {
 	/**
 	 * Create the application.
 	 */
-	public UIDesign() {
+	public BlockPanel() {
 		initialize();
 	}
 
@@ -70,19 +62,19 @@ public class UIDesign {
 		mainPane.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));//设置主面板为流式布局
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
 		/*
 		 * 添加缩略图
 		 * */
 		String imagePath = "001.jpg";
-		HashMap<String, String> infoMap = new HashMap<>();
-		infoMap.put("VideoName", "dog");
-		infoMap.put("Duration", "00:05:23");
-		infoMap.put("Resolution","1920x1080");
+		VideoInfo videoInfo = new VideoInfo("dog", "00:05:23", "1920x1080", "游戏", 
+					"vod/games/Ghost Recon.mp4");
 		for(int i = 1; i<=5;i++){
 			try {
-				BufferedImage bufferedImage = ImageIO.read(new FileInputStream(imagePath));
+				BufferedImage bufferedImage = ImageIO.read(new FileInputStream("/home/mirage/GraduationProject/VideoManager/tmp.jpg"));
 				//新建显示块
-				DisplayBlock displayBlock = new DisplayBlock(bufferedImage,infoMap);
+				videoInfo.setBufferedImage(bufferedImage);
+				DisplayBlock displayBlock = new DisplayBlock(videoInfo);
 				mainPane.add(displayBlock);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -121,12 +113,21 @@ class DisplayBlock extends JPanel{
 	private int blockWidth = -1,blockHeight  = -1;//DisplayBlock显示块大小
 	private int padding = 10;//显示块面板与缩略图面板之间的内边距
 	private int infoHeight = 50;//信息显示区域的高度
-	private static int totalHeight = 0;
+	private static int totalHeight = -1;
+	private VideoInfo videoInfo = null;
+	//计算主面板应该多高,主需要一个静态的即可，该函数只在添加主面板时使用一次
 	public static int getTotalHeight() {
-		return totalHeight;
+		//blockHeight = tnHeight+3*padding+infoHeight;
+		return 3*(200+3*10+50);//共显示3行，每行3个
+	}
+	//返回当前视频显示块对象内的videoInfo对象
+	public VideoInfo getVideoInfo() {
+		return videoInfo;
 	}
 	//HashMap<>()存储视频时长等信息
-	public DisplayBlock(BufferedImage bufferedImage, HashMap<String, String> infoMap) {
+	public DisplayBlock(VideoInfo videoInfo) {
+		
+		this.videoInfo = videoInfo;
 		//计算DisplayBlock显示块大小
 		blockWidth = tnWidth+2*padding;
 		blockHeight = tnHeight+3*padding+infoHeight;
@@ -139,21 +140,24 @@ class DisplayBlock extends JPanel{
 			public void mouseClicked(MouseEvent e) {
 				super.mouseClicked(e);
 				System.out.println("CLick");
+				//从事件里反向获取当前组件的索引
 				DisplayBlock thisDisplayBlock = (DisplayBlock)e.getSource();
 				SelectBlock.changeSelectionBlock(thisDisplayBlock);//选块切换
 			}
 		});
+		BufferedImage bufferedImage = videoInfo.getBufferedImage();
 		//在显示块上添加缩略图面板
 		Thumbnail thumbnailPanel = new Thumbnail(tnWidth,tnHeight,bufferedImage);
 		thumbnailPanel.repaint();//在显示块上画出缩略图
 		this.add(thumbnailPanel);//将缩略图加到显示块上去
 		thumbnailPanel.setBounds(padding,padding, tnWidth,tnHeight);//定位缩略图面板的位置,同时设置大小
 		//在显示块上添加文本信息面板
-		Info info = new Info(infoMap);
+		Info info = new Info(
+				videoInfo.getVideoName(),
+				videoInfo.getDuration(),
+				videoInfo.getResolution());
 		this.add(info);
 		info.setBounds(padding, tnHeight+2*padding, tnWidth,infoHeight);//定位信息面板的位置,同时设置大小
-		//每新建一个显示块，就把总高度累加
-		totalHeight += blockHeight;
 	}
 }
 
@@ -181,23 +185,25 @@ class Thumbnail extends JPanel{
 }
 
 class Info extends JPanel{
-	public Info(HashMap<String, String> infoMap) {
+	public Info(String videoName,String duration,String resolution) {
 		this.setBackground(new Color(255, 204, 204));
 		this.setLayout(new GridLayout(3, 1, 0, 2));//行数 列数 水平间隔 竖直间隔
-		JLabel jLabelVideoName = new JLabel("VideoName:"+infoMap.get("VideoName"));
-		JLabel jLabelDuration = new JLabel("Duration:"+infoMap.get("Duration"));
-		JLabel jLabelResolution = new JLabel("Resolution:"+infoMap.get("Resolution"));
+		JLabel jLabelVideoName = new JLabel("VideoName:"+videoName);
+		JLabel jLabelDuration = new JLabel("Duration:"+duration);
+		JLabel jLabelResolution = new JLabel("Resolution:"+resolution);
 		this.add(jLabelVideoName);
 		this.add(jLabelDuration);
 		this.add(jLabelResolution);
 	}
 }
 
-final class SelectBlock{
+class SelectBlock{
 	private static DisplayBlock lastBlock = null;//显示块对象的引用
 	private static Color noSelectionColor = new Color(199, 237, 204);//未选择时颜色
 	private static Color selectionColor = new Color(51, 85, 254);//被选择时颜色
-
+	public static DisplayBlock getLastBlock() {
+		return lastBlock;
+	}
 	public static void changeSelectionBlock(DisplayBlock displayBlock) {
 		if(lastBlock != null)//第一次清空时，它没有上一块
 			lastBlock.setBackground(noSelectionColor);//清空上一块颜色
@@ -206,5 +212,11 @@ final class SelectBlock{
 	}
 	public static Color getNoSelectionColor() {
 		return noSelectionColor;
+	}
+	/**
+	 * 该函数将lastBlock置为Null
+	 */
+	public static void resetLastBlock() {
+		lastBlock = null;
 	}
 }
