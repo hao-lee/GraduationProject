@@ -5,9 +5,6 @@ import javax.swing.JPanel;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.SwingUtilities;
-
-import CommonPackage.VideoInfo;
-
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -16,7 +13,6 @@ import java.awt.event.ItemListener;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.awt.event.ActionEvent;
-import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -30,7 +26,6 @@ public class Client {
 	private int serverPort = 10000;
 	private ExecutorService executorService = null;
 	private JFrame mainFrame = null;
-	private JTable jtableVideoList;
 	JComboBox<String> categoryComboBox = null;
 	private int mode = DefineConstant.MODE_LIVE;//播放模式初始值
 	//起始序号和步长

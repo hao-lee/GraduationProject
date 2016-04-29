@@ -16,7 +16,7 @@ public class VideoInfo implements Serializable{
 	private String videoName = null;
 	private String duration = null;
 	private String resolution = null;
-	private String category = null;
+	//private String category = null;
 	private String relativePath = null;
 	//private BufferedImage bufferedImage = null;
 	private byte[] imageByteArray= null;//类的使用者对这种内部转换不可知
@@ -26,7 +26,7 @@ public class VideoInfo implements Serializable{
 		this.videoName = videoName;
 		this.duration = duration;
 		this.resolution = resolution;
-		this.category = category;
+		//this.category = category;
 		this.relativePath = filePath;
 	}
 	/*getter*/
@@ -57,7 +57,7 @@ public class VideoInfo implements Serializable{
 		//this.bufferedImage = bufferedImage;
 		 ByteArrayOutputStream byteout = new ByteArrayOutputStream();  
          try {
-			boolean flag = ImageIO.write(bufferedImage, "jpg", byteout);
+			ImageIO.write(bufferedImage, "jpg", byteout);
 			byteout.flush();
 	        this.imageByteArray  = byteout.toByteArray();  
 		} catch (IOException e) {

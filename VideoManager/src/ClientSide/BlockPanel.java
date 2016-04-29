@@ -3,87 +3,78 @@ package ClientSide;
 import CommonPackage.*;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.IOException;
 
-public class BlockPanel {
-
-	private JFrame frame;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					BlockPanel window = new BlockPanel();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	/**
-	 * Create the application.
-	 */
-	public BlockPanel() {
-		initialize();
-	}
-
-	/**
-	 * Initialize the contents of the frame.
-	 */
-	private void initialize() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 700, 500);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		JPanel  mainPane=new  JPanel();//主面板，用来添加视频显示块的
-		JScrollPane scrollPane = new  JScrollPane(mainPane);//将主面板附到滚动面板上
-		frame.setContentPane(scrollPane);//将滚动面板作为窗口内容面板
-		scrollPane.setPreferredSize(new Dimension(700, 500));//设置内容面板和窗口一样大
-		mainPane.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));//设置主面板为流式布局
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		
-		/*
-		 * 添加缩略图
-		 * */
-		String imagePath = "001.jpg";
-		VideoInfo videoInfo = new VideoInfo("dog", "00:05:23", "1920x1080", "游戏", 
-					"vod/games/Ghost Recon.mp4");
-		for(int i = 1; i<=5;i++){
-			try {
-				BufferedImage bufferedImage = ImageIO.read(new FileInputStream("/home/mirage/GraduationProject/VideoManager/tmp.jpg"));
-				//新建显示块
-				videoInfo.setBufferedImage(bufferedImage);
-				DisplayBlock displayBlock = new DisplayBlock(videoInfo);
-				mainPane.add(displayBlock);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}//for
-		mainPane.setPreferredSize(new Dimension(700, DisplayBlock.getTotalHeight()));;
-	}
-
-}
+//public class BlockPanel {
+//
+//	private JFrame frame;
+//
+//	/**
+//	 * Launch the application.
+//	 */
+//	public static void main(String[] args) {
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				try {
+//					BlockPanel window = new BlockPanel();
+//					window.frame.setVisible(true);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
+//	}
+//
+//	/**
+//	 * Create the application.
+//	 */
+//	public BlockPanel() {
+//		initialize();
+//	}
+//
+//	/**
+//	 * Initialize the contents of the frame.
+//	 */
+//	private void initialize() {
+//		frame = new JFrame();
+//		frame.setBounds(100, 100, 700, 500);
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		JPanel  mainPane=new  JPanel();//主面板，用来添加视频显示块的
+//		JScrollPane scrollPane = new  JScrollPane(mainPane);//将主面板附到滚动面板上
+//		frame.setContentPane(scrollPane);//将滚动面板作为窗口内容面板
+//		scrollPane.setPreferredSize(new Dimension(700, 500));//设置内容面板和窗口一样大
+//		mainPane.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));//设置主面板为流式布局
+//		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+//		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+//		
+//		/*
+//		 * 添加缩略图
+//		 * */
+//		String imagePath = "001.jpg";
+//		VideoInfo videoInfo = new VideoInfo("dog", "00:05:23", "1920x1080", "游戏", 
+//					"vod/games/Ghost Recon.mp4");
+//		for(int i = 1; i<=5;i++){
+//			try {
+//				BufferedImage bufferedImage = ImageIO.read(new FileInputStream("/home/mirage/GraduationProject/VideoManager/tmp.jpg"));
+//				//新建显示块
+//				videoInfo.setBufferedImage(bufferedImage);
+//				DisplayBlock displayBlock = new DisplayBlock(videoInfo);
+//				mainPane.add(displayBlock);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}//for
+//		mainPane.setPreferredSize(new Dimension(700, DisplayBlock.getTotalHeight()));;
+//	}
+//
+//}
 
 /*
 
@@ -109,11 +100,14 @@ infoAreaHeight |i |                                |   |
  * 视频显示块面板
  * */
 class DisplayBlock extends JPanel{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int tnWidth = 300, tnHeight = 200;//缩略图面板大小，也是图片大小
 	private int blockWidth = -1,blockHeight  = -1;//DisplayBlock显示块大小
 	private int padding = 10;//显示块面板与缩略图面板之间的内边距
 	private int infoHeight = 50;//信息显示区域的高度
-	private static int totalHeight = -1;
 	private VideoInfo videoInfo = null;
 	//计算主面板应该多高,主需要一个静态的即可，该函数只在添加主面板时使用一次
 	public static int getTotalHeight() {
@@ -165,6 +159,10 @@ class DisplayBlock extends JPanel{
  * 缩略图面板，不用设置布局，图片直接画上去
  * */
 class Thumbnail extends JPanel{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	Image scaledImage = null;
 	//构造函数
 	public Thumbnail(int tnWidth , int tnHeight, BufferedImage bufferedImage) {
@@ -185,6 +183,8 @@ class Thumbnail extends JPanel{
 }
 
 class Info extends JPanel{
+
+	private static final long serialVersionUID = -8194540666523790574L;
 	public Info(String videoName,String duration,String resolution) {
 		this.setBackground(new Color(255, 204, 204));
 		this.setLayout(new GridLayout(3, 1, 0, 2));//行数 列数 水平间隔 竖直间隔

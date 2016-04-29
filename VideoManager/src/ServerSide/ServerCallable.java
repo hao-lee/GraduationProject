@@ -10,11 +10,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
-
-import org.w3c.dom.css.ElementCSSInlineStyle;
 
 class ServerCallable implements Callable<Integer> {
 	private Socket socketToClient = null;
