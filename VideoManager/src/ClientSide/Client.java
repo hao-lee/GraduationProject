@@ -4,25 +4,41 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.plaf.ListUI;
+import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.LookAndFeel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
+import javax.swing.JLabel;
+import java.awt.Font;
 
 // main function
 public class Client {
@@ -58,14 +74,17 @@ public class Client {
 	// 创建客户端主界面
 	private void createMainInterface() {
 		int windowWidth = 1000;//宽度
-		int windowHeight = 600;//高度
+		int windowHeight = 650;//高度
 		int mainPanelHeight = DisplayBlock.getTotalHeight()+4*5;//行间距为5
 		// user-interface
-		mainFrame = new JFrame("Main Interface");
+		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+		}catch (Exception e) {e.printStackTrace();}
+		mainFrame = new JFrame("流媒体客户端");
 		mainFrame.setResizable(false);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainFrame.setBounds(100, 0, windowWidth, windowHeight);
-
+		
 		/* frame的内容面板 */
 		JPanel contentPane = new JPanel(null);//绝对布局
 		mainFrame.setContentPane(contentPane);
@@ -74,18 +93,18 @@ public class Client {
 		 * */
 		/*设置菜单控件*/
 		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBounds(0, 0, windowWidth, 21);//大小和位置
+		menuBar.setBounds(0, 0, windowWidth, 23);//大小和位置
 		contentPane.add(menuBar);
 		
 		/*新建按钮上面板，存放分类列表、刷新按钮*/
-		JPanel upPanel = new JPanel(new FlowLayout());//绝对布局
+		JPanel upPanel = new JPanel();//绝对布局
 		/* 将按钮上面板加到内容面板上 */
 		contentPane.add(upPanel);
-		upPanel.setBounds(0, 21, windowWidth, 36);//大小和位置
+		upPanel.setBounds(0, 23, windowWidth, 44);//大小和位置
 		
 		/*新建按钮下面板，存放播放按钮、上下翻页按钮*/
-		JPanel downPanel = new JPanel(new FlowLayout());
-		downPanel.setBounds(3, 526, windowWidth, 36);//大小和位置
+		JPanel downPanel = new JPanel();
+		downPanel.setBounds(0, 568, windowWidth, 50);//大小和位置
 		contentPane.add(downPanel);
 		
 		/*新建滚动面板,滚动面板唯一地做用是为主面板提供滚动条功能*/
@@ -93,7 +112,7 @@ public class Client {
 		/* 将滚动面板加到内容面板上 */
 		contentPane.add(jScrollPane);
 		/*滚动面板和内容面板（去掉菜单剩下的）一样高即可，宽度减去3为了让滚动条宽度更好看*/
-		jScrollPane.setBounds(0, 61, windowWidth, 462);//大小和位置
+		jScrollPane.setBounds(3, 67, 997, 501);//大小和位置
 		
 		/*
 		 * 新建主面板，并使之具备滚动功能
@@ -108,29 +127,43 @@ public class Client {
 		/*视频播放模式，直播和点播*/
 		ButtonGroup buttonGroup = new ButtonGroup();
 		JRadioButton liveRButton = new JRadioButton("直播");
+		liveRButton.setFont(new Font("Dialog", Font.BOLD, 15));
+		liveRButton.setBounds(89, 7, 69, 31);
 		JRadioButton vodRButton = new JRadioButton("点播");
+		vodRButton.setFont(new Font("Dialog", Font.BOLD, 15));
+		vodRButton.setBounds(19, 6, 66, 32);
 		buttonGroup.add(liveRButton);
+		upPanel.setLayout(null);
 		buttonGroup.add(vodRButton);
 		upPanel.add(vodRButton);
 		upPanel.add(liveRButton);
 		liveRButton.setSelected(true);
 		
 		/*视频分类列表*/
+		JLabel lblCategoryLabel = new JLabel("视频分类");
+		lblCategoryLabel.setFont(new Font("Dialog", Font.BOLD, 15));
+		lblCategoryLabel.setBounds(180, 8, 86, 28);
+		upPanel.add(lblCategoryLabel);
 		categoryListModel = new DefaultListModel<>();
 		categoryList = new JList<>(categoryListModel);
+		categoryList.setFont(new Font("Dialog", Font.BOLD, 20));
+		categoryList.setBounds(270, 7, 500, 29);
 		categoryList.setLayoutOrientation(JList.HORIZONTAL_WRAP);//水平显示，可以折行
 		categoryList.setVisibleRowCount(1);//最多折两行
-		categoryList.setPreferredSize(new Dimension(300, 20));
+		categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		upPanel.add(categoryList);
 		
 		/*
 		 * 获取分类
 		 * */
 		getCategoryManually(categoryList);
+		
 		/*
 		 * 显示块要追加到主面板mainPanel上，
 		 * 不要搞成contentPane，contentPane使命到此完成
 		 * */
+		
+		
 		/*
 		 * 单选按钮，设置播放模式
 		 * */
@@ -149,8 +182,11 @@ public class Client {
 		/*
 		 * 刷新视频列表
 		 * */
-		JButton btnRefreshVideoList = new JButton("刷新视频列表");
-		btnRefreshVideoList.setPreferredSize(new Dimension(120, 25));
+		JButton btnRefreshVideoList = new JButton(new ImageIcon(((new ImageIcon(
+	            "refresh.png").getImage().getScaledInstance(30, 30,
+	                    java.awt.Image.SCALE_SMOOTH)))));
+		btnRefreshVideoList.setBounds(842, 4, 38, 38);
+		//btnRefreshVideoList.setContentAreaFilled(false);
 		upPanel.add(btnRefreshVideoList);
 		btnRefreshVideoList.addActionListener(new ActionListener() {
 			@Override
@@ -179,8 +215,11 @@ public class Client {
 		/*
 		 * 上一页
 		 * */
-		JButton btnPrevious = new JButton("上一页");
-		btnPrevious.setPreferredSize(new Dimension(107, 25));
+		downPanel.setLayout(null);
+		JButton btnPrevious = new JButton(new ImageIcon(((new ImageIcon(
+	            "previouspage.gif").getImage().getScaledInstance(96, 32,
+	                    java.awt.Image.SCALE_SMOOTH)))));
+		btnPrevious.setBounds(255, 5, 101, 36);
 		downPanel.add(btnPrevious);
 		btnPrevious.addActionListener(new ActionListener() {
 			@Override
@@ -217,11 +256,37 @@ public class Client {
 			}
 		});
 		
+		
+		/*
+		 * 播放视频
+		 */
+		JButton btnPlayVideo = new JButton(new ImageIcon(((new ImageIcon(
+	            "play.png").getImage().getScaledInstance(50, 50,
+	                    java.awt.Image.SCALE_SMOOTH)))));
+		btnPlayVideo.setBounds(480, 0, 50, 50);
+		//btnPlayVideo.setContentAreaFilled(false);
+		downPanel.add(btnPlayVideo);
+		btnPlayVideo.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			ClientCallable callable = null;
+			if(mode==DefineConstant.MODE_VOD)
+				callable = new ClientCallable(serverIP, 
+					serverPort,DefineConstant.ACTION_PLAYVOD);
+			else//live
+				callable = new ClientCallable(serverIP, 
+						serverPort,DefineConstant.ACTION_PLAYLIVE);
+			executorService.submit(callable);
+		}// actionPerformed
+		});// addActionListener
+		
+		
 		/*
 		 * 下一页
 		 * */
-		JButton btnNext = new JButton("下一页");
-		btnNext.setPreferredSize(new Dimension(107, 25));
+		JButton btnNext = new JButton(new ImageIcon(((new ImageIcon(
+	            "nextpage.gif").getImage().getScaledInstance(96, 32,
+	                    java.awt.Image.SCALE_SMOOTH)))));
+		btnNext.setBounds(640, 5, 101, 36);
 		downPanel.add(btnNext);
 		btnNext.addActionListener(new ActionListener() {
 			@Override
@@ -255,35 +320,23 @@ public class Client {
 				executorService.submit(callable);// 不需要收集返回值
 			}
 		});
-		
+
+
 		/*
-		 * 播放视频
-		 */
-		JButton btnPlayVideo = new JButton("播放视频");
-		btnPlayVideo.setPreferredSize(new Dimension(107, 25));
-		downPanel.add(btnPlayVideo);
-		btnPlayVideo.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			ClientCallable callable = null;
-			if(mode==DefineConstant.MODE_VOD)
-				callable = new ClientCallable(serverIP, 
-					serverPort,DefineConstant.ACTION_PLAYVOD);
-			else//live
-				callable = new ClientCallable(serverIP, 
-						serverPort,DefineConstant.ACTION_PLAYLIVE);
-			executorService.submit(callable);
-		}// actionPerformed
-		});// addActionListener
-
-
-		JMenu menuMain = new JMenu("Main");
+		 * 菜单设置
+		 * */
+		
+		JMenu menuMain = new JMenu("主菜单");
+		menuMain.setFont(new Font("Dialog", Font.BOLD, 18));
 		menuBar.add(menuMain);
 
-		JMenu menuSetting = new JMenu("Setting");
+		JMenu menuSetting = new JMenu("网络设置");
+		menuSetting.setFont(new Font("Dialog", Font.BOLD, 18));
 		menuBar.add(menuSetting);
 
 		/*手动获取分类*/
 		JMenuItem mntmGetCategory = new JMenuItem("手动获取列表");
+		mntmGetCategory.setFont(new Font("Dialog", Font.BOLD, 18));
 		menuMain.add(mntmGetCategory);
 		mntmGetCategory.addActionListener(new ActionListener() {
 			@Override
@@ -296,6 +349,7 @@ public class Client {
 		 * 更改要连接的服务器IP地址
 		 */
 		JMenuItem mntmServerIp = new JMenuItem("Server IP");
+		mntmServerIp.setFont(new Font("Dialog", Font.BOLD, 18));
 		menuSetting.add(mntmServerIp);
 		mntmServerIp.addActionListener(new ActionListener() {
 			@Override
@@ -309,6 +363,7 @@ public class Client {
 		 * 更改要连接的服务器Port端口
 		 */
 		JMenuItem mntmServerPort = new JMenuItem("Server Port");
+		mntmServerPort.setFont(new Font("Dialog", Font.BOLD, 18));
 		menuSetting.add(mntmServerPort);
 		;
 		mntmServerPort.addActionListener(new ActionListener() {
@@ -351,5 +406,4 @@ public class Client {
 	public static void AllowNextPage(){
 		canNextPage = true;
 	}
-
 }// class
