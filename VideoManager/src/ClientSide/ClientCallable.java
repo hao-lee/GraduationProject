@@ -14,7 +14,10 @@ import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
+import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -30,7 +33,7 @@ public class ClientCallable implements Callable<Integer> {
 	private int videoDisplayStart = 0;//起始行数从0计
 	private int videoDisplayStep = 9;
 	
-	private JComboBox<String> categoryComboBox = null;//分类下拉列表
+	private DefaultListModel<String> categoryListModel = null;
 	private JPanel mainPanel = null;
 	
 	/*
@@ -42,12 +45,12 @@ public class ClientCallable implements Callable<Integer> {
 	
 	/*获取分类用*/
 	public ClientCallable(String serverIP, int serverPort, int requestCode
-			,int mode, JComboBox<String> categoryComboBox) {
+			,int mode, DefaultListModel<String> categoryListModel) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
 		this.requestCode = requestCode;
 		this.mode = mode;
-		this.categoryComboBox = categoryComboBox;
+		this.categoryListModel = categoryListModel;
 	}
 	/*播放视频用*/
 	public ClientCallable(String serverIP, int serverPort, int requestCode) {
@@ -109,22 +112,27 @@ public class ClientCallable implements Callable<Integer> {
 				request = DefineConstant.ACTION_GETCATEGORY+"|"+mode;
 				printToServer.println(request);//发送请求，获取分类
 				/*打开反序列化输入流，
-				这时服务端已经得到了categoryMap并准备发给客户端*/
+				这时服务端已经得到了categorySet并准备发给客户端*/
 				objectInputStream = new ObjectInputStream(inputStream);
 				ArrayList<String> categorySet = 
 								(ArrayList<String>)objectInputStream.readObject();
 				for(Iterator<String> iter = categorySet.iterator();iter.hasNext();){
-					String categoryItem = iter.next();//不要把iter.next()直接放入事件调度线程，会出现异常的
+					String categoryElement = iter.next();//不要把iter.next()直接放入事件调度线程，会出现异常的
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							categoryComboBox.addItem(categoryItem);
+							categoryListModel.addElement(categoryElement);
 						}
 					});
 				}
 				break;
 
 			case DefineConstant.ACTION_REFRESHVIDEOLIST:
+				
+				if(videoDisplayStart == 0)//起点是0，禁止上翻
+					Client.ProhibitPreviousPage();
+				else Client.AllowPreviousPage();
+				
 				/*请求格式：req|mode|cate|start|step*/
 				request = requestCode+"|"+mode+"|"+category+"|"
 						+videoDisplayStart+"|"+videoDisplayStep;
@@ -134,6 +142,11 @@ public class ClientCallable implements Callable<Integer> {
 				/*读取对象个数,这里是用的Integer对象来传送，因为对象流和普通流不能混用
 				所以我们就统一用对象流来输入*/
 				int count = (Integer)objectInputStream.readObject();
+				
+				if(count < videoDisplayStep)//查询到末尾了，数据量不足一页，禁止下翻
+					Client.ProhibitNextPage();
+				else Client.AllowNextPage();
+				
 				/*count是循环接收对象的个数，不可直接用videoDisplayStep，
 				因为实际查到的个数可能小于videoDisplayStep*/
 				for(;count != 0;count --){
@@ -216,7 +229,7 @@ public class ClientCallable implements Callable<Integer> {
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "无法连接服务器", "错误", JOptionPane.ERROR_MESSAGE);
-			System.out.println("Server is stoped or IP:port is wrong"+serverIP+serverPort);
+			System.out.println("无法连接服务器"+serverIP+serverPort);
 		} finally {
 			try {
 				if (readFromServer != null)readFromServer.close();

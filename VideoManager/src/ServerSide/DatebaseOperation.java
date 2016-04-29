@@ -65,6 +65,7 @@ class DatebaseOperation{
 			else sql += "livestream ";
 			sql += "WHERE Category="+"\""+category+"\" "
 						+"LIMIT "+videoDisplayStart+","+videoDisplayStep;
+			System.out.println(sql);
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
 				VideoInfo videoInfo = new VideoInfo(

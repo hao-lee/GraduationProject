@@ -33,7 +33,7 @@ class ShellCmd {
 		try {
 			//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，为了安全还要加引号
 			String fileAbsolutePath  = "\""+pathPrefix + fileRelativePath+"\"";
-			String[] cmd = { "sh", "-c", "ffmpeg -y -i "+fileAbsolutePath+" -f mjpeg -t 0.01 -s 320x240 tmp.jpg" };
+			String[] cmd = { "sh", "-c", "ffmpeg -y -i "+fileAbsolutePath+" -f mjpeg -t 0.001 -s 320x240 tmp.jpg" };
 			pb = new ProcessBuilder(cmd);
 			pb.redirectErrorStream(true);
 			pc = pb.start();
