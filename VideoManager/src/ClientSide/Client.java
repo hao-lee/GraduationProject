@@ -3,20 +3,10 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
-import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.ListUI;
-import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -24,26 +14,27 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.LookAndFeel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
 import javax.swing.JLabel;
 import java.awt.Font;
 
 // main function
 public class Client {
-	private String serverIP = "127.0.0.1";
-	private int serverPort = 10000;
+	private String serverIP = "127.0.0.1";//默认服务器IP
+	private int serverPort = 10000;//默认服务器端口
 	private ExecutorService executorService = null;
 	private JFrame mainFrame = null;
 	JList<String> categoryList = null;
@@ -69,6 +60,29 @@ public class Client {
 	public Client() {
 		// create a ThreadPool
 		executorService = Executors.newCachedThreadPool();
+		//读取配置
+		FileInputStream fileInputStream = null;
+		InputStream inputStream = null;
+		try {
+			fileInputStream = new FileInputStream("client.config");
+			inputStream = 
+						new BufferedInputStream(fileInputStream);
+			Properties properties = new Properties();
+			properties.load(inputStream);
+			this.serverIP = properties.getProperty("serverIP", "127.0.0.1");//第二参数是默认值
+			this.serverPort = Integer.valueOf(
+					properties.getProperty("serverPort", "10000"));//第二参数是默认值
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+				try {
+					if(fileInputStream!=null)fileInputStream.close();
+					if(inputStream!=null)inputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+		
 	}
 
 	// 创建客户端主界面
@@ -112,7 +126,7 @@ public class Client {
 		/* 将滚动面板加到内容面板上 */
 		contentPane.add(jScrollPane);
 		/*滚动面板和内容面板（去掉菜单剩下的）一样高即可，宽度减去3为了让滚动条宽度更好看*/
-		jScrollPane.setBounds(3, 67, 997, 501);//大小和位置
+		jScrollPane.setBounds(3, 67, windowWidth-5, 501);//大小和位置
 		
 		/*
 		 * 新建主面板，并使之具备滚动功能

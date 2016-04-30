@@ -15,6 +15,19 @@ class DatebaseOperation{
 	private ResultSet resultSet = null;
 	private String url = "jdbc:mysql://localhost:3306/VideoInfo?"
             + "user=root&password=MyNewPass4!&useSSL=false";
+	private String vodCategoryTable = "vodcategory";
+	private String liveCategoryTable = "livecategory";
+	private String vodTable = "vod";
+	private String livestreamTable = "livestream";
+	
+	public DatebaseOperation() {
+		Config config = new Config();
+		this.vodCategoryTable = config.readConfig("vodCategoryTable");
+		this.liveCategoryTable = config.readConfig("liveCategoryTable");
+		this.vodTable = config.readConfig("vodTable");
+		this.livestreamTable = config.readConfig("livestreamTable");
+	}
+	
 	/*
 	 * 取出所有分类名称
 	 * */
@@ -27,8 +40,8 @@ class DatebaseOperation{
 			stmt = connection.createStatement();
 			sql = "select * from ";
 			if(mode == DefineConstant.MODE_VOD)
-				sql += "vodcategory";
-			else sql += "livecategory";
+				sql += vodCategoryTable;
+			else sql += liveCategoryTable;
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
 				System.out.println(resultSet.getString(1));
@@ -61,9 +74,9 @@ class DatebaseOperation{
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
 			sql = "SELECT * FROM ";//拼接初始化
 			if(mode == DefineConstant.MODE_VOD)
-				sql += "vod ";
-			else sql += "livestream ";
-			sql += "WHERE Category="+"\""+category+"\" "
+				sql += vodTable;
+			else sql += livestreamTable;
+			sql += " WHERE Category="+"\""+category+"\" "
 						+"LIMIT "+videoDisplayStart+","+videoDisplayStep;
 			System.out.println(sql);
 			resultSet = stmt.executeQuery(sql);
@@ -73,7 +86,7 @@ class DatebaseOperation{
 						resultSet.getString("Duration"), 
 						resultSet.getString("Resolution"), 
 						resultSet.getString("Category"), 
-						resultSet.getString("RelativePath"));
+						resultSet.getString("RelativePurePath"));
 				videoInfoList.add(videoInfo);
 			}
 			

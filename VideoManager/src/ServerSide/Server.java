@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
-	private int port = 10000;
+	private int listeningPort = 10000;//默认监听的端口
 	private ServerSocket serverSocket = null;
 	private Socket socketToClient = null;
 	private ExecutorService executorService = null;
@@ -21,10 +21,13 @@ public class Server {
 
 	public void startServer() {
 		try {
-			serverSocket = new ServerSocket(port);// start
+			serverSocket = new ServerSocket(listeningPort);// start
 			// 初始化线程池
 			executorService = Executors.newCachedThreadPool();
-			System.out.println("Server started...");
+			Config config = new Config();
+			this.listeningPort = Integer.valueOf(
+					config.readConfig("listeningPort"));//读取配置文件监听端口
+			System.out.println("Server started... Listening port "+listeningPort);
 		} catch (IOException e) {
 			e.printStackTrace();
 			try {

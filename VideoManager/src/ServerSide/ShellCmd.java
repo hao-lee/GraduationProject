@@ -18,11 +18,19 @@ class ShellCmd {
 	private PrintWriter printToClient = null;
 	Process pc = null;
 	ProcessBuilder pb = null;
-	String pathPrefix = "/home/mirage/rtsp-relay/file/";
+	/*
+	 * 直播时拼凑出的绝对路径是送给ffmpeg用的，
+	 * 在点播时不需要服务器协助，直接用文件相对于file目录的路径拼凑URL，
+	 * 所以点播目录绝对不能随便移动，但是直播中ffplay实际使用的是流名字，
+	 * 所以服务端直播视频的存放路径可以更改，但是为了统一，尽量不要更改。
+	 * */
+	String livePathPrefix = "/home/mirage/rtsp-relay/file/";//直播文件的默认绝对路径前缀
 	
 	public ShellCmd(BufferedReader readFromClient,PrintWriter printToClient) {
 		this.readFromClient = readFromClient;
 		this.printToClient = printToClient;
+		Config config = new Config();
+		livePathPrefix = config.readConfig("livePathPrefix");
 	}
 	
 	/*截图视频缩略图*/
@@ -32,7 +40,7 @@ class ShellCmd {
 			ProcessBuilder pb = null;
 		try {
 			//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，为了安全还要加引号
-			String fileAbsolutePath  = "\""+pathPrefix + fileRelativePath+"\"";
+			String fileAbsolutePath  = "\""+livePathPrefix + fileRelativePath+"\"";
 			String[] cmd = { "sh", "-c", "ffmpeg -y -i "+fileAbsolutePath+" -f mjpeg -t 0.001 -s 320x240 tmp.jpg" };
 			pb = new ProcessBuilder(cmd);
 			pb.redirectErrorStream(true);
@@ -64,7 +72,7 @@ class ShellCmd {
 	/*
 	 * 播放某个视频
 	 */
-	public void playVideo(String fileRelativePath) {
+	public void streamVideo(String fileRelativePath) {
 		try {
 			Process pc = null;
 			ProcessBuilder pb = null;
@@ -72,7 +80,7 @@ class ShellCmd {
 			//告诉客户端流名称，本次发送不需要心跳应答
 			printToClient.println(streamName);
 			//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，为了安全还要加引号
-			String fileAbsolutePath  = "\""+pathPrefix + fileRelativePath+"\"";
+			String fileAbsolutePath  = "\""+livePathPrefix + fileRelativePath+"\"";
 			String[] cmd = { "sh", "-c",
 					"ffmpeg -re -i " + fileAbsolutePath + " -c copy -f rtsp rtsp://" + "127.0.0.1" + "/live/" + streamName };
 			pb = new ProcessBuilder(cmd);

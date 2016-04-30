@@ -72,19 +72,23 @@ class ServerCallable implements Callable<Integer> {
 				//对每个视频分别取截图并设置到视频对象里，然后写回客户端
 				while(iterator.hasNext()){
 					VideoInfo videoInfo = iterator.next();
-					ShellCmd shellCmd = new ShellCmd(readFromClient,printToClient);
-					String relativePath = videoInfo.getRelativePath();//视频相对路径
+					/*拼接文件完整的相对路径，以便读取缩略图*/
+					String relativePurePath = videoInfo.getRelativePath();//视频相对路径
 					String fileName = videoInfo.getVideoName();//取视频文件名
-					String fileRelativePath = relativePath+fileName;//拼接绝对路径
+					String fileRelativePath = relativePurePath+fileName;//拼接相对路径
+					ShellCmd shellCmd = new ShellCmd(readFromClient,printToClient);
+					/*读取缩略图*/
 					BufferedImage bufferedImage = 
 							shellCmd.generateThumbnail(fileRelativePath);
+					/*缩略图设入videoInfo*/
 					videoInfo.setBufferedImage(bufferedImage);//将图片对象设入videoInfo对象
+					/*将填充好的videoInfo发给客户端*/
 					objectOutputStream.writeObject(videoInfo);//序列化发给客户端
 				}
 			}else if (requestCode == DefineConstant.ACTION_PLAYLIVE) {
 				String fileRelativePath = msgField[1];
 				ShellCmd shellCmd = new ShellCmd(readFromClient,printToClient);
-				shellCmd.playVideo(fileRelativePath);
+				shellCmd.streamVideo(fileRelativePath);
 			}else {
 				System.out.println("Undefined Command: ");
 			}

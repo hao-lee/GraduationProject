@@ -16,8 +16,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -87,8 +85,8 @@ public class ClientCallable implements Callable<Integer> {
 		DisplayBlock selectedVideoBlock = null;
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
 		String fileName = null;//文件名
-		String relativePath = null;//相对路径
-		String fileRelativePath = null;//拼凑绝对路径
+		String relativePurePath = null;//相对纯路径（不包括文件名）
+		String fileRelativePath = null;//完成的相对路径（包括文件名）
 		
 		try {
 			//点播不需要建立连接
@@ -171,8 +169,8 @@ public class ClientCallable implements Callable<Integer> {
 				selectedVideoBlock = SelectBlock.getLastBlock();//获得被选块
 				videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
 				fileName = videoInfo.getVideoName();//文件名
-				relativePath = videoInfo.getRelativePath();//相对路径（不含文件名）
-				fileRelativePath = relativePath+fileName;//拼凑相对路径
+				relativePurePath = videoInfo.getRelativePath();//相对路径（不含文件名）
+				fileRelativePath = relativePurePath+fileName;//拼凑相对路径
 				
 				/*请求格式：req|fileRelativePath，
 				 * 服务端会再加上前缀拼凑出文件绝对路径送给ffmpeg
@@ -213,9 +211,9 @@ public class ClientCallable implements Callable<Integer> {
 				selectedVideoBlock = SelectBlock.getLastBlock();//获得被选块
 				videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
 				fileName = videoInfo.getVideoName();//文件名xxx.mp4
-				relativePath = videoInfo.getRelativePath();//相对路径livestream/games/
+				relativePurePath = videoInfo.getRelativePath();//相对路径livestream/games/
 				//拼凑相对路径，livestream/games/xxx.mp4
-				fileRelativePath = relativePath+fileName;
+				fileRelativePath = relativePurePath+fileName;
 				ffplayCallable = new FFplayCallable("rtsp://"
 						+serverIP+"/file/"+fileRelativePath);
 				ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);
