@@ -181,7 +181,8 @@ public class Client {
 		/*
 		 * 单选按钮，设置播放模式
 		 * */
-		/*注意，不管点击哪个按钮，两个按钮的itemStateChanged事件都会触发，所以只需监听一个即可*/
+		/*注意，不管点击哪个按钮，两个按钮的itemStateChanged事件都会触发，
+		 * 所以只需监听一个即可*/
 		liveRButton.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
@@ -260,8 +261,6 @@ public class Client {
 				/*复位记忆被选择视频块全局变量*/
 				SelectBlock.resetLastBlock();
 				videoDisplayStart -= videoDisplayStep;//起点减少
-				if(videoDisplayStart < 0)//如果翻过头了，直接赋0
-					videoDisplayStart = 0;
 				ClientCallable callable = new ClientCallable(serverIP, serverPort
 						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
 						,videoDisplayStart,videoDisplayStep);

@@ -20,7 +20,7 @@ public class VideoInfo implements Serializable{
 	private String relativePath = null;
 	//private BufferedImage bufferedImage = null;
 	private byte[] imageByteArray= null;//类的使用者对这种内部转换不可知
-	//前几个属性从数据库获取，最后的bufferedImage会在ServerCallable获取
+	//前几个属性从数据库获取，最后的bufferedImage会在ServerCallable调用ffmpeg获取
 	public VideoInfo(String videoName,String duration,String resolution,
 			String category,String filePath) {
 		this.videoName = videoName;

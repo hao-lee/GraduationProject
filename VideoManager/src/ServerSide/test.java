@@ -2,7 +2,7 @@ package ServerSide;
 
 public class test {
 	public static void main(String[] args) {
-		DatebaseOperation datebaseOperation = new DatebaseOperation();
+		DatebaseQuery datebaseOperation = new DatebaseQuery();
 		datebaseOperation.getCategory(DefineConstant.MODE_LIVE);
 	}
 }

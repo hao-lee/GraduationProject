@@ -40,7 +40,7 @@ class ServerCallable implements Callable<Integer> {
 			if(requestCode == DefineConstant.ACTION_GETCATEGORY){
 				//这个功能使用DatebaseOperation类
 				int mode = Integer.valueOf(msgField[1]);
-				DatebaseOperation db = new DatebaseOperation();
+				DatebaseQuery db = new DatebaseQuery();
 				ArrayList<String> categoryList = db.getCategory(mode);
 				///打开序列化输出流
 				objectOutputStream = new ObjectOutputStream(outputStream);
@@ -55,7 +55,7 @@ class ServerCallable implements Callable<Integer> {
 				int videoDisplayStart = Integer.valueOf(msgField[3]);
 				int videoDisplayStep = Integer.valueOf(msgField[4]);
 				/*查询数据库*/
-				DatebaseOperation db = new DatebaseOperation();
+				DatebaseQuery db = new DatebaseQuery();
 				ArrayList<VideoInfo> videoInfoList=db.getVideoSet(mode, 
 						category, videoDisplayStart, videoDisplayStep);
 				/*

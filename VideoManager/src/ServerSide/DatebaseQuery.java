@@ -8,24 +8,39 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-class DatebaseOperation{
+class DatebaseQuery{
+	/*
+	 * 这个类的操作只有数据库查询，至于数据库的增删则放到DatabaseSync类里进行
+	 * */
+	private String dbName = "VideoInfo";
+	private String dbUsername = "root";
+	private String dbPassword = "MyNewPass4!";
 	private Connection connection = null;
 	private String sql = null;
 	private Statement stmt = null;
 	private ResultSet resultSet = null;
-	private String url = "jdbc:mysql://localhost:3306/VideoInfo?"
-            + "user=root&password=MyNewPass4!&useSSL=false";
+	private String url = "jdbc:mysql://localhost:3306/";//VideoInfo?"
+            //+ "user=root&password=MyNewPass4!&useSSL=false";
 	private String vodCategoryTable = "vodcategory";
 	private String liveCategoryTable = "livecategory";
 	private String vodTable = "vod";
-	private String livestreamTable = "livestream";
+	private String liveTable = "live";
 	
-	public DatebaseOperation() {
+	//构造函数
+	public DatebaseQuery() {
 		Config config = new Config();
+		this.dbName = config.readConfig("dbName");
+		this.dbUsername = config.readConfig("dbUsername");
+		this.dbPassword = config.readConfig("dbPassword");
+		this.url = url
+				+this.dbName
+				+"?user="+this.dbUsername
+				+"&password="+this.dbPassword
+				+"&useSSL=false";
 		this.vodCategoryTable = config.readConfig("vodCategoryTable");
 		this.liveCategoryTable = config.readConfig("liveCategoryTable");
 		this.vodTable = config.readConfig("vodTable");
-		this.livestreamTable = config.readConfig("livestreamTable");
+		this.liveTable = config.readConfig("liveTable");
 	}
 	
 	/*
@@ -75,10 +90,9 @@ class DatebaseOperation{
 			sql = "SELECT * FROM ";//拼接初始化
 			if(mode == DefineConstant.MODE_VOD)
 				sql += vodTable;
-			else sql += livestreamTable;
+			else sql += liveTable;
 			sql += " WHERE Category="+"\""+category+"\" "
 						+"LIMIT "+videoDisplayStart+","+videoDisplayStep;
-			System.out.println(sql);
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
 				VideoInfo videoInfo = new VideoInfo(
