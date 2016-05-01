@@ -36,15 +36,17 @@ public class Client {
 	private String serverIP = "127.0.0.1";//默认服务器IP
 	private int serverPort = 10000;//默认服务器端口
 	private ExecutorService executorService = null;
+	/*事件监听里面只能用final变量或类成员变量，在此定义好成员变量*/
 	private JFrame mainFrame = null;
-	JList<String> categoryList = null;
-	DefaultListModel<String> categoryListModel = null;
+	private JList<String> categoryList = null;
+	private DefaultListModel<String> categoryListModel = null;
 	private int mode = DefineConstant.MODE_LIVE;//播放模式初始值
 	//起始序号和步长
 	private int videoDisplayStart = 0;//行数从0计
 	private int videoDisplayStep = 9;
-	private static boolean canPreviousPage = true;
-	private static boolean canNextPage = true;
+	/*是否可以上下翻页，用于防止过度上翻和下翻*/
+	private static boolean canPreviousPage = false;//默认禁止，会在ClientCallable中打开
+	private static boolean canNextPage = false;//默认禁止，会在ClientCallable中打开
 	
 	public static void main(String[] args) {
 		Client client = new Client();
@@ -206,7 +208,7 @@ public class Client {
 		btnRefreshVideoList.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				/*获取被选择的列表是哪个*/
+				/*获取被选择的列表是哪个，没选择不允许刷新视频列表*/
 				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
@@ -217,8 +219,10 @@ public class Client {
 				mainPanel.removeAll();
 				mainPanel.revalidate();
 				mainPanel.repaint();
-				/*复位记忆被选择视频块全局变量*/
-				SelectBlock.resetLastBlock();
+				
+				/*复位“记忆被选择视频块”的全局变量为null*/
+				SelectBlock.resetSelectedBlock();
+				
 				ClientCallable callable = new ClientCallable(serverIP, serverPort
 						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
 						,videoDisplayStart,videoDisplayStep);
@@ -239,7 +243,7 @@ public class Client {
 		btnPrevious.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				/*获取被选择的列表是哪个*/
+				/*获取被选择的列表是哪个，没选择不允许翻页*/
 				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
@@ -258,8 +262,10 @@ public class Client {
 				mainPanel.removeAll();
 				mainPanel.revalidate();
 				mainPanel.repaint();
-				/*复位记忆被选择视频块全局变量*/
-				SelectBlock.resetLastBlock();
+				
+				/*复位“记忆被选择视频块”的全局变量为null*/
+				SelectBlock.resetSelectedBlock();
+				
 				videoDisplayStart -= videoDisplayStep;//起点减少
 				ClientCallable callable = new ClientCallable(serverIP, serverPort
 						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
@@ -281,6 +287,12 @@ public class Client {
 		downPanel.add(btnPlayVideo);
 		btnPlayVideo.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
+			//检测是否有视频被选择
+			if(SelectBlock.getSelectedBlock() == null){
+				JOptionPane.showMessageDialog(null, "没有视频被选择"
+						, "提示", JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
 			ClientCallable callable = null;
 			if(mode==DefineConstant.MODE_VOD)
 				callable = new ClientCallable(serverIP, 
@@ -304,7 +316,7 @@ public class Client {
 		btnNext.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				/*获取被选择的列表是哪个*/
+				/*获取被选择的列表是哪个，没选择不允许翻页*/
 				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
@@ -323,8 +335,10 @@ public class Client {
 				mainPanel.removeAll();
 				mainPanel.revalidate();
 				mainPanel.repaint();
-				/*复位记忆被选择视频块全局变量*/
-				SelectBlock.resetLastBlock();
+				
+				/*复位“记忆被选择视频块”的全局变量为null*/
+				SelectBlock.resetSelectedBlock();
+				
 				videoDisplayStart += videoDisplayStep;//起点增加
 				ClientCallable callable = new ClientCallable(serverIP, serverPort
 						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
@@ -393,7 +407,7 @@ public class Client {
 		mainFrame.setVisible(true);
 	}// create
 
-	//刷新分类列表
+	//获取分类
 	private void getCategoryManually(JList<String> categoryList){
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();

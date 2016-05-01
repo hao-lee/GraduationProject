@@ -22,6 +22,11 @@ import javax.swing.SwingUtilities;
 
 //这是CLICallable的图形界面版，逻辑没有改变，只是加入了图形控件的输出
 public class ClientCallable implements Callable<Integer> {
+	
+	/*
+	 * 这些变量都要接收上级函数传值，而call方法本身无法接收参数
+	 * ，所以在此定义成员变量，使用构造方法传值。
+	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
 	private int requestCode = -1;
@@ -50,7 +55,7 @@ public class ClientCallable implements Callable<Integer> {
 		this.mode = mode;
 		this.categoryListModel = categoryListModel;
 	}
-	/*播放视频用*/
+	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
 	public ClientCallable(String serverIP, int serverPort, int requestCode) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
@@ -70,22 +75,22 @@ public class ClientCallable implements Callable<Integer> {
 
 	@Override
 	public Integer call() throws Exception {
+		/*套接字和原生输入输出流*/
 		Socket socketToServer = null;
 		InputStream inputStream = null;
 		OutputStream outputStream =null;
-		
+		/*包装后的输入输出流*/
 		ObjectInputStream objectInputStream = null;
 		BufferedReader readFromServer = null;
 		PrintWriter printToServer = null;
-		
+		/*线程对象*/
 		FFplayCallable ffplayCallable = null;
 		Future<Integer> ffplayFuture = null;
-		String request = null;
 		
-		DisplayBlock selectedVideoBlock = null;
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
-		String fileName = null;//文件名
-		String relativePurePath = null;//相对纯路径（不包括文件名）
+		String fileID = null;//文件名
+		String extension = null;//扩展名
+		String location = null;//相对纯路径（不包括文件名）
 		String fileRelativePath = null;//完成的相对路径（包括文件名）
 		
 		try {
@@ -102,7 +107,13 @@ public class ClientCallable implements Callable<Integer> {
 			/*
 			 * 根据请求的功能类型，发送的信息域数量也不同
 			 * */
+			/*接受到的服务端应答信息*/
 			String response = null;
+			/*要发送的请求*/
+			String request = null;
+			/*被选择的块，由静态全局方法和变量得到*/
+			DisplayBlock selectedVideoBlock = null;
+			
 			switch (requestCode) {
 			
 			case DefineConstant.ACTION_GETCATEGORY:
@@ -166,11 +177,13 @@ public class ClientCallable implements Callable<Integer> {
 				 * 然后找到所对应视频的路径+文件名即可
 				 * */
 				/*只需告诉服务端请求码+(视频相对路径+视频文件名)*/
-				selectedVideoBlock = SelectBlock.getLastBlock();//获得被选块
+				selectedVideoBlock = SelectBlock.getSelectedBlock();//获得被选视频块
+				
 				videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
-				fileName = videoInfo.getVideoName();//文件名
-				relativePurePath = videoInfo.getRelativePath();//相对路径（不含文件名）
-				fileRelativePath = relativePurePath+fileName;//拼凑相对路径
+				fileID = videoInfo.getFileID();//文件ID
+				extension = videoInfo.getExtension();//扩展名
+				location = videoInfo.getLocation();//文件位置
+				fileRelativePath = location+fileID+"."+extension;//拼凑相对路径
 				
 				/*请求格式：req|fileRelativePath，
 				 * 服务端会再加上前缀拼凑出文件绝对路径送给ffmpeg
@@ -204,16 +217,19 @@ public class ClientCallable implements Callable<Integer> {
 				/*
 				 * 注意，上面的循环正常结束的原因就是服务器不再发送数据，可能是视频传输完毕，
 				 * 也可能服务器因为未知原因异常终止，但是这种情况基本不会出现。
+				 * 如果服务端视频播放完毕，那么上面的循环会跳出，本线程结束，
+				 * 但是播放线程是独立的，他不会收到影响,ffplay又要等到用户关闭才会消失，
+				 * ，所以出现的现象是ffplay画面静止了，等待用户关闭之后播放线程死亡，全过程终止。
 				 */
 				break;
 			case DefineConstant.ACTION_PLAYVOD:
 				/*点播功能不需要再给服务端发消息了，直接干*/
-				selectedVideoBlock = SelectBlock.getLastBlock();//获得被选块
+				selectedVideoBlock = SelectBlock.getSelectedBlock();//获得被选视频块
 				videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
-				fileName = videoInfo.getVideoName();//文件名xxx.mp4
-				relativePurePath = videoInfo.getRelativePath();//相对纯路径vod/games/
-				//拼凑相对路径，vod/games/xxx.mp4
-				fileRelativePath = relativePurePath+fileName;
+				fileID = videoInfo.getFileID();//文件ID
+				extension = videoInfo.getExtension();//扩展名
+				location = videoInfo.getLocation();//文件位置
+				fileRelativePath = location+fileID+"."+extension;//拼凑相对路径
 				ffplayCallable = new FFplayCallable("rtsp://"
 						+serverIP+"/file/"+fileRelativePath);
 				ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);

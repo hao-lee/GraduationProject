@@ -15,10 +15,6 @@ class DatebaseQuery{
 	private String dbName = "VideoInfo";
 	private String dbUsername = "root";
 	private String dbPassword = "MyNewPass4!";
-	private Connection connection = null;
-	private String sql = null;
-	private Statement stmt = null;
-	private ResultSet resultSet = null;
 	private String url = "jdbc:mysql://localhost:3306/";//VideoInfo?"
             //+ "user=root&password=MyNewPass4!&useSSL=false";
 	private String vodCategoryTable = "vodcategory";
@@ -47,6 +43,10 @@ class DatebaseQuery{
 	 * 取出所有分类名称
 	 * */
 	public ArrayList<String> getCategory(int mode) {
+		Connection connection = null;
+		String sql = null;
+		Statement stmt = null;
+		ResultSet resultSet = null;
 		ArrayList<String> categoryList = new ArrayList<>();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -80,6 +80,10 @@ class DatebaseQuery{
 	 */
 	public ArrayList<VideoInfo> getVideoSet(int mode, String category, 
 							int videoDisplayStart,int videoDisplayStep) {
+		Connection connection = null;
+		String sql = null;
+		Statement stmt = null;
+		ResultSet resultSet = null;
 		ArrayList<VideoInfo> videoInfoList = new ArrayList<>();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -96,11 +100,13 @@ class DatebaseQuery{
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
 				VideoInfo videoInfo = new VideoInfo(
+						resultSet.getString("FileID"),
+						resultSet.getString("Extension"),
 						resultSet.getString("VideoName"),
 						resultSet.getString("Duration"), 
 						resultSet.getString("Resolution"), 
 						resultSet.getString("Category"), 
-						resultSet.getString("RelativePurePath"));
+						resultSet.getString("Location"));
 				videoInfoList.add(videoInfo);
 			}
 			

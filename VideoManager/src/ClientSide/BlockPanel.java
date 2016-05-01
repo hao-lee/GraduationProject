@@ -182,6 +182,7 @@ class Thumbnail extends JPanel{
 	}
 }
 
+/*视频信息显示面板，包括视频名、时长、分辨率*/
 class Info extends JPanel{
 
 	private static final long serialVersionUID = -8194540666523790574L;
@@ -197,18 +198,21 @@ class Info extends JPanel{
 	}
 }
 
+
+/*静态变量和全局方法，记录当前被选中的块*/
 class SelectBlock{
-	private static DisplayBlock lastBlock = null;//显示块对象的引用
+	private static DisplayBlock selectedBlock = null;//被选择视频块对象的引用
 	private static Color noSelectionColor = new Color(199, 237, 204);//未选择时颜色
 	private static Color selectionColor = new Color(51, 85, 254);//被选择时颜色
-	public static DisplayBlock getLastBlock() {
-		return lastBlock;
+	/*获得被选择的视频块*/
+	public static DisplayBlock getSelectedBlock() {
+		return selectedBlock;
 	}
 	public static void changeSelectionBlock(DisplayBlock displayBlock) {
-		if(lastBlock != null)//第一次清空时，它没有上一块
-			lastBlock.setBackground(noSelectionColor);//清空上一块颜色
+		if(selectedBlock != null)//第一次清空时，它没有上一块
+			selectedBlock.setBackground(noSelectionColor);//清空上一块颜色
 		displayBlock.setBackground(selectionColor);//设置本块颜色
-		lastBlock = displayBlock;//本块变为上一块
+		selectedBlock = displayBlock;//本块变为上一块
 	}
 	public static Color getNoSelectionColor() {
 		return noSelectionColor;
@@ -216,7 +220,7 @@ class SelectBlock{
 	/**
 	 * 该函数将lastBlock置为Null
 	 */
-	public static void resetLastBlock() {
-		lastBlock = null;
+	public static void resetSelectedBlock() {
+		selectedBlock = null;
 	}
 }

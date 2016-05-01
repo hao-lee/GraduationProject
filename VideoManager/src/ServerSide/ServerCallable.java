@@ -63,6 +63,7 @@ class ServerCallable implements Callable<Integer> {
 				 * 所以先告诉客户端有几个对象。不同类型的流不可混用，在此全部用对象流*/
 				//打开序列化输出流
 				objectOutputStream = new ObjectOutputStream(outputStream);
+				//告诉客户端，有几条视频信息
 				objectOutputStream.writeObject(new Integer(videoInfoList.size()));
 				/*
 				 * 上面读取到的videoInfo集合，每个对象的bufferedImage字段没有被填充*
@@ -73,10 +74,11 @@ class ServerCallable implements Callable<Integer> {
 				while(iterator.hasNext()){
 					VideoInfo videoInfo = iterator.next();
 					/*拼接文件完整的相对路径，以便读取缩略图*/
-					String relativePurePath = videoInfo.getRelativePath();//视频相对路径
-					String fileName = videoInfo.getVideoName();//取视频文件名
-					String fileRelativePath = relativePurePath+fileName;//拼接相对路径
-					ShellCmd shellCmd = new ShellCmd(readFromClient,printToClient);
+					String fileID = videoInfo.getFileID();//取视频文件ID
+					String extension = videoInfo.getExtension();//扩展名
+					String location = videoInfo.getLocation();//视频位置
+					String fileRelativePath = location+fileID+"."+extension;//拼接相对路径
+					ShellCmd shellCmd = new ShellCmd();
 					/*读取缩略图*/
 					BufferedImage bufferedImage = 
 							shellCmd.generateThumbnail(fileRelativePath);
@@ -87,8 +89,9 @@ class ServerCallable implements Callable<Integer> {
 				}
 			}else if (requestCode == DefineConstant.ACTION_PLAYLIVE) {
 				String fileRelativePath = msgField[1];
-				ShellCmd shellCmd = new ShellCmd(readFromClient,printToClient);
-				shellCmd.streamVideo(fileRelativePath);
+				ShellCmd shellCmd = new ShellCmd();
+				shellCmd.streamVideo(fileRelativePath,readFromClient
+									,printToClient);
 			}else {
 				System.out.println("Undefined Command: ");
 			}

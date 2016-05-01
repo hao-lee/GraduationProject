@@ -12,39 +12,35 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-//这个类里面的函数用于执行Shell命令，并读取Shell输出通过printToClient发给客户端
+//这个类里面的函数用于执行ffmpeg命令
 class ShellCmd {
-	private InputStream inputFromShell = null;
-	private BufferedReader readFromClient = null;
-	private PrintWriter printToClient = null;
 	Process pc = null;
 	ProcessBuilder pb = null;
 	/*
 	 * 仅在刷新列表获取缩略图以及视频直播时使用绝对路径前缀，
 	 * 拼凑出的绝对路径是送给ffmpeg用的，
-	 * 在点播时不需要服务器协助，ffplay直接用文件相对于file目录的路径拼凑URL，
+	 * 在点播时不需要和服务器交互，ffplay直接用文件相对于file目录的路径拼凑URL，
 	 * 所以点播目录绝对不能随便移动。
 	 * 但是直播中ffplay实际使用的是流名字，所以服务端直播视频的存放路径可以更改，
 	 * 为了统一，直播文件的路径也尽量不要更改。
 	 * */
-	String livePathPrefix = "/home/mirage/rtsp-relay/file/";//文件的默认绝对路径前缀
+	String pathPrefix = "/home/mirage/rtsp-relay/file/";//文件的默认绝对路径前缀
 	
-	public ShellCmd(BufferedReader readFromClient,PrintWriter printToClient) {
-		this.readFromClient = readFromClient;
-		this.printToClient = printToClient;
+	public ShellCmd() {
 		Config config = new Config();
-		livePathPrefix = config.readConfig("livePathPrefix");
+		pathPrefix = config.readConfig("pathPrefix");
 	}
 	
 	/*截图视频缩略图*/
 	public BufferedImage generateThumbnail(String fileRelativePath) {
-			BufferedImage bufferedImage =null;
-			Process pc = null;
-			ProcessBuilder pb = null;
+		InputStream inputFromShell = null;//读取shell
+		BufferedImage bufferedImage =null;
+		Process pc = null;
+		ProcessBuilder pb = null;
 		try {
 			//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径
 			//不需要再用双引号把路径包起来，即使文件名有空格，java也会自己处理好的
-			String fileAbsolutePath  = livePathPrefix + fileRelativePath;
+			String fileAbsolutePath  = pathPrefix + fileRelativePath;
 			ArrayList<String> command = new ArrayList<>();//命令数组
 			command.add("ffmpeg");
 			command.add("-y");
@@ -88,16 +84,19 @@ class ShellCmd {
 	/*
 	 * 播放某个视频
 	 */
-	public void streamVideo(String fileRelativePath) {
+	public void streamVideo(String fileRelativePath,
+			BufferedReader readFromClient,PrintWriter printToClient) {
+		InputStream inputFromShell = null;//读取shell
+		Process pc = null;
+		ProcessBuilder pb = null;
 		try {
-			Process pc = null;
-			ProcessBuilder pb = null;
+			
 			int streamName = MountPoint.getStreamName();
 			//告诉客户端流名称，本次发送不需要心跳应答
 			printToClient.println(streamName);
 			//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，
 			//不需要加双引号，对于文件名的空格，java会自动处理
-			String fileAbsolutePath  = livePathPrefix + fileRelativePath;
+			String fileAbsolutePath  = pathPrefix + fileRelativePath;
 			ArrayList<String> command = new ArrayList<>();//命令数组
 			command.add("ffmpeg");
 			command.add("-re");
