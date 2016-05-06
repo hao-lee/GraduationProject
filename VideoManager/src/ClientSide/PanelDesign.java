@@ -79,7 +79,7 @@ class DisplayBlock extends JPanel{
 		//在显示块上添加缩略图面板
 		Thumbnail thumbnailPanel = new Thumbnail(tnWidth,tnHeight,bufferedImage);
 		thumbnailPanel.repaint();//在显示块上画出缩略图
-		this.add(thumbnailPanel);//将缩略图加到显示块上去
+		this.add(thumbnailPanel);//将缩略图面板加到显示块上去
 		thumbnailPanel.setBounds(padding,padding, tnWidth,tnHeight);//定位缩略图面板的位置,同时设置大小
 		//在显示块上添加文本信息面板
 		Info info = new Info(

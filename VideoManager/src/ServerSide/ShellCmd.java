@@ -12,6 +12,8 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import CommonPackage.Config;
+
 //这个类里面的函数用于执行ffmpeg命令
 class ShellCmd {
 	Process pc = null;
@@ -24,11 +26,10 @@ class ShellCmd {
 	 * 但是直播中ffplay实际使用的是流名字，所以服务端直播视频的存放路径可以更改，
 	 * 为了统一，直播文件的路径也尽量不要更改。
 	 * */
-	String pathPrefix = "/home/mirage/rtsp-relay/file/";//文件的默认绝对路径前缀
+	String pathPrefix = null;//文件的默认绝对路径前缀
 	
 	public ShellCmd() {
-		Config config = new Config();
-		pathPrefix = config.readConfig("pathPrefix");
+		pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
 	}
 	
 	/*截图视频缩略图*/
@@ -91,7 +92,7 @@ class ShellCmd {
 		ProcessBuilder pb = null;
 		try {
 			
-			int streamName = MountPoint.getStreamName();
+			int streamName = StreamName.getStreamName();
 			//告诉客户端流名称，本次发送不需要心跳应答
 			printToClient.println(streamName);
 			//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，
@@ -131,7 +132,7 @@ class ShellCmd {
 				e.printStackTrace();
 			}
 			pc.destroy();
-			MountPoint.releaseStreamName(streamName);//释放数据流名字
+			StreamName.releaseStreamName(streamName);//释放数据流名字
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

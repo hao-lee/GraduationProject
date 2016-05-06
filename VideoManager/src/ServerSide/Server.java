@@ -6,8 +6,10 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import CommonPackage.Config;
+
 public class Server {
-	private int listeningPort = 10000;//默认监听的端口
+	private int listeningPort = -1;//监听的端口
 	private ServerSocket serverSocket = null;
 	private Socket socketToClient = null;
 	private ExecutorService executorService = null;
@@ -21,12 +23,19 @@ public class Server {
 
 	public void startServer() {
 		try {
-			serverSocket = new ServerSocket(listeningPort);// start
 			// 初始化线程池
 			executorService = Executors.newCachedThreadPool();
-			Config config = new Config();
+			/*
+			 * 将配置文件一次性读取进来
+			 * */
+			Config.readConfigFile("server.config");
+			
+			/*按需取key对应的value*/
 			this.listeningPort = Integer.valueOf(
-					config.readConfig("listeningPort"));//读取配置文件监听端口
+					Config.getValue("listeningPort","10000"));//读取配置文件监听端口
+			
+			serverSocket = new ServerSocket(listeningPort);// start
+			
 			System.out.println("Server started... Listening port "+listeningPort);
 		} catch (IOException e) {
 			e.printStackTrace();

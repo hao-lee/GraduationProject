@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import CommonPackage.Config;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -14,11 +15,6 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.awt.event.ActionEvent;
@@ -33,8 +29,8 @@ import java.awt.Font;
 
 // main function
 public class Client {
-	private String serverIP = "127.0.0.1";//默认服务器IP
-	private int serverPort = 10000;//默认服务器端口
+	private String serverIP = null;//服务器IP
+	private int serverPort = -1;//服务器端口
 	private ExecutorService executorService = null;
 	/*事件监听里面只能用final变量或类成员变量，在此定义好成员变量*/
 	private JFrame mainFrame = null;
@@ -61,29 +57,11 @@ public class Client {
 	// 构造函数，同时初始化线程池
 	public Client() {
 		// create a ThreadPool
-		executorService = Executors.newCachedThreadPool();
-		//读取配置
-		FileInputStream fileInputStream = null;
-		InputStream inputStream = null;
-		try {
-			fileInputStream = new FileInputStream("client.config");
-			inputStream = 
-						new BufferedInputStream(fileInputStream);
-			Properties properties = new Properties();
-			properties.load(inputStream);
-			this.serverIP = properties.getProperty("serverIP", "127.0.0.1");//第二参数是默认值
-			this.serverPort = Integer.valueOf(
-					properties.getProperty("serverPort", "10000"));//第二参数是默认值
-		} catch (Exception e) {
-			e.printStackTrace();
-		}finally {
-				try {
-					if(fileInputStream!=null)fileInputStream.close();
-					if(inputStream!=null)inputStream.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-		}
+		this.executorService = Executors.newCachedThreadPool();
+		//读取配置文件
+		Config.readConfigFile("client.config");
+		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
+		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 		
 	}
 
@@ -223,11 +201,10 @@ public class Client {
 				/*复位“记忆被选择视频块”的全局变量为null*/
 				SelectBlock.resetSelectedBlock();
 				
-				ClientCallable callable = new ClientCallable(serverIP, serverPort
-						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
-						,videoDisplayStart,videoDisplayStep);
-				callable.setMainPanel(mainPanel);
-				executorService.submit(callable);// 不需要收集返回值
+				VideoListCallable videoListCallable = new VideoListCallable(
+						serverIP, serverPort, mode, selectedCategory, 
+						videoDisplayStart, videoDisplayStep, mainPanel);
+				executorService.submit(videoListCallable);
 			}
 		});
 
@@ -267,11 +244,11 @@ public class Client {
 				SelectBlock.resetSelectedBlock();
 				
 				videoDisplayStart -= videoDisplayStep;//起点减少
-				ClientCallable callable = new ClientCallable(serverIP, serverPort
-						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
-						,videoDisplayStart,videoDisplayStep);
-				callable.setMainPanel(mainPanel);
-				executorService.submit(callable);// 不需要收集返回值
+				
+				VideoListCallable videoListCallable = new VideoListCallable(
+						serverIP, serverPort, mode, selectedCategory, 
+						videoDisplayStart, videoDisplayStep, mainPanel);
+				executorService.submit(videoListCallable);
 			}
 		});
 		
@@ -293,14 +270,17 @@ public class Client {
 						, "提示", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			ClientCallable callable = null;
-			if(mode==DefineConstant.MODE_VOD)
-				callable = new ClientCallable(serverIP, 
-					serverPort,DefineConstant.ACTION_PLAYVOD);
-			else//live
-				callable = new ClientCallable(serverIP, 
-						serverPort,DefineConstant.ACTION_PLAYLIVE);
-			executorService.submit(callable);
+			LiveCallable liveCallable = null;
+			VodCallable vodCallable = null;
+			if(mode==DefineConstant.MODE_VOD){
+				vodCallable = new VodCallable(serverIP, serverPort);
+				executorService.submit(vodCallable);
+			}
+			else{//live
+				liveCallable = new LiveCallable(serverIP, serverPort);
+				executorService.submit(liveCallable);
+			}
+			
 		}// actionPerformed
 		});// addActionListener
 		
@@ -340,11 +320,10 @@ public class Client {
 				SelectBlock.resetSelectedBlock();
 				
 				videoDisplayStart += videoDisplayStep;//起点增加
-				ClientCallable callable = new ClientCallable(serverIP, serverPort
-						,DefineConstant.ACTION_REFRESHVIDEOLIST,mode,selectedCategory
-						,videoDisplayStart,videoDisplayStep);
-				callable.setMainPanel(mainPanel);
-				executorService.submit(callable);// 不需要收集返回值
+				VideoListCallable videoListCallable = new VideoListCallable(
+						serverIP, serverPort, mode, selectedCategory, 
+						videoDisplayStart, videoDisplayStep, mainPanel);
+				executorService.submit(videoListCallable);
 			}
 		});
 
@@ -412,9 +391,9 @@ public class Client {
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();
-		ClientCallable callable = new ClientCallable(serverIP, serverPort
-				,DefineConstant.ACTION_GETCATEGORY, mode,categoryListModel);
-		executorService.submit(callable);// 不需要收集返回值
+		CatagoryCallable catagoryCallable = new CatagoryCallable(serverIP,
+				serverPort, mode, categoryListModel);
+		executorService.submit(catagoryCallable);// 不需要收集返回值
 	}
 
 	//禁止上翻

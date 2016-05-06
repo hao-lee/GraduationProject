@@ -12,31 +12,30 @@ class DatebaseQuery{
 	/*
 	 * 这个类的操作只有数据库查询，至于数据库的增删则放到DatabaseSync类里进行
 	 * */
-	private String dbName = "VideoInfo";
-	private String dbUsername = "root";
-	private String dbPassword = "MyNewPass4!";
-	private String url = "jdbc:mysql://localhost:3306/";//VideoInfo?"
-            //+ "user=root&password=MyNewPass4!&useSSL=false";
-	private String vodCategoryTable = "vodcategory";
-	private String liveCategoryTable = "livecategory";
-	private String vodTable = "vod";
-	private String liveTable = "live";
+	private String dbName = null;
+	private String dbUsername = null;
+	private String dbPassword = null;
+	private String url = "jdbc:mysql://localhost:3306/";
+	//VideoInfo?" + "user=root&password=MyNewPass4!&useSSL=false";
+	private String vodCategoryTable = null;
+	private String liveCategoryTable = null;
+	private String vodTable = null;
+	private String liveTable = null;
 	
 	//构造函数
 	public DatebaseQuery() {
-		Config config = new Config();
-		this.dbName = config.readConfig("dbName");
-		this.dbUsername = config.readConfig("dbUsername");
-		this.dbPassword = config.readConfig("dbPassword");
+		this.dbName = Config.getValue("dbName", "VideoInfo");
+		this.dbUsername = Config.getValue("dbUsername", "root");
+		this.dbPassword = Config.getValue("dbPassword", "MyNewPass4!");
 		this.url = url
 				+this.dbName
 				+"?user="+this.dbUsername
 				+"&password="+this.dbPassword
 				+"&useSSL=false";
-		this.vodCategoryTable = config.readConfig("vodCategoryTable");
-		this.liveCategoryTable = config.readConfig("liveCategoryTable");
-		this.vodTable = config.readConfig("vodTable");
-		this.liveTable = config.readConfig("liveTable");
+		this.vodCategoryTable = Config.getValue("vodCategoryTable","vodcategory");
+		this.liveCategoryTable = Config.getValue("liveCategoryTable","livecategory");
+		this.vodTable = Config.getValue("vodTable","vod");
+		this.liveTable = Config.getValue("liveTable","live");
 	}
 	
 	/*

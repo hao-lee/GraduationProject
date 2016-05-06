@@ -45,7 +45,7 @@ class ServerCallable implements Callable<Integer> {
 				///打开序列化输出流
 				objectOutputStream = new ObjectOutputStream(outputStream);
 				objectOutputStream.writeObject(categoryList);
-			}else if (requestCode == DefineConstant.ACTION_REFRESHVIDEOLIST) {
+			}else if (requestCode == DefineConstant.ACTION_GETVIDEOLIST) {
 				/* 这个功能：
 				 * 使用DatebaseOperation类获取指定数量的视频
 				 * 使用ShellCmd类获得每个视频对应的缩略图
