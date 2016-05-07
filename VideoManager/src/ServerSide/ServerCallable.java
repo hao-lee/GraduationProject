@@ -1,7 +1,6 @@
 package ServerSide;
 
 import CommonPackage.*;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,92 +8,68 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.concurrent.Callable;
 
 class ServerCallable implements Callable<Integer> {
 	private Socket socketToClient = null;
-	private BufferedReader readFromClient = null;
-	private PrintWriter printToClient = null;
-	private ObjectOutputStream objectOutputStream = null;
-
+	
 	public ServerCallable(Socket s) {
 		this.socketToClient = s;
 	}
 
 	@Override
 	public Integer call() throws Exception {
+		InputStream inputStream = null;
+		OutputStream outputStream = null;
+		PrintWriter printToClient = null;
+		BufferedReader readFromClient = null;
+		ObjectOutputStream objectOutputStream = null;//序列化输出流，需要时再打开
+		
 		try {
-			InputStream inputStream = socketToClient.getInputStream();
-			readFromClient = new BufferedReader(new InputStreamReader(inputStream));
-			OutputStream outputStream = socketToClient.getOutputStream();
-			printToClient = new PrintWriter(outputStream, true);// auto flush
+			inputStream = socketToClient.getInputStream();
+			outputStream = socketToClient.getOutputStream();
 			
-			// 分析客户端请求
+			// 分析客户端请求	
+			readFromClient = new BufferedReader(new InputStreamReader(inputStream));
 			String msg = readFromClient.readLine();
 			String[] msgField = msg.split("\\|");//切分请求
 			int requestCode = Integer.valueOf(msgField[0]);
 			
 			/*根据请求的不同，行为不同*/
-			if(requestCode == DefineConstant.ACTION_GETCATEGORY){
-				//这个功能使用DatebaseOperation类
-				int mode = Integer.valueOf(msgField[1]);
-				DatebaseQuery db = new DatebaseQuery();
-				ArrayList<String> categoryList = db.getCategory(mode);
-				///打开序列化输出流
+			int mode = -1;
+			Interaction interaction = new Interaction();
+			
+			switch (requestCode) {
+			case DefineConstant.ACTION_GETCATEGORY:
+
+				mode = Integer.valueOf(msgField[1]);
 				objectOutputStream = new ObjectOutputStream(outputStream);
-				objectOutputStream.writeObject(categoryList);
-			}else if (requestCode == DefineConstant.ACTION_GETVIDEOLIST) {
-				/* 这个功能：
-				 * 使用DatebaseOperation类获取指定数量的视频
-				 * 使用ShellCmd类获得每个视频对应的缩略图
-				 * */
-				int mode = Integer.valueOf(msgField[1]);
+				interaction.sendCategoryList(mode,objectOutputStream);
+				break;
+				
+			case DefineConstant.ACTION_GETVIDEOLIST:
+				mode = Integer.valueOf(msgField[1]);
 				String category = msgField[2];
 				int videoDisplayStart = Integer.valueOf(msgField[3]);
 				int videoDisplayStep = Integer.valueOf(msgField[4]);
-				/*查询数据库*/
-				DatebaseQuery db = new DatebaseQuery();
-				ArrayList<VideoInfo> videoInfoList=db.getVideoSet(mode, 
-						category, videoDisplayStart, videoDisplayStep);
-				/*
-				 * 序列化对象不能用读取到null这样的方法来判断读取完毕，
-				 * 所以先告诉客户端有几个对象。不同类型的流不可混用，在此全部用对象流*/
-				//打开序列化输出流
 				objectOutputStream = new ObjectOutputStream(outputStream);
-				//告诉客户端，有几条视频信息
-				objectOutputStream.writeObject(new Integer(videoInfoList.size()));
-				/*
-				 * 上面读取到的videoInfo集合，每个对象的bufferedImage字段没有被填充*
-				 * 现在开始填充，填充完一个就发给客户端一个
-				 */
-				Iterator<VideoInfo> iterator = videoInfoList.iterator();
-				//对每个视频分别取截图并设置到视频对象里，然后写回客户端
-				while(iterator.hasNext()){
-					VideoInfo videoInfo = iterator.next();
-					/*拼接文件完整的相对路径，以便读取缩略图*/
-					String fileID = videoInfo.getFileID();//取视频文件ID
-					String extension = videoInfo.getExtension();//扩展名
-					String location = videoInfo.getLocation();//视频位置
-					String fileRelativePath = location+fileID+"."+extension;//拼接相对路径
-					ShellCmd shellCmd = new ShellCmd();
-					/*读取缩略图*/
-					BufferedImage bufferedImage = 
-							shellCmd.generateThumbnail(fileRelativePath);
-					/*缩略图设入videoInfo*/
-					videoInfo.setBufferedImage(bufferedImage);//将图片对象设入videoInfo对象
-					/*将填充好的videoInfo发给客户端*/
-					objectOutputStream.writeObject(videoInfo);//序列化发给客户端
-				}
-			}else if (requestCode == DefineConstant.ACTION_PLAYLIVE) {
+				interaction.sendVideoList(mode, category, 
+						videoDisplayStart, videoDisplayStep,
+						objectOutputStream);
+				break;
+			case DefineConstant.ACTION_PLAYLIVE:
+				//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，
+				//不需要加双引号，对于文件名的空格，java会自动处理
 				String fileRelativePath = msgField[1];
-				ShellCmd shellCmd = new ShellCmd();
-				shellCmd.streamVideo(fileRelativePath,readFromClient
-									,printToClient);
-			}else {
-				System.out.println("Undefined Command: ");
+				printToClient = new PrintWriter(outputStream, true);// auto flush
+				interaction.streamVideo(fileRelativePath, 
+						readFromClient, printToClient);
+				break;
+			default:
+				System.out.println("Undefined Command: "+requestCode);
+				break;
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Client and its socket have exited!");
@@ -103,6 +78,8 @@ class ServerCallable implements Callable<Integer> {
 				if (objectOutputStream!=null)objectOutputStream.close();
 				if (readFromClient != null)readFromClient.close();
 				if (printToClient != null)printToClient.close();
+				if (inputStream != null)inputStream.close();
+				if (outputStream != null)outputStream.close();
 				if (socketToClient != null)socketToClient.close();
 				System.out.println("All Has been closed! in communicateWithClient() finally block");
 			} catch (Exception e2) {
@@ -110,5 +87,60 @@ class ServerCallable implements Callable<Integer> {
 			}
 		} // catch-finally
 		return null;
+		
 	}// function call
+	
+
+	/*
+	 * 获取缩略图
+	 * */
+//	private BufferedImage generateThumbnail(String fileRelativePath) {
+//		InputStream inputFromShell = null;//读取shell
+//		BufferedImage bufferedImage =null;
+//		Process pc = null;
+//		ProcessBuilder pb = null;
+//		try {
+//			//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径
+//			//不需要再用双引号把路径包起来，即使文件名有空格，java也会自己处理好的
+//			String fileAbsolutePath  = pathPrefix + fileRelativePath;
+//			ArrayList<String> command = new ArrayList<>();//命令数组
+//			command.add("ffmpeg");
+//			command.add("-y");
+//			command.add("-i");
+//			command.add(fileAbsolutePath);
+//			command.add("-f");
+//			command.add("mjpeg");
+//			command.add("-t");
+//			command.add("0.001");
+//			command.add("-s");
+//			command.add("320x240");
+//			command.add("tmp.jpg");
+//			//String[] cmd = { "sh", "-c", "ffmpeg -y -i "+ "\"" +fileAbsolutePath+"\""+" -f mjpeg -t 0.001 -s 320x240 tmp.jpg" };
+//			pb = new ProcessBuilder(command);
+//			pb.redirectErrorStream(true);
+//			pc = pb.start();
+//			inputFromShell = pc.getInputStream();
+//			BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
+//			String tmp_in = null;
+//			try {
+//				while ((tmp_in = readFromShell.readLine()) != null) {
+//					System.out.println(tmp_in);
+//				}
+//			} catch (Exception e) {e.printStackTrace();}
+//			pc.destroy();
+//			bufferedImage = ImageIO.read(new FileInputStream("tmp.jpg"));
+//			File file = new File("tmp.jpg");
+//			if(file.exists())file.delete();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		} finally {
+//			try {
+//				if (inputFromShell != null)inputFromShell.close();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		} // finally
+//		return bufferedImage;
+//	}
+	
 }// class end

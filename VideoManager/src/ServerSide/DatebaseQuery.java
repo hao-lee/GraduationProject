@@ -105,7 +105,9 @@ class DatebaseQuery{
 						resultSet.getString("Duration"), 
 						resultSet.getString("Resolution"), 
 						resultSet.getString("Category"), 
-						resultSet.getString("Location"));
+						resultSet.getString("Location"),
+						resultSet.getString("ThumbnailPartialPath"));
+				
 				videoInfoList.add(videoInfo);
 			}
 			

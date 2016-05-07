@@ -90,23 +90,28 @@ public class LiveCallable implements Callable<Integer> {
 			while ((response = readFromServer.readLine()) != null){
 			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
 				if(Integer.valueOf(response) == DefineConstant.WAIT){
-					printToServer.println("I am alive.");//该字符串任意
 					continue;	
 				}else{//收到OK消息，跳出循环
-					printToServer.println("I am alive.");
 					break;
 				}
 			}
+			
 			//根据服务端的指示，现在可以开启ffplay放视频了
+			
 			ffplayCallable = new FFplayCallable("rtsp://"
 								+serverIP+"/live/"+streamName);
 			ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);
-			//播放器线程已经启动，现在继续收发消息，让服务器知道客户端还活着
-			while ((response = readFromServer.readLine()) != null){
-				//*检测ffplay进程所在的线程是否已经结束，如果是，那么本线程也就没有继续执行的必要了
-				if (ffplayFuture.isDone()) break;
-				printToServer.println("I am alive.");
-			}
+			/*
+			 * 播放器线程已经启动，现在是心跳包应答模式
+			 * */
+			do {
+				Thread.sleep(1000);
+				if((response = readFromServer.readLine()) != null)
+					printToServer.println("I am alive.");//告诉服务端我还活着
+				else //读取到null说明服务端死了，没必要再应答了，等待播放线程去吧
+					break;
+			} while (!ffplayFuture.isDone());//播放线程死了就没必要继续了
+
 			/*
 			 * 注意，上面的循环正常结束的原因就是服务器不再发送数据，可能是视频传输完毕，
 			 * 也可能服务器因为未知原因异常终止，但是这种情况基本不会出现。
