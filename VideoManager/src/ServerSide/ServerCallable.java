@@ -1,6 +1,6 @@
 package ServerSide;
 
-import CommonPackage.*;
+import CommonPackage.Protocol;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,14 +40,14 @@ class ServerCallable implements Callable<Integer> {
 			Interaction interaction = new Interaction();
 			
 			switch (requestCode) {
-			case DefineConstant.ACTION_GETCATEGORY:
+			case Protocol.ACTION_GETCATEGORY:
 
 				mode = Integer.valueOf(msgField[1]);
 				objectOutputStream = new ObjectOutputStream(outputStream);
 				interaction.sendCategoryList(mode,objectOutputStream);
 				break;
 				
-			case DefineConstant.ACTION_GETVIDEOLIST:
+			case Protocol.ACTION_GETVIDEOLIST:
 				mode = Integer.valueOf(msgField[1]);
 				String category = msgField[2];
 				int videoDisplayStart = Integer.valueOf(msgField[3]);
@@ -57,7 +57,7 @@ class ServerCallable implements Callable<Integer> {
 						videoDisplayStart, videoDisplayStep,
 						objectOutputStream);
 				break;
-			case DefineConstant.ACTION_PLAYLIVE:
+			case Protocol.ACTION_PLAYLIVE:
 				//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，
 				//不需要加双引号，对于文件名的空格，java会自动处理
 				String fileRelativePath = msgField[1];

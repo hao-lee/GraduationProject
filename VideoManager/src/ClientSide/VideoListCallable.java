@@ -1,5 +1,6 @@
 package ClientSide;
 
+import CommonPackage.Protocol;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +73,7 @@ public class VideoListCallable implements Callable<Integer> {
 			else Client.AllowPreviousPage();
 			
 			/*请求格式：req|mode|cate|start|step*/
-			request = DefineConstant.ACTION_GETVIDEOLIST
+			request = Protocol.ACTION_GETVIDEOLIST
 					+"|"+mode+"|"+category+"|"
 					+videoDisplayStart+"|"+videoDisplayStep;
 			printToServer.println(request);//发送请求

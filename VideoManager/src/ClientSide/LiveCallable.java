@@ -1,5 +1,6 @@
 package ClientSide;
 
+import CommonPackage.Protocol;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +83,7 @@ public class LiveCallable implements Callable<Integer> {
 			/*请求格式：req|fileRelativePath，
 			 * 服务端会再加上前缀拼凑出文件绝对路径送给ffmpeg
 			 * 客户端只需要知道流的名字即可*/
-			request = DefineConstant.ACTION_PLAYLIVE+"|"+fileRelativePath;
+			request = Protocol.ACTION_PLAYLIVE+"|"+fileRelativePath;
 			printToServer.println(request);//发送请求
 			String streamName = null;
 			//读取服务器发来的视频流名字，本次接收不需要发送心跳应答
@@ -91,23 +92,31 @@ public class LiveCallable implements Callable<Integer> {
 			
 			while ((response = readFromServer.readLine()) != null){
 			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
-				if(Integer.valueOf(response) == DefineConstant.WAIT){
+				if(Integer.valueOf(response) == Protocol.WAIT){
 					continue;	
 				}else{//收到OK消息，跳出循环
 					break;
 				}
 			}
 			
-			//根据服务端的指示，现在可以开启ffplay放视频了
+			/*
+			 * 如果此时response为null，说明服务端的FFmpeg没有正常开启，可能遇到了错误
+			 * 后面就不用费劲了，直接结束吧，省得浪费资源。
+			 * */
+			if(response == null){
+				System.out.println("服务端可能播放失败");
+				return null;
+			}
+			//现在可以开启播放线程播放视频了
 			
 			ffplayCallable = new FFplayCallable("rtsp://"
 								+serverIP+"/live/"+streamName);
 			ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);
 			/*
-			 * 播放器线程已经启动，现在是心跳包应答模式
+			 * 播放器线程已经启动，现在本线程进入心跳包应答模式
 			 * */
 			do {
-				Thread.sleep(1000);
+				//Thread.sleep(1000);
 				if((response = readFromServer.readLine()) != null)
 					printToServer.println("I am alive.");//告诉服务端我还活着
 				else //读取到null说明服务端死了，没必要再应答了，等待播放线程去吧

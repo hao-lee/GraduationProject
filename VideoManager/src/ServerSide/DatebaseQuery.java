@@ -18,10 +18,6 @@ class DatebaseQuery{
 	private String dbPassword = null;
 	private String url = "jdbc:mysql://localhost:3306/";
 	//VideoInfo?" + "user=root&password=MyNewPass4!&useSSL=false";
-	private String vodCategoryTable = null;
-	private String liveCategoryTable = null;
-	private String vodTable = null;
-	private String liveTable = null;
 	
 	//构造函数
 	public DatebaseQuery() {
@@ -33,16 +29,18 @@ class DatebaseQuery{
 				+"?user="+this.dbUsername
 				+"&password="+this.dbPassword
 				+"&useSSL=false";
-		this.vodCategoryTable = Config.getValue("vodCategoryTable","vodcategory");
-		this.liveCategoryTable = Config.getValue("liveCategoryTable","livecategory");
-		this.vodTable = Config.getValue("vodTable","vod");
-		this.liveTable = Config.getValue("liveTable","live");
 	}
 	
 	/*
 	 * 取出所有分类名称
 	 * */
 	public HashMap<String, String> getCategory(int mode) {
+		/*
+		 * 数据库表名
+		 * */
+		String vodCategoryTable = "vodcategory";
+		String liveCategoryTable = "livecategory";
+		
 		Connection connection = null;
 		String sql = null;
 		Statement stmt = null;
@@ -54,7 +52,7 @@ class DatebaseQuery{
 			connection = DriverManager.getConnection(url);
 			stmt = connection.createStatement();
 			sql = "select * from ";
-			if(mode == DefineConstant.MODE_VOD)
+			if(mode == Protocol.MODE_VOD)
 				sql += vodCategoryTable;
 			else sql += liveCategoryTable;
 			resultSet = stmt.executeQuery(sql);
@@ -81,6 +79,12 @@ class DatebaseQuery{
 	 */
 	public ArrayList<VideoInfo> getVideoSet(int mode, String category, 
 							int videoDisplayStart,int videoDisplayStep) {
+		/*
+		 * 数据库表名
+		 * */
+		String vodTable = "vod";
+		String liveTable = "live";
+		
 		Connection connection = null;
 		String sql = null;
 		Statement stmt = null;
@@ -93,7 +97,7 @@ class DatebaseQuery{
 			stmt = connection.createStatement();
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
 			sql = "SELECT * FROM ";//拼接初始化
-			if(mode == DefineConstant.MODE_VOD)
+			if(mode == Protocol.MODE_VOD)
 				sql += vodTable;
 			else sql += liveTable;
 			sql += " WHERE CategoryName="+"\""+category+"\" "

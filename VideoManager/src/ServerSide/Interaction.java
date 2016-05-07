@@ -1,5 +1,5 @@
 package ServerSide;
-
+import CommonPackage.Protocol;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
-
-import org.w3c.dom.css.ElementCSSInlineStyle;
 
 import CommonPackage.Config;
 import CommonPackage.VideoInfo;
@@ -74,12 +72,12 @@ public class Interaction {
 				VideoInfo videoInfo = iterator.next();
 				
 				/*获得缩略图路径，以便读取缩略图*/
-				String thumbnailPartialPath = "thumbnail/";//缩略图路径
+				String thumbnailRelativePath = Config.getValue("thumbnailRelativePath","thumbnail/");//缩略图路径
 				String fileID = videoInfo.getFileID();
 				//默认绝对路径前缀
 				String pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
 				//拼接绝对路径
-				String thumbnailPath = pathPrefix+thumbnailPartialPath+fileID+".jpg";
+				String thumbnailPath = pathPrefix+thumbnailRelativePath+fileID+".jpg";
 				/*读取缩略图*/
 				BufferedImage bufferedImage = 
 						ImageIO.read(new FileInputStream(thumbnailPath));
@@ -130,32 +128,30 @@ public class Interaction {
 			// 如果接收方挂了，底层socket不会关闭，所以发送方不会出现异常。但是客户端立即重启的话就会
 			// 得不到端口而报异常，除非设置端口重用选项。实际测试中并未出现问题，
 			// 所以客户端暂时不用设置SO_REUSEADDR。
-			try {
-				while ((tmp_in = readFromShell.readLine()) != null) {
-					System.out.println(tmp_in);
-					if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
-						printToClient.println(DefineConstant.WAIT);
-					else{//开始发送视频了
-						printToClient.println(DefineConstant.OK);
-						break;
-					}
+			while ((tmp_in = readFromShell.readLine()) != null) {
+				System.out.println(tmp_in);
+				if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
+					printToClient.println(Protocol.WAIT);
+				else{//开始发送视频了
+					printToClient.println(Protocol.OK);
+					break;
 				}
-				
-				/*
-				 * 如果FFmpeg播放出错，则此时它已经死了，
-				 * 如果没死就是一切正常，可以进入心跳包应答模式
-				 * */
-				if(pc.isAlive())
-					do {
-						Thread.sleep(1000);
-						printToClient.println("Probe");//探测客户端是否死亡
-					} while ((readFromClient.readLine()) != null);//客户端死了就没必要继续了
-				else 
-					System.out.println("!!!");
-				
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
+			
+			/*
+			 * 如果FFmpeg播放出错，则此时它已经死了，不需要交互了
+			 * 如果没死就是一切正常，可以进入心跳包应答模式
+			 * */
+			do {
+				//Thread.sleep(1000);
+				//读取FFmpeg的输出防止缓冲区满了而阻塞，字符串太长，丢弃不用
+				if((tmp_in = readFromShell.readLine()) != null)
+					;
+				else
+					break;//FFmpeg死了，没必要再探测客户端了
+				printToClient.println("Probe");//发送一个短字符串探测客户端是否死亡
+				//客户端死了就没必要继续了
+			} while ((readFromClient.readLine()) != null);
 			pc.destroy();
 			StreamName.releaseStreamName(streamName);//释放数据流名字
 		} catch (Exception e) {

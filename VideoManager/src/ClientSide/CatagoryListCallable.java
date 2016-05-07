@@ -15,10 +15,11 @@ import java.util.concurrent.Callable;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import CommonPackage.Protocol;
 
 
 
-public class CatagoryCallable implements Callable<HashMap<String, String>> {
+public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 	
 	/*
 	 * 这些变量都要接收上级函数传值，而call方法本身无法接收参数
@@ -30,7 +31,7 @@ public class CatagoryCallable implements Callable<HashMap<String, String>> {
 	private DefaultListModel<String> categoryListModel = null;
 	
 	/*获取分类用*/
-	public CatagoryCallable(String serverIP, int serverPort
+	public CatagoryListCallable(String serverIP, int serverPort
 			,int mode, DefaultListModel<String> categoryListModel) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
@@ -61,7 +62,7 @@ public class CatagoryCallable implements Callable<HashMap<String, String>> {
 			String request = null;
 			
 			/* 请求格式：reqCode | mode */
-			request = DefineConstant.ACTION_GETCATEGORY+"|"+mode;
+			request = Protocol.ACTION_GETCATEGORY+"|"+mode;
 			printToServer.println(request);//发送请求，获取分类
 			/*打开反序列化输入流，
 			这时服务端已经得到了categorySet并准备发给客户端*/

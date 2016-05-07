@@ -69,7 +69,7 @@ class DisplayBlock extends JPanel{
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				super.mouseClicked(e);
-				System.out.println("CLick");
+				System.out.println("Click");
 				//从事件里反向获取当前组件的索引
 				DisplayBlock thisDisplayBlock = (DisplayBlock)e.getSource();
 				SelectBlock.changeSelectionBlock(thisDisplayBlock);//选块切换

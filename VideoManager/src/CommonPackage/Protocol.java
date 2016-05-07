@@ -1,6 +1,6 @@
-package ServerSide;
+package CommonPackage;
 
-class DefineConstant {
+public class Protocol {
 	//用于发送控制指令
 	//点播模式不与服务器交互，所以不需要请求码
 	public static final int ACTION_PLAYLIVE = 2;
