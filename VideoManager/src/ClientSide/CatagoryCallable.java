@@ -7,15 +7,18 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 
-public class CatagoryCallable implements Callable<Integer> {
+
+public class CatagoryCallable implements Callable<HashMap<String, String>> {
 	
 	/*
 	 * 这些变量都要接收上级函数传值，而call方法本身无法接收参数
@@ -36,7 +39,7 @@ public class CatagoryCallable implements Callable<Integer> {
 	}
 
 	@Override
-	public Integer call() throws Exception {
+	public HashMap<String, String> call() throws Exception {
 		/*套接字和原生输入输出流*/
 		Socket socketToServer = null;
 		InputStream inputStream = null;
@@ -45,7 +48,7 @@ public class CatagoryCallable implements Callable<Integer> {
 		ObjectInputStream objectInputStream = null;
 		BufferedReader readFromServer = null;
 		PrintWriter printToServer = null;
-		
+		HashMap<String, String> categoryList = null;
 		try {
 			// 客户端暂时不用设置SO_REUSEADDR
 			socketToServer = new Socket(serverIP, serverPort);
@@ -63,14 +66,18 @@ public class CatagoryCallable implements Callable<Integer> {
 			/*打开反序列化输入流，
 			这时服务端已经得到了categorySet并准备发给客户端*/
 			objectInputStream = new ObjectInputStream(inputStream);
-			ArrayList<String> categorySet = 
-							(ArrayList<String>)objectInputStream.readObject();
-			for(Iterator<String> iter = categorySet.iterator();iter.hasNext();){
-				String categoryElement = iter.next();//不要把iter.next()直接放入事件调度线程，会出现异常的
+			categoryList = (HashMap<String, String>)
+					objectInputStream.readObject();
+			
+			Set set = categoryList.entrySet();
+			for(Iterator iter = set.iterator();iter.hasNext();){
+				Map.Entry<String, String> categoryElement = 
+						(Map.Entry<String, String>)iter.next();
+				//不要把iter.next()直接放入事件调度线程，会出现异常的
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						categoryListModel.addElement(categoryElement);
+						categoryListModel.addElement(categoryElement.getKey());
 					}
 				});
 			}
@@ -89,6 +96,6 @@ public class CatagoryCallable implements Callable<Integer> {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return categoryList;
 	}// function call
 }

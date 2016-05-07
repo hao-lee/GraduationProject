@@ -21,11 +21,13 @@ public class LiveCallable implements Callable<Integer> {
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
+	private String relativePath = null;
 	
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
-	public LiveCallable(String serverIP, int serverPort) {
+	public LiveCallable(String serverIP, int serverPort, String relativePath) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
+		this.relativePath = relativePath;
 	}
 
 	@Override
@@ -44,7 +46,6 @@ public class LiveCallable implements Callable<Integer> {
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
 		String fileID = null;//文件名
 		String extension = null;//扩展名
-		String location = null;//相对纯路径（不包括文件名）
 		String fileRelativePath = null;//完成的相对路径（包括文件名）
 		
 		try {
@@ -75,8 +76,8 @@ public class LiveCallable implements Callable<Integer> {
 			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
 			fileID = videoInfo.getFileID();//文件ID
 			extension = videoInfo.getExtension();//扩展名
-			location = videoInfo.getLocation();//文件位置
-			fileRelativePath = location+fileID+"."+extension;//拼凑相对路径
+			
+			fileRelativePath = relativePath+fileID+"."+extension;//拼凑相对路径
 			
 			/*请求格式：req|fileRelativePath，
 			 * 服务端会再加上前缀拼凑出文件绝对路径送给ffmpeg
@@ -87,6 +88,7 @@ public class LiveCallable implements Callable<Integer> {
 			//读取服务器发来的视频流名字，本次接收不需要发送心跳应答
 			readFromServer = new BufferedReader(new InputStreamReader(inputStream));
 			streamName = readFromServer.readLine();
+			
 			while ((response = readFromServer.readLine()) != null){
 			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
 				if(Integer.valueOf(response) == DefineConstant.WAIT){

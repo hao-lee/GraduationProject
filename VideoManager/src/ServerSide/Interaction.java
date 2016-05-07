@@ -9,9 +9,11 @@ import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-
 import javax.imageio.ImageIO;
+
+import org.w3c.dom.css.ElementCSSInlineStyle;
 
 import CommonPackage.Config;
 import CommonPackage.VideoInfo;
@@ -27,10 +29,10 @@ public class Interaction {
 		//这个功能使用DatebaseOperation类
 		DatebaseQuery datebaseQuery = null;//数据库查询类
 		datebaseQuery = new DatebaseQuery();
-		ArrayList<String> categoryList = datebaseQuery.getCategory(mode);
+		HashMap<String, String> categoryMap = datebaseQuery.getCategory(mode);
 		///打开序列化输出流
 		try {
-			objectOutputStream.writeObject(categoryList);
+			objectOutputStream.writeObject(categoryMap);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -72,7 +74,7 @@ public class Interaction {
 				VideoInfo videoInfo = iterator.next();
 				
 				/*获得缩略图路径，以便读取缩略图*/
-				String thumbnailPartialPath = videoInfo.getThumbnailPartialPath();//取缩略图路径
+				String thumbnailPartialPath = "thumbnail/";//缩略图路径
 				String fileID = videoInfo.getFileID();
 				//默认绝对路径前缀
 				String pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
@@ -138,13 +140,18 @@ public class Interaction {
 						break;
 					}
 				}
+				
 				/*
-				 * 下面进入心跳包应答模式
+				 * 如果FFmpeg播放出错，则此时它已经死了，
+				 * 如果没死就是一切正常，可以进入心跳包应答模式
 				 * */
-				do {
-					Thread.sleep(1000);
-					printToClient.println("Probe");//探测客户端是否死亡
-				} while ((readFromClient.readLine()) != null);//客户端死了就没必要继续了
+				if(pc.isAlive())
+					do {
+						Thread.sleep(1000);
+						printToClient.println("Probe");//探测客户端是否死亡
+					} while ((readFromClient.readLine()) != null);//客户端死了就没必要继续了
+				else 
+					System.out.println("!!!");
 				
 			} catch (Exception e) {
 				e.printStackTrace();
