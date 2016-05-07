@@ -15,8 +15,11 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -34,8 +37,10 @@ public class Client {
 	private ExecutorService executorService = null;
 	/*事件监听里面只能用final变量或类成员变量，在此定义好成员变量*/
 	private JFrame mainFrame = null;
-	private JList<String> categoryList = null;
-	private DefaultListModel<String> categoryListModel = null;
+	private JList<String> jList = null;
+	private DefaultListModel<String> jListModel = null;
+	public HashMap<String, String> categoryMap = null;
+	
 	private int mode = DefineConstant.MODE_LIVE;//播放模式初始值
 	//起始序号和步长
 	private int videoDisplayStart = 0;//行数从0计
@@ -138,19 +143,19 @@ public class Client {
 		lblCategoryLabel.setFont(new Font("Dialog", Font.BOLD, 15));
 		lblCategoryLabel.setBounds(180, 8, 86, 28);
 		upPanel.add(lblCategoryLabel);
-		categoryListModel = new DefaultListModel<>();
-		categoryList = new JList<>(categoryListModel);
-		categoryList.setFont(new Font("Dialog", Font.BOLD, 20));
-		categoryList.setBounds(270, 7, 500, 29);
-		categoryList.setLayoutOrientation(JList.HORIZONTAL_WRAP);//水平显示，可以折行
-		categoryList.setVisibleRowCount(1);//最多折两行
-		categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		upPanel.add(categoryList);
+		jListModel = new DefaultListModel<>();
+		jList = new JList<>(jListModel);
+		jList.setFont(new Font("Dialog", Font.BOLD, 20));
+		jList.setBounds(270, 7, 500, 29);
+		jList.setLayoutOrientation(JList.HORIZONTAL_WRAP);//水平显示，可以折行
+		jList.setVisibleRowCount(1);//最多折两行
+		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		upPanel.add(jList);
 		
 		/*
 		 * 获取分类
 		 * */
-		getCategoryManually(categoryList);
+		getCategoryManually(jList);
 		
 		/*
 		 * 显示块要追加到主面板mainPanel上，
@@ -170,7 +175,7 @@ public class Client {
 					mode = DefineConstant.MODE_VOD;
 				else								//liveRButton被选择，切换成直播
 					mode = DefineConstant.MODE_LIVE;
-				getCategoryManually(categoryList);//重新获取分类
+				getCategoryManually(jList);//重新获取分类
 			}
 		});
 		
@@ -187,7 +192,7 @@ public class Client {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许刷新视频列表*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = (String) jList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -221,7 +226,7 @@ public class Client {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许翻页*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = (String) jList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -270,14 +275,17 @@ public class Client {
 						, "提示", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
+			//获得分类
+			String selectedCatagory = jList.getSelectedValue();
+			String relativePath = categoryMap.get(selectedCatagory);
 			LiveCallable liveCallable = null;
 			VodCallable vodCallable = null;
 			if(mode==DefineConstant.MODE_VOD){
-				vodCallable = new VodCallable(serverIP, serverPort);
+				vodCallable = new VodCallable(serverIP, serverPort,relativePath);
 				executorService.submit(vodCallable);
 			}
 			else{//live
-				liveCallable = new LiveCallable(serverIP, serverPort);
+				liveCallable = new LiveCallable(serverIP, serverPort,relativePath);
 				executorService.submit(liveCallable);
 			}
 			
@@ -297,7 +305,7 @@ public class Client {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许翻页*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = (String) jList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -347,7 +355,7 @@ public class Client {
 		mntmGetCategory.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getCategoryManually(categoryList);
+				getCategoryManually(jList);
 			}
 		});
 		
@@ -388,12 +396,18 @@ public class Client {
 
 	//获取分类
 	private void getCategoryManually(JList<String> categoryList){
-		categoryListModel.removeAllElements();
+		jListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();
 		CatagoryCallable catagoryCallable = new CatagoryCallable(serverIP,
-				serverPort, mode, categoryListModel);
-		executorService.submit(catagoryCallable);// 不需要收集返回值
+				serverPort, mode, jListModel);
+		Future<HashMap<String, String>> future = 
+				executorService.submit(catagoryCallable);// 不需要收集返回值
+		try {
+			categoryMap = future.get();//这里等着拿到分类，不然以后的功能没有意义
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	//禁止上翻
@@ -412,4 +426,5 @@ public class Client {
 	public static void AllowNextPage(){
 		canNextPage = true;
 	}
+	
 }// class

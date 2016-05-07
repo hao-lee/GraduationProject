@@ -14,10 +14,18 @@ public class VodCallable implements Callable<Integer>{
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
+	private String relativePath = null;
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
-	public VodCallable(String serverIP, int serverPort) {
+	/**
+	 * 
+	 * @param serverIP
+	 * @param serverPort
+	 * @param relativePath 视频所在分类的路径
+	 */
+	public VodCallable(String serverIP, int serverPort, String relativePath) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
+		this.relativePath = relativePath;
 	}
 
 
@@ -30,8 +38,7 @@ public class VodCallable implements Callable<Integer>{
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
 		String fileID = null;//文件名
 		String extension = null;//扩展名
-		String location = null;//相对纯路径（不包括文件名）
-		String fileRelativePath = null;//完成的相对路径（包括文件名）
+		String fileRelativePath = null;//相对路径（包括文件名）
 		
 		try {
 			//点播不需要建立server连接
@@ -39,11 +46,13 @@ public class VodCallable implements Callable<Integer>{
 			DisplayBlock selectedVideoBlock = null;
 			/*点播功能不需要再给服务端发消息了，直接干*/
 			selectedVideoBlock = SelectBlock.getSelectedBlock();//获得被选视频块
+			
+			
 			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
 			fileID = videoInfo.getFileID();//文件ID
 			extension = videoInfo.getExtension();//扩展名
-			location = videoInfo.getLocation();//文件位置
-			fileRelativePath = location+fileID+"."+extension;//拼凑相对路径
+			
+			fileRelativePath = relativePath+fileID+"."+extension;//拼凑相对路径
 			ffplayCallable = new FFplayCallable("rtsp://"
 					+serverIP+"/file/"+fileRelativePath);
 			ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);

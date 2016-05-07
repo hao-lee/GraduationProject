@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 class DatebaseQuery{
 	/*
@@ -41,12 +42,12 @@ class DatebaseQuery{
 	/*
 	 * 取出所有分类名称
 	 * */
-	public ArrayList<String> getCategory(int mode) {
+	public HashMap<String, String> getCategory(int mode) {
 		Connection connection = null;
 		String sql = null;
 		Statement stmt = null;
 		ResultSet resultSet = null;
-		ArrayList<String> categoryList = new ArrayList<>();
+		HashMap<String, String> categoryMap = new HashMap<>();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			System.out.println("成功加载MySQL驱动程序");
@@ -58,8 +59,9 @@ class DatebaseQuery{
 			else sql += liveCategoryTable;
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
-				System.out.println(resultSet.getString(1));
-				categoryList.add(resultSet.getString(1));
+				//System.out.println(resultSet.getString(1));
+				categoryMap.put(resultSet.getString("CategoryName"),
+						resultSet.getString("RelativePath"));
 			}
 			
 		} catch (Exception e) {
@@ -71,7 +73,7 @@ class DatebaseQuery{
 				if(connection!=null)connection.close();
 			} catch (SQLException e) {e.printStackTrace();}
 		}//finally
-		return categoryList;
+		return categoryMap;
 	}
 
 	/*
@@ -94,7 +96,7 @@ class DatebaseQuery{
 			if(mode == DefineConstant.MODE_VOD)
 				sql += vodTable;
 			else sql += liveTable;
-			sql += " WHERE Category="+"\""+category+"\" "
+			sql += " WHERE CategoryName="+"\""+category+"\" "
 						+"LIMIT "+videoDisplayStart+","+videoDisplayStep;
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
@@ -104,9 +106,7 @@ class DatebaseQuery{
 						resultSet.getString("VideoName"),
 						resultSet.getString("Duration"), 
 						resultSet.getString("Resolution"), 
-						resultSet.getString("Category"), 
-						resultSet.getString("Location"),
-						resultSet.getString("ThumbnailPartialPath"));
+						resultSet.getString("CategoryName"));
 				
 				videoInfoList.add(videoInfo);
 			}
