@@ -46,8 +46,8 @@ public class Client {
 	
 	private int mode = Convention.MODE_LIVE;//播放模式初始值
 	//起始序号和步长
-	private int videoDisplayStart = 0;//行数从0计
-	private int videoDisplayStep = 9;
+	private static int videoDisplayStart = 0;//行数默认从0计
+	private static int videoDisplayStep = 9;//默认步长
 	/*是否可以上下翻页，用于防止过度上翻和下翻*/
 	private static boolean canPreviousPage = false;//默认禁止，会在ClientCallable中打开
 	private static boolean canNextPage = false;//默认禁止，会在ClientCallable中打开
@@ -106,6 +106,7 @@ public class Client {
 		
 		/*新建按钮下面板，存放播放按钮、上下翻页按钮*/
 		JPanel downPanel = new JPanel();
+		downPanel.setLayout(null);
 		downPanel.setBounds(0, 568, windowWidth, 50);//大小和位置
 		contentPane.add(downPanel);
 		
@@ -210,12 +211,73 @@ public class Client {
 				SelectBlock.resetSelectedBlock();
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory, 
-						videoDisplayStart, videoDisplayStep, mainPanel);
+						serverIP, serverPort, mode, selectedCategory,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
 
+		/*
+		 * 首页
+		 * */
+		JButton btnFirst = new JButton(new ImageIcon(((new ImageIcon(
+	            "firstpage.png").getImage().getScaledInstance(96, 32,
+	                    java.awt.Image.SCALE_SMOOTH)))));
+		btnFirst.setBounds(100, 5, 101, 36);
+		downPanel.add(btnFirst);
+		btnFirst.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				/*获取被选择的列表是哪个，没选择不允许翻页*/
+				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				if(selectedCategory == null){//没选择分类
+					JOptionPane.showMessageDialog(null, "请选择分类"
+							, "提示", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+				/*先刷新主面板*/
+				mainPanel.removeAll();
+				mainPanel.revalidate();
+				mainPanel.repaint();
+				/*复位“记忆被选择视频块”的全局变量为null*/
+				SelectBlock.resetSelectedBlock();
+				videoDisplayStart = 0;//起点0
+				VideoListCallable videoListCallable = new VideoListCallable(
+						serverIP, serverPort, mode, selectedCategory, mainPanel);
+				executorService.submit(videoListCallable);
+			}
+		});
+		
+		/*
+		 * 末页
+		 * */
+		JButton btnLast = new JButton(new ImageIcon(((new ImageIcon(
+	            "lastpage.png").getImage().getScaledInstance(96, 32,
+	                    java.awt.Image.SCALE_SMOOTH)))));
+		btnLast.setBounds(800, 5, 101, 36);
+		downPanel.add(btnLast);
+		btnLast.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				/*获取被选择的列表是哪个，没选择不允许翻页*/
+				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				if(selectedCategory == null){//没选择分类
+					JOptionPane.showMessageDialog(null, "请选择分类"
+							, "提示", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+				/*先刷新主面板*/
+				mainPanel.removeAll();
+				mainPanel.revalidate();
+				mainPanel.repaint();
+				/*复位“记忆被选择视频块”的全局变量为null*/
+				SelectBlock.resetSelectedBlock();
+				videoDisplayStart = -1;//起点-1表示末页
+				VideoListCallable videoListCallable = new VideoListCallable(
+						serverIP, serverPort, mode, selectedCategory, mainPanel);
+				executorService.submit(videoListCallable);
+			}
+		});
+		
 		/*
 		 * 上一页
 		 * */
@@ -254,46 +316,10 @@ public class Client {
 				videoDisplayStart -= videoDisplayStep;//起点减少
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory, 
-						videoDisplayStart, videoDisplayStep, mainPanel);
+						serverIP, serverPort, mode, selectedCategory, mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
-		
-		
-		/*
-		 * 播放视频
-		 */
-		JButton btnPlayVideo = new JButton(new ImageIcon(((new ImageIcon(
-	            "play.png").getImage().getScaledInstance(50, 50,
-	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnPlayVideo.setBounds(480, 0, 50, 50);
-		//btnPlayVideo.setContentAreaFilled(false);
-		downPanel.add(btnPlayVideo);
-		btnPlayVideo.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-			//检测是否有视频被选择
-			if(SelectBlock.getSelectedBlock() == null){
-				JOptionPane.showMessageDialog(null, "没有视频被选择"
-						, "提示", JOptionPane.INFORMATION_MESSAGE);
-				return;
-			}
-			//获得分类
-			String selectedCatagory = categoryList.getSelectedValue();
-			String relativePath = categoryMap.get(selectedCatagory);
-			LiveCallable liveCallable = null;
-			VodCallable vodCallable = null;
-			if(mode==Convention.MODE_VOD){
-				vodCallable = new VodCallable(serverIP, serverPort,relativePath);
-				executorService.submit(vodCallable);
-			}
-			else{//live
-				liveCallable = new LiveCallable(serverIP, serverPort,relativePath);
-				executorService.submit(liveCallable);
-			}
-			
-		}// actionPerformed
-		});// addActionListener
 		
 		
 		/*
@@ -332,12 +358,44 @@ public class Client {
 				
 				videoDisplayStart += videoDisplayStep;//起点增加
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory, 
-						videoDisplayStart, videoDisplayStep, mainPanel);
+						serverIP, serverPort, mode, selectedCategory, mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
 
+		/*
+		 * 播放视频
+		 */
+		JButton btnPlayVideo = new JButton(new ImageIcon(((new ImageIcon(
+	            "play.png").getImage().getScaledInstance(50, 50,
+	                    java.awt.Image.SCALE_SMOOTH)))));
+		btnPlayVideo.setBounds(480, 0, 50, 50);
+		//btnPlayVideo.setContentAreaFilled(false);
+		downPanel.add(btnPlayVideo);
+		btnPlayVideo.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			//检测是否有视频被选择
+			if(SelectBlock.getSelectedBlock() == null){
+				JOptionPane.showMessageDialog(null, "没有视频被选择"
+						, "提示", JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+			//获得分类
+			String selectedCatagory = categoryList.getSelectedValue();
+			String relativePath = categoryMap.get(selectedCatagory);
+			LiveCallable liveCallable = null;
+			VodCallable vodCallable = null;
+			if(mode==Convention.MODE_VOD){
+				vodCallable = new VodCallable(serverIP, serverPort,relativePath);
+				executorService.submit(vodCallable);
+			}
+			else{//live
+				liveCallable = new LiveCallable(serverIP, serverPort,relativePath);
+				executorService.submit(liveCallable);
+			}
+			
+		}// actionPerformed
+		});// addActionListener
 
 		/*
 		 * 菜单设置
@@ -429,5 +487,16 @@ public class Client {
 	public static void AllowNextPage(){
 		canNextPage = true;
 	}
-	
+	//设置请求记录的起点
+	public static void setVideoDisplayStart(int start) {
+		videoDisplayStart = start;
+	}
+	//取得请求记录的起点
+	public static int getVideoDisplayStart () {
+		return videoDisplayStart;
+	}
+	//取得请求记录的步长
+	public static int getVideoDisplayStep () {
+		return videoDisplayStep;
+	}
 }// class

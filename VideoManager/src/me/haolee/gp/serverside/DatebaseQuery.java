@@ -96,6 +96,7 @@ class DatebaseQuery{
 			System.out.println("成功加载MySQL驱动程序");
 			connection = DriverManager.getConnection(url);
 			stmt = connection.createStatement();
+
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
 			sql = "SELECT * FROM ";//拼接初始化
 			if(mode == Convention.MODE_VOD)
@@ -128,4 +129,45 @@ class DatebaseQuery{
 		return videoInfoList;//包含了videoDisplayStep个视频的详细信息，每个视频占一条
 	}
 
+	public int totalCount(int mode, String category) {
+		
+		/*
+		 * 数据库表名
+		 * */
+		String vodTable = "vod";
+		String liveTable = "live";
+		
+		Connection connection = null;
+		String sql = null;
+		Statement stmt = null;
+		ResultSet resultSet = null;
+		int recordCount = 0;
+		
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
+			System.out.println("成功加载MySQL驱动程序");
+			connection = DriverManager.getConnection(url);
+			stmt = connection.createStatement();
+			
+			if(mode == Convention.MODE_VOD)
+				resultSet = stmt.executeQuery("select count(*) from "
+							+vodTable+" WHERE CategoryName="+"\""+category+"\" ");
+			else
+				resultSet = stmt.executeQuery("select count(*) from "
+							+liveTable+" WHERE CategoryName="+"\""+category+"\" ");
+			resultSet.next();
+			recordCount = resultSet.getInt(1);
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally {
+			try {
+				if(resultSet!=null)resultSet.close();
+				if(stmt!=null)stmt.close();
+				if(connection!=null)connection.close();
+			} catch (SQLException e) {e.printStackTrace();}
+		}//finally
+		
+		return recordCount;
+	}
 }

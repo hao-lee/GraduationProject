@@ -47,20 +47,39 @@ public class Interaction {
 		 * 使用DatebaseOperation类获取指定数量的视频
 		 * */
 		DatebaseQuery datebaseQuery = null;//数据库查询类
-		/*查询数据库*/
+		/*数据库查询对象*/
 		datebaseQuery = new DatebaseQuery();
-		ArrayList<VideoInfo> videoInfoList=datebaseQuery.getVideoSet(mode, 
-				category, videoDisplayStart, videoDisplayStep);
+		/*总条数*/
+		int totalCount = datebaseQuery.totalCount(mode, category);
+
 		/*
 		 * 序列化对象不能用读取到null这样的方法来判断读取完毕，
 		 * 所以先告诉客户端有几个对象。不同类型的流不可混用，在此全部用对象流*/
 		//打开序列化输出流
-		//告诉客户端，有几条视频信息
+		//告诉客户端，该分类下的视频总数
 		try {
-			objectOutputStream.writeObject(new Integer(videoInfoList.size()));
+			objectOutputStream.writeObject(new Integer(totalCount));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		
+		/*
+		 * 小插曲：如果videoDisplayStart==-1说明要取最后一页，
+		 * 根据总记录数和步长，重置此时的起点
+		 * */
+		if(videoDisplayStart == -1){
+			//根据总记录数和步长，算出最后一页的起点
+			videoDisplayStart = (totalCount/videoDisplayStep)*videoDisplayStart;
+			//总记录数恰好为步长倍数，最后一页没内容，自动前推一页
+			if(totalCount%videoDisplayStep == 0)
+				videoDisplayStart -=videoDisplayStep;
+		}
+		System.out.println(videoDisplayStart);
+		/*
+		 * 查询指定范围的视频
+		 * */
+		ArrayList<VideoInfo> videoInfoList=datebaseQuery.getVideoSet(mode, 
+				category, videoDisplayStart, videoDisplayStep);
 		/*
 		 * 从数据库读取到的videoInfo集合，每个对象的bufferedImage字段没有被填充*
 		 * 现在开始填充，填充完一个就发给客户端一个
