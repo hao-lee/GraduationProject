@@ -1,6 +1,6 @@
 package ClientSide;
 
-import CommonPackage.Protocol;
+import CommonPackage.Convention;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,18 +65,18 @@ public class VideoListCallable implements Callable<Integer> {
 			outputStream = socketToServer.getOutputStream();
 			// auto flush
 			printToServer = new PrintWriter(outputStream, true);
-			/*要发送的请求*/
-			String request = null;
 				
 			if(videoDisplayStart == 0)//起点是0，禁止上翻
 				Client.ProhibitPreviousPage();
 			else Client.AllowPreviousPage();
 			
 			/*请求格式：req|mode|cate|start|step*/
-			request = Protocol.ACTION_GETVIDEOLIST
-					+"|"+mode+"|"+category+"|"
-					+videoDisplayStart+"|"+videoDisplayStep;
-			printToServer.println(request);//发送请求
+			printToServer.println(Convention.ACTION_GETVIDEOLIST);
+			printToServer.println(mode);
+			printToServer.println(category);
+			printToServer.println(videoDisplayStart);
+			printToServer.println(videoDisplayStep);
+
 			/*打开反序列化输入流*/
 			objectInputStream = new ObjectInputStream(inputStream);
 			/*读取对象个数,这里是用的Integer对象来传送，因为对象流和普通流不能混用
@@ -108,6 +108,7 @@ public class VideoListCallable implements Callable<Integer> {
 			System.out.println("无法连接服务器"+serverIP+serverPort);
 		} finally {
 			try {
+				if(objectInputStream!=null)objectInputStream.close();
 				if (readFromServer != null)readFromServer.close();
 				if (printToServer != null)printToServer.close();
 				if (socketToServer != null)socketToServer.close();

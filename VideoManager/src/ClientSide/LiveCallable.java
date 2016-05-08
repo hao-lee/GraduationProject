@@ -1,6 +1,6 @@
 package ClientSide;
 
-import CommonPackage.Protocol;
+import CommonPackage.Convention;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,8 +63,6 @@ public class LiveCallable implements Callable<Integer> {
 			 * */
 			/*接受到的服务端应答信息*/
 			String response = null;
-			/*要发送的请求*/
-			String request = null;
 			/*被选择的块，由静态全局方法和变量得到*/
 			DisplayBlock selectedVideoBlock = null;
 			/*因为视频列表刷新时，已经用mode和category进行了过滤，
@@ -83,30 +81,31 @@ public class LiveCallable implements Callable<Integer> {
 			/*请求格式：req|fileRelativePath，
 			 * 服务端会再加上前缀拼凑出文件绝对路径送给ffmpeg
 			 * 客户端只需要知道流的名字即可*/
-			request = Protocol.ACTION_PLAYLIVE+"|"+fileRelativePath;
-			printToServer.println(request);//发送请求
+			printToServer.println(Convention.ACTION_PLAYLIVE);
+			printToServer.println(fileRelativePath);
+			
 			String streamName = null;
 			//读取服务器发来的视频流名字，本次接收不需要发送心跳应答
 			readFromServer = new BufferedReader(new InputStreamReader(inputStream));
 			streamName = readFromServer.readLine();
 			
-			while ((response = readFromServer.readLine()) != null){
-			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
-				if(Integer.valueOf(response) == Protocol.WAIT){
-					continue;	
-				}else{//收到OK消息，跳出循环
-					break;
-				}
-			}
+//			while ((response = readFromServer.readLine()) != null){
+//			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
+//				if(Integer.valueOf(response) == Convention.WAIT){
+//					continue;	
+//				}else{//收到OK消息，跳出循环
+//					break;
+//				}
+//			}
 			
 			/*
 			 * 如果此时response为null，说明服务端的FFmpeg没有正常开启，可能遇到了错误
 			 * 后面就不用费劲了，直接结束吧，省得浪费资源。
 			 * */
-			if(response == null){
-				System.out.println("服务端可能播放失败");
-				return null;
-			}
+//			if(response == null){
+//				System.out.println("服务端可能播放失败");
+//				return null;
+//			}
 			//现在可以开启播放线程播放视频了
 			
 			ffplayCallable = new FFplayCallable("rtsp://"

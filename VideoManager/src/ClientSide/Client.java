@@ -1,6 +1,6 @@
 package ClientSide;
 
-import CommonPackage.Protocol;
+import CommonPackage.Convention;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -42,7 +42,7 @@ public class Client {
 	private DefaultListModel<String> categoryListModel = null;
 	public HashMap<String, String> categoryMap = null;
 	
-	private int mode = Protocol.MODE_LIVE;//播放模式初始值
+	private int mode = Convention.MODE_LIVE;//播放模式初始值
 	//起始序号和步长
 	private int videoDisplayStart = 0;//行数从0计
 	private int videoDisplayStep = 9;
@@ -173,9 +173,9 @@ public class Client {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.DESELECTED)//liveRButton被取消，切换到点播
-					mode = Protocol.MODE_VOD;
+					mode = Convention.MODE_VOD;
 				else								//liveRButton被选择，切换成直播
-					mode = Protocol.MODE_LIVE;
+					mode = Convention.MODE_LIVE;
 				getCategoryManually(categoryList);//重新获取分类
 			}
 		});
@@ -281,7 +281,7 @@ public class Client {
 			String relativePath = categoryMap.get(selectedCatagory);
 			LiveCallable liveCallable = null;
 			VodCallable vodCallable = null;
-			if(mode==Protocol.MODE_VOD){
+			if(mode==Convention.MODE_VOD){
 				vodCallable = new VodCallable(serverIP, serverPort,relativePath);
 				executorService.submit(vodCallable);
 			}

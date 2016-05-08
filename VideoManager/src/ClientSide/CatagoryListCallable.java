@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import CommonPackage.Protocol;
+import CommonPackage.Convention;
 
 
 
@@ -58,12 +58,12 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 			outputStream = socketToServer.getOutputStream();
 			// auto flush
 			printToServer = new PrintWriter(outputStream, true);
-			/*要发送的请求*/
-			String request = null;
 			
+			/*要发送的请求*/
 			/* 请求格式：reqCode | mode */
-			request = Protocol.ACTION_GETCATEGORY+"|"+mode;
-			printToServer.println(request);//发送请求，获取分类
+			printToServer.println(Convention.ACTION_GETCATEGORY);
+			printToServer.println(mode);
+			
 			/*打开反序列化输入流，
 			这时服务端已经得到了categorySet并准备发给客户端*/
 			objectInputStream = new ObjectInputStream(inputStream);
@@ -89,6 +89,7 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 			System.out.println("无法连接服务器"+serverIP+serverPort);
 		} finally {
 			try {
+				if(objectInputStream != null) objectInputStream.close();
 				if (readFromServer != null)readFromServer.close();
 				if (printToServer != null)printToServer.close();
 				if (socketToServer != null)socketToServer.close();

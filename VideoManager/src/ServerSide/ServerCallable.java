@@ -1,6 +1,6 @@
 package ServerSide;
 
-import CommonPackage.Protocol;
+import CommonPackage.Convention;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,36 +31,34 @@ class ServerCallable implements Callable<Integer> {
 			
 			// 分析客户端请求	
 			readFromClient = new BufferedReader(new InputStreamReader(inputStream));
-			String msg = readFromClient.readLine();
-			String[] msgField = msg.split("\\|");//切分请求
-			int requestCode = Integer.valueOf(msgField[0]);
+			int requestCode = Integer.valueOf(readFromClient.readLine());
 			
 			/*根据请求的不同，行为不同*/
 			int mode = -1;
 			Interaction interaction = new Interaction();
 			
 			switch (requestCode) {
-			case Protocol.ACTION_GETCATEGORY:
+			case Convention.ACTION_GETCATEGORY:
 
-				mode = Integer.valueOf(msgField[1]);
+				mode = Integer.valueOf(readFromClient.readLine());
 				objectOutputStream = new ObjectOutputStream(outputStream);
 				interaction.sendCategoryList(mode,objectOutputStream);
 				break;
 				
-			case Protocol.ACTION_GETVIDEOLIST:
-				mode = Integer.valueOf(msgField[1]);
-				String category = msgField[2];
-				int videoDisplayStart = Integer.valueOf(msgField[3]);
-				int videoDisplayStep = Integer.valueOf(msgField[4]);
+			case Convention.ACTION_GETVIDEOLIST:
+				mode = Integer.valueOf(readFromClient.readLine());
+				String category = readFromClient.readLine();
+				int videoDisplayStart = Integer.valueOf(readFromClient.readLine());
+				int videoDisplayStep = Integer.valueOf(readFromClient.readLine());
 				objectOutputStream = new ObjectOutputStream(outputStream);
 				interaction.sendVideoList(mode, category, 
 						videoDisplayStart, videoDisplayStep,
 						objectOutputStream);
 				break;
-			case Protocol.ACTION_PLAYLIVE:
+			case Convention.ACTION_PLAYLIVE:
 				//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，
 				//不需要加双引号，对于文件名的空格，java会自动处理
-				String fileRelativePath = msgField[1];
+				String fileRelativePath = readFromClient.readLine();
 				printToClient = new PrintWriter(outputStream, true);// auto flush
 				interaction.streamVideo(fileRelativePath, 
 						readFromClient, printToClient);

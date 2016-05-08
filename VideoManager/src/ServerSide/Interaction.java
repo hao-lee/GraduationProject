@@ -1,5 +1,5 @@
 package ServerSide;
-import CommonPackage.Protocol;
+import CommonPackage.Convention;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -128,15 +128,15 @@ public class Interaction {
 			// 如果接收方挂了，底层socket不会关闭，所以发送方不会出现异常。但是客户端立即重启的话就会
 			// 得不到端口而报异常，除非设置端口重用选项。实际测试中并未出现问题，
 			// 所以客户端暂时不用设置SO_REUSEADDR。
-			while ((tmp_in = readFromShell.readLine()) != null) {
-				System.out.println(tmp_in);
-				if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
-					printToClient.println(Protocol.WAIT);
-				else{//开始发送视频了
-					printToClient.println(Protocol.OK);
-					break;
-				}
-			}
+//			while ((tmp_in = readFromShell.readLine()) != null) {
+//				System.out.println(tmp_in);
+//				if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
+//					printToClient.println(Convention.WAIT);
+//				else{//开始发送视频了
+//					printToClient.println(Convention.OK);
+//					break;
+//				}
+//			}
 			
 			/*
 			 * 如果FFmpeg播放出错，则此时它已经死了，不需要交互了

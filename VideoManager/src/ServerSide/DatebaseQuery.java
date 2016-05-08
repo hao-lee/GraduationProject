@@ -52,7 +52,7 @@ class DatebaseQuery{
 			connection = DriverManager.getConnection(url);
 			stmt = connection.createStatement();
 			sql = "select * from ";
-			if(mode == Protocol.MODE_VOD)
+			if(mode == Convention.MODE_VOD)
 				sql += vodCategoryTable;
 			else sql += liveCategoryTable;
 			resultSet = stmt.executeQuery(sql);
@@ -97,7 +97,7 @@ class DatebaseQuery{
 			stmt = connection.createStatement();
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
 			sql = "SELECT * FROM ";//拼接初始化
-			if(mode == Protocol.MODE_VOD)
+			if(mode == Convention.MODE_VOD)
 				sql += vodTable;
 			else sql += liveTable;
 			sql += " WHERE CategoryName="+"\""+category+"\" "
