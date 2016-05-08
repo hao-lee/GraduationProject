@@ -1,4 +1,4 @@
-package CommonPackage;
+package me.haolee.gp.common;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;

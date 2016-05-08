@@ -1,5 +1,4 @@
-package ServerSide;
-import CommonPackage.Convention;
+package me.haolee.gp.serverside;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -13,8 +12,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
 
-import CommonPackage.Config;
-import CommonPackage.VideoInfo;
+import me.haolee.gp.common.Config;
+import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.VideoInfo;
 
 public class Interaction {
 	

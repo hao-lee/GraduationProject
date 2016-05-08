@@ -1,6 +1,5 @@
-package ClientSide;
+package me.haolee.gp.clientside;
 
-import CommonPackage.Convention;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +11,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.JOptionPane;
-import CommonPackage.VideoInfo;
+
+import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.VideoInfo;
 
 public class LiveCallable implements Callable<Integer> {
 	

@@ -1,4 +1,4 @@
-package ClientSide;
+package me.haolee.gp.clientside;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +15,8 @@ import java.util.concurrent.Callable;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import CommonPackage.Convention;
+
+import me.haolee.gp.common.Convention;
 
 
 

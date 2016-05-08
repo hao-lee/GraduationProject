@@ -1,4 +1,4 @@
-package ServerSide;
+package me.haolee.gp.serverside;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import CommonPackage.Config;
+import me.haolee.gp.common.Config;
 
 public class Server {
 	private int listeningPort = -1;//监听的端口

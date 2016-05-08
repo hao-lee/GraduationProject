@@ -1,4 +1,4 @@
-package ClientSide;
+package me.haolee.gp.clientside;
 
 import java.io.BufferedReader;
 import java.io.File;

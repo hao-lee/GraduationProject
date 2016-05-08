@@ -1,4 +1,4 @@
-package CommonPackage;
+package me.haolee.gp.common;
 
 /**
  * 这是一个客户端和服务端的约定

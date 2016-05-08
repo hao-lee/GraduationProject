@@ -1,10 +1,12 @@
-package ClientSide;
+package me.haolee.gp.clientside;
 
-import CommonPackage.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import me.haolee.gp.common.*;
+
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;

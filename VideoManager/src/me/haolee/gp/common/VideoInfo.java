@@ -1,4 +1,4 @@
-package CommonPackage;
+package me.haolee.gp.common;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

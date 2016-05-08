@@ -1,6 +1,5 @@
-package ClientSide;
+package me.haolee.gp.clientside;
 
-import CommonPackage.Convention;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +12,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import CommonPackage.VideoInfo;
+import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.VideoInfo;
 
 public class VideoListCallable implements Callable<Integer> {
 	

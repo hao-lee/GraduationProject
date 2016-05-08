@@ -1,4 +1,4 @@
-package ServerSide;
+package me.haolee.gp.serverside;
 
 import java.util.HashSet;
 

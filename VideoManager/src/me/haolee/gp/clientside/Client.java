@@ -1,6 +1,5 @@
-package ClientSide;
+package me.haolee.gp.clientside;
 
-import CommonPackage.Convention;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -9,7 +8,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import CommonPackage.Config;
+
+import me.haolee.gp.common.Config;
+import me.haolee.gp.common.Convention;
+
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;

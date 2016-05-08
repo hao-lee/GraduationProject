@@ -1,6 +1,5 @@
-package ServerSide;
+package me.haolee.gp.serverside;
 
-import CommonPackage.Convention;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +8,8 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.Callable;
+
+import me.haolee.gp.common.Convention;
 
 class ServerCallable implements Callable<Integer> {
 	private Socket socketToClient = null;
