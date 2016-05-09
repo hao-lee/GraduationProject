@@ -11,10 +11,10 @@ import java.util.concurrent.Callable;
 
 import me.haolee.gp.common.Convention;
 
-class ServerCallable implements Callable<Integer> {
+class AnalyseRequest implements Callable<Integer> {
 	private Socket socketToClient = null;
 	
-	public ServerCallable(Socket s) {
+	public AnalyseRequest(Socket s) {
 		this.socketToClient = s;
 	}
 
@@ -36,14 +36,13 @@ class ServerCallable implements Callable<Integer> {
 			
 			/*根据请求的不同，行为不同*/
 			int mode = -1;
-			Interaction interaction = new Interaction();
 			
 			switch (requestCode) {
 			case Convention.ACTION_GETCATEGORY:
 
 				mode = Integer.valueOf(readFromClient.readLine());
 				objectOutputStream = new ObjectOutputStream(outputStream);
-				interaction.sendCategoryList(mode,objectOutputStream);
+				new SendCategoryList().sendCategoryList(mode,objectOutputStream);
 				break;
 				
 			case Convention.ACTION_GETVIDEOLIST:
@@ -52,7 +51,7 @@ class ServerCallable implements Callable<Integer> {
 				int videoDisplayStart = Integer.valueOf(readFromClient.readLine());
 				int videoDisplayStep = Integer.valueOf(readFromClient.readLine());
 				objectOutputStream = new ObjectOutputStream(outputStream);
-				interaction.sendVideoList(mode, category, 
+				new SendVideoList().sendVideoList(mode, category, 
 						videoDisplayStart, videoDisplayStep,
 						objectOutputStream);
 				break;
@@ -61,7 +60,7 @@ class ServerCallable implements Callable<Integer> {
 				//不需要加双引号，对于文件名的空格，java会自动处理
 				String fileRelativePath = readFromClient.readLine();
 				printToClient = new PrintWriter(outputStream, true);// auto flush
-				interaction.streamVideo(fileRelativePath, 
+				new SendVideoStream().sendVideoStream(fileRelativePath, 
 						readFromClient, printToClient);
 				break;
 			default:
