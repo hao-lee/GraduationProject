@@ -17,4 +17,7 @@ public class Convention {
 	//视频模式，直播和点播
 	public static final int MODE_LIVE = 4;
 	public static final int MODE_VOD = 5;
+	//应答控制字
+	public static final int CTRL_WAIT = 6;
+	public static final int CTRL_OK = 7;
 }

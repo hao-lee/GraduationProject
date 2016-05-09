@@ -83,23 +83,24 @@ public class LiveCallable implements Callable<Integer> {
 			readFromServer = new BufferedReader(new InputStreamReader(inputStream));
 			streamName = readFromServer.readLine();
 			
-//			while ((response = readFromServer.readLine()) != null){
-//			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
-//				if(Integer.valueOf(response) == Convention.WAIT){
-//					continue;	
-//				}else{//收到OK消息，跳出循环
-//					break;
-//				}
-//			}
+			String response = null;
+			while ((response = readFromServer.readLine()) != null){
+			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
+				if(Integer.valueOf(response) == Convention.CTRL_WAIT){
+					continue;	
+				}else{//收到OK消息，跳出循环
+					break;
+				}
+			}
 			
 			/*
 			 * 如果此时response为null，说明服务端的FFmpeg没有正常开启，可能遇到了错误
 			 * 后面就不用费劲了，直接结束吧，省得浪费资源。
 			 * */
-//			if(response == null){
-//				System.out.println("服务端可能播放失败");
-//				return null;
-//			}
+			if(response == null){
+				System.out.println("服务端可能播放失败");
+				return null;
+			}
 			//现在可以开启播放线程播放视频了
 			String rtspUrl = "rtsp://"+serverIP+"/live/"+streamName;
 			Callable<Integer> callable = new Callable<Integer>() {

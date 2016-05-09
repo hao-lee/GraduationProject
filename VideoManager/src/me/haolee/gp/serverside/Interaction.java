@@ -96,7 +96,12 @@ public class Interaction {
 				//默认绝对路径前缀
 				String pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
 				//拼接绝对路径
-				String thumbnailPath = pathPrefix+thumbnailRelativePath+fileID+".jpg";
+				String thumbnailPath = null;
+				//如果是直播就用默认贴图
+				if(videoInfo.getExtension().equals("live"))
+					thumbnailPath = "live_defaultcover.png";
+				else
+					thumbnailPath = pathPrefix+thumbnailRelativePath+fileID+".jpg";
 				/*读取缩略图*/
 				BufferedImage bufferedImage = 
 						ImageIO.read(new FileInputStream(thumbnailPath));
@@ -123,18 +128,29 @@ public class Interaction {
 			int streamName = StreamName.getStreamName();
 			//告诉客户端流名称，本次发送不需要心跳应答
 			printToClient.println(streamName);
-			//文件的默认绝对路径前缀
-			String pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
-			//拼接绝对路径
-			String fileAbsolutePath  = pathPrefix + fileRelativePath;
 			
 			ArrayList<String> command = new ArrayList<>();//命令数组
 			command.add("ffmpeg");
-			command.add("-re");
+			
+			//文件的默认绝对路径前缀
+			String pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
+			//拼接绝对路径
+			String fileAbsolutePath = pathPrefix + fileRelativePath;
+			//如果是.live文件则读出里面的内容作为输入地址(网络地址)
+			if(fileAbsolutePath.endsWith(".live")){
+				fileAbsolutePath = new BufferedReader(new InputStreamReader(new FileInputStream(fileAbsolutePath))).readLine();
+				command.add("-rtsp_transport");
+				command.add("tcp");
+			}else{//读取的本地文件
+				command.add("-re");
+			}
+			
 			command.add("-i");
 			command.add(fileAbsolutePath);
-			command.add("-c");
-			command.add("copy");
+			command.add("-c:v");
+			command.add("libx264");
+			command.add("-c:a");
+			command.add("libfaac");
 			command.add("-f");
 			command.add("rtsp");
 			command.add("rtsp://"+"127.0.0.1"+"/live/"+streamName);
@@ -147,16 +163,16 @@ public class Interaction {
 			// 如果接收方挂了，底层socket不会关闭，所以发送方不会出现异常。但是客户端立即重启的话就会
 			// 得不到端口而报异常，除非设置端口重用选项。实际测试中并未出现问题，
 			// 所以客户端暂时不用设置SO_REUSEADDR。
-//			while ((tmp_in = readFromShell.readLine()) != null) {
-//				System.out.println(tmp_in);
-//				if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
-//					printToClient.println(Convention.WAIT);
-//				else{//开始发送视频了
-//					printToClient.println(Convention.OK);
-//					break;
-//				}
-//			}
-			
+			while ((tmp_in = readFromShell.readLine()) != null) {
+				System.out.println(tmp_in);
+				if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
+					printToClient.println(Convention.CTRL_WAIT);
+				else{//开始发送视频了
+					printToClient.println(Convention.CTRL_OK);
+					break;
+				}
+			}
+			//System.out.println(":::"+tmp_in);
 			/*
 			 * 如果FFmpeg播放出错，则此时它已经死了，不需要交互了
 			 * 如果没死就是一切正常，可以进入心跳包应答模式
