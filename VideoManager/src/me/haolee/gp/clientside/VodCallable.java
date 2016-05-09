@@ -15,7 +15,7 @@ public class VodCallable implements Callable<Integer>{
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
-	private String relativePath = null;
+	private String categoryRelativePath = null;
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
 	/**
 	 * 
@@ -26,7 +26,7 @@ public class VodCallable implements Callable<Integer>{
 	public VodCallable(String serverIP, int serverPort, String relativePath) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
-		this.relativePath = relativePath;
+		this.categoryRelativePath = relativePath;
 	}
 
 
@@ -49,7 +49,7 @@ public class VodCallable implements Callable<Integer>{
 			fileID = videoInfo.getFileID();//文件ID
 			extension = videoInfo.getExtension();//扩展名
 			
-			fileRelativePath = relativePath+fileID+"."+extension;//拼凑相对路径
+			fileRelativePath = categoryRelativePath+fileID+"."+extension;//拼凑相对路径
 			String rtspURL = "rtsp://"
 					+serverIP+"/file/"+fileRelativePath;
 			FFplay ffplay = new FFplay(rtspURL);

@@ -3,7 +3,7 @@
   associations="true" dependencies="false" nesting-relationships="true" router="FAN">  
   <class id="1" language="java" name="me.haolee.gp.serverside.CategoryListSender" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/CategoryListSender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="491" y="72"/>    
+    <position height="-1" width="-1" x="358" y="64"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -12,7 +12,7 @@
   </class>  
   <class id="2" language="java" name="me.haolee.gp.serverside.VideoStreamSender" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/VideoStreamSender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="511" y="347"/>    
+    <position height="-1" width="-1" x="442" y="405"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -21,7 +21,7 @@
   </class>  
   <class id="3" language="java" name="me.haolee.gp.serverside.RequestAnalyser" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/RequestAnalyser.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="244" y="265"/>    
+    <position height="-1" width="-1" x="190" y="395"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -39,7 +39,7 @@
   </class>  
   <class id="5" language="java" name="me.haolee.gp.serverside.VideoListSender" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/VideoListSender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="532" y="216"/>    
+    <position height="-1" width="-1" x="390" y="223"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -48,7 +48,7 @@
   </class>  
   <class id="6" language="java" name="me.haolee.gp.serverside.StreamID" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/StreamID.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="826" y="378"/>    
+    <position height="-1" width="-1" x="724" y="378"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -57,7 +57,7 @@
   </class>  
   <class id="7" language="java" name="me.haolee.gp.serverside.DatebaseQuery" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/DatebaseQuery.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="841" y="145"/>    
+    <position height="-1" width="-1" x="694" y="142"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
