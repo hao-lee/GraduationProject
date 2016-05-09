@@ -26,8 +26,8 @@ public class VideoListCallable implements Callable<Integer> {
 	private int mode = -1;
 	private String category = null;
 	
-	private int videoDisplayStart = 0;//起始行数从0计
-	private int videoDisplayStep = 9;
+	private int videoDisplayStart = Client.getVideoDisplayStart();//起始行数从0计
+	private int videoDisplayStep = Client.getVideoDisplayStep();
 	
 	/*刷新视频列表用*/
 	public VideoListCallable(String serverIP, int serverPort,int mode
@@ -36,8 +36,6 @@ public class VideoListCallable implements Callable<Integer> {
 		this.serverPort = serverPort;
 		this.mode = mode;
 		this.category = category;
-		this.videoDisplayStart = Client.getVideoDisplayStart();
-		this.videoDisplayStep = Client.getVideoDisplayStep();
 	}
 
 	@Override

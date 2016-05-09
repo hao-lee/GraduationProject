@@ -29,15 +29,12 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 	private String serverIP = null;
 	private int serverPort = -1;
 	private int mode = -1;
-	private DefaultListModel<String> categoryListModel = null;
 	
 	/*获取分类用*/
-	public CatagoryListCallable(String serverIP, int serverPort
-			,int mode, DefaultListModel<String> categoryListModel) {
+	public CatagoryListCallable(String serverIP, int serverPort,int mode) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
 		this.mode = mode;
-		this.categoryListModel = categoryListModel;
 	}
 
 	@Override
@@ -76,12 +73,7 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 				Map.Entry<String, String> categoryElement = 
 						(Map.Entry<String, String>)iter.next();
 				//不要把iter.next()直接放入事件调度线程，会出现异常的
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						categoryListModel.addElement(categoryElement.getKey());
-					}
-				});
+				Client.addToCategoryList(categoryElement.getKey());
 			}
 
 		} catch (Exception e) {

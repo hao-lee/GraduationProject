@@ -42,7 +42,7 @@ public class Client {
 	private JFrame mainFrame = null;
 	private static JPanel mainPanel = null;//子线程要用，静态方便
 	private JList<String> categoryList = null;
-	private DefaultListModel<String> categoryListModel = null;
+	private static DefaultListModel<String> categoryListModel = null;
 	public HashMap<String, String> categoryMap = null;
 	private int mode = Convention.MODE_LIVE;//播放模式初始值
 
@@ -472,7 +472,7 @@ public class Client {
 		categoryList.revalidate();
 		categoryList.repaint();
 		CatagoryListCallable catagoryCallable = new CatagoryListCallable(serverIP,
-				serverPort, mode, categoryListModel);
+				serverPort, mode);
 		Future<HashMap<String, String>> future = 
 				executorService.submit(catagoryCallable);// 不需要收集返回值
 		try {
@@ -509,6 +509,14 @@ public class Client {
 	//取得请求记录的步长
 	public static int getVideoDisplayStep () {
 		return videoDisplayStep;
+	}
+	//显示视频分类
+	public static void addToCategoryList(String element) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				categoryListModel.addElement(element);
+			}});
 	}
 	//设置显示总记录条数的JLabel
 	public static void setLblTotalCount(int totalCount) {
