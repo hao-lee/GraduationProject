@@ -64,7 +64,7 @@ public class LiveCallable implements Callable<Integer> {
 			 * 然后找到所对应视频的路径+文件名即可
 			 * */
 			/*只需告诉服务端请求码+(视频相对路径+视频文件名)*/
-			selectedVideoBlock = SelectBlock.getSelectedBlock();//获得被选视频块
+			selectedVideoBlock = SelectedBlock.getSelectedBlock();//获得被选视频块
 			
 			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
 			fileID = videoInfo.getFileID();//文件ID

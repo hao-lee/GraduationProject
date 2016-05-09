@@ -42,7 +42,7 @@ public class VodCallable implements Callable<Integer>{
 			/*被选择的块，由静态全局方法和变量得到*/
 			DisplayBlock selectedVideoBlock = null;
 			/*点播功能不需要再给服务端发消息了，直接干*/
-			selectedVideoBlock = SelectBlock.getSelectedBlock();//获得被选视频块
+			selectedVideoBlock = SelectedBlock.getSelectedBlock();//获得被选视频块
 			
 			
 			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构

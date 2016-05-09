@@ -63,7 +63,7 @@ class DisplayBlock extends JPanel{
 		blockWidth = tnWidth+2*padding;
 		blockHeight = tnHeight+3*padding+infoHeight;
 		this.setPreferredSize(new Dimension(blockWidth,blockHeight));//显示块面板大小，上下左右各比缩略图面板大padding
-		this.setBackground(SelectBlock.getNoSelectionColor());//显示块面板初始背景
+		this.setBackground(SelectedBlock.getNoSelectionColor());//显示块面板初始背景
 		this.setLayout(null);//绝对布局
 		//鼠标点击时呈现出该显示块被选择的效果
 		this.addMouseListener(new MouseAdapter() {
@@ -73,7 +73,7 @@ class DisplayBlock extends JPanel{
 				System.out.println("Click");
 				//从事件里反向获取当前组件的索引
 				DisplayBlock thisDisplayBlock = (DisplayBlock)e.getSource();
-				SelectBlock.changeSelectionBlock(thisDisplayBlock);//选块切换
+				SelectedBlock.changeSelectionBlock(thisDisplayBlock);//选块切换
 			}
 		});
 		BufferedImage bufferedImage = videoInfo.getBufferedImage();
@@ -133,7 +133,7 @@ class Info extends JPanel{
 
 
 /*静态变量和全局方法，记录当前被选中的块*/
-class SelectBlock{
+class SelectedBlock{
 	private static DisplayBlock selectedBlock = null;//被选择视频块对象的引用
 	private static Color noSelectionColor = new Color(199, 237, 204);//未选择时颜色
 	private static Color selectionColor = new Color(51, 85, 254);//被选择时颜色

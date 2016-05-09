@@ -211,7 +211,7 @@ public class Client {
 				mainPanel.repaint();
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectBlock.resetSelectedBlock();
+				SelectedBlock.resetSelectedBlock();
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
 						serverIP, serverPort, mode, selectedCategory);
@@ -242,7 +242,7 @@ public class Client {
 				mainPanel.revalidate();
 				mainPanel.repaint();
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectBlock.resetSelectedBlock();
+				SelectedBlock.resetSelectedBlock();
 				videoDisplayStart = 0;//起点0
 				VideoListCallable videoListCallable = new VideoListCallable(
 						serverIP, serverPort, mode, selectedCategory);
@@ -273,7 +273,7 @@ public class Client {
 				mainPanel.revalidate();
 				mainPanel.repaint();
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectBlock.resetSelectedBlock();
+				SelectedBlock.resetSelectedBlock();
 				videoDisplayStart = -1;//起点-1表示末页
 				VideoListCallable videoListCallable = new VideoListCallable(
 						serverIP, serverPort, mode, selectedCategory);
@@ -314,7 +314,7 @@ public class Client {
 				mainPanel.repaint();
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectBlock.resetSelectedBlock();
+				SelectedBlock.resetSelectedBlock();
 				
 				videoDisplayStart -= videoDisplayStep;//起点减少
 				
@@ -357,7 +357,7 @@ public class Client {
 				mainPanel.repaint();
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectBlock.resetSelectedBlock();
+				SelectedBlock.resetSelectedBlock();
 				
 				videoDisplayStart += videoDisplayStep;//起点增加
 				VideoListCallable videoListCallable = new VideoListCallable(
@@ -378,7 +378,7 @@ public class Client {
 		btnPlayVideo.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			//检测是否有视频被选择
-			if(SelectBlock.getSelectedBlock() == null){
+			if(SelectedBlock.getSelectedBlock() == null){
 				JOptionPane.showMessageDialog(null, "没有视频被选择"
 						, "提示", JOptionPane.INFORMATION_MESSAGE);
 				return;
