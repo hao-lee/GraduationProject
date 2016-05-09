@@ -50,9 +50,9 @@ public class VodCallable implements Callable<Integer>{
 			extension = videoInfo.getExtension();//扩展名
 			
 			fileRelativePath = relativePath+fileID+"."+extension;//拼凑相对路径
-			String rtspUrl = "rtsp://"
+			String rtspURL = "rtsp://"
 					+serverIP+"/file/"+fileRelativePath;
-			FFplay ffplay = new FFplay(rtspUrl);
+			FFplay ffplay = new FFplay(rtspURL);
 			ffplay.play();
 			
 		} catch (Exception e) {

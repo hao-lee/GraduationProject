@@ -102,11 +102,11 @@ public class LiveCallable implements Callable<Integer> {
 				return null;
 			}
 			//现在可以开启播放线程播放视频了
-			String rtspUrl = "rtsp://"+serverIP+"/live/"+streamName;
+			String rtspURL = "rtsp://"+serverIP+"/live/"+streamName;
 			Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
-					FFplay ffplay = new FFplay(rtspUrl);
+					FFplay ffplay = new FFplay(rtspURL);
 					ffplay.play();
 					return null;
 				}

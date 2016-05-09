@@ -17,7 +17,7 @@ class DatebaseQuery{
 	private String dbName = null;
 	private String dbUsername = null;
 	private String dbPassword = null;
-	private String url = "jdbc:mysql://localhost:3306/";
+	private String dbURL = "jdbc:mysql://localhost:3306/";
 	//VideoInfo?" + "user=root&password=MyNewPass4!&useSSL=false";
 	
 	//构造函数
@@ -25,7 +25,7 @@ class DatebaseQuery{
 		this.dbName = Config.getValue("dbName", "VideoInfo");
 		this.dbUsername = Config.getValue("dbUsername", "root");
 		this.dbPassword = Config.getValue("dbPassword", "MyNewPass4!");
-		this.url = url
+		this.dbURL = dbURL
 				+this.dbName
 				+"?user="+this.dbUsername
 				+"&password="+this.dbPassword
@@ -50,7 +50,7 @@ class DatebaseQuery{
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			System.out.println("成功加载MySQL驱动程序");
-			connection = DriverManager.getConnection(url);
+			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			sql = "select * from ";
 			if(mode == Convention.MODE_VOD)
@@ -94,7 +94,7 @@ class DatebaseQuery{
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			System.out.println("成功加载MySQL驱动程序");
-			connection = DriverManager.getConnection(url);
+			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
@@ -146,7 +146,7 @@ class DatebaseQuery{
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
 			System.out.println("成功加载MySQL驱动程序");
-			connection = DriverManager.getConnection(url);
+			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			
 			if(mode == Convention.MODE_VOD)
