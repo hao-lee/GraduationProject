@@ -41,9 +41,6 @@ public class LiveCallable implements Callable<Integer> {
 		/*包装后的输入输出流*/
 		BufferedReader readFromServer = null;
 		PrintWriter printToServer = null;
-		/*线程对象*/
-		FFplayCallable ffplayCallable = null;
-		Future<Integer> ffplayFuture = null;
 		
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
 		String fileID = null;//文件名
@@ -59,11 +56,7 @@ public class LiveCallable implements Callable<Integer> {
 			outputStream = socketToServer.getOutputStream();
 			// auto flush
 			printToServer = new PrintWriter(outputStream, true);
-			/*
-			 * 根据请求的功能类型，发送的信息域数量也不同
-			 * */
-			/*接受到的服务端应答信息*/
-			String response = null;
+
 			/*被选择的块，由静态全局方法和变量得到*/
 			DisplayBlock selectedVideoBlock = null;
 			/*因为视频列表刷新时，已经用mode和category进行了过滤，
@@ -108,16 +101,24 @@ public class LiveCallable implements Callable<Integer> {
 //				return null;
 //			}
 			//现在可以开启播放线程播放视频了
-			
-			ffplayCallable = new FFplayCallable("rtsp://"
-								+serverIP+"/live/"+streamName);
-			ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);
+			String rtspUrl = "rtsp://"+serverIP+"/live/"+streamName;
+			Callable<Integer> callable = new Callable<Integer>() {
+				@Override
+				public Integer call() throws Exception {
+					FFplay ffplay = new FFplay(rtspUrl);
+					ffplay.play();
+					return null;
+				}
+			};
+			Future<Integer> ffplayFuture = Executors.newSingleThreadExecutor().
+					submit(callable);
 			/*
 			 * 播放器线程已经启动，现在本线程进入心跳包应答模式
 			 * */
+			/*接受到的服务端应答信息*/
 			do {
 				//Thread.sleep(1000);
-				if((response = readFromServer.readLine()) != null)
+				if(readFromServer.readLine() != null)
 					printToServer.println("I am alive.");//告诉服务端我还活着
 				else //读取到null说明服务端死了，没必要再应答了，等待播放线程去吧
 					break;

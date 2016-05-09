@@ -32,10 +32,6 @@ public class VodCallable implements Callable<Integer>{
 
 	@Override
 	public Integer call() throws Exception {
-		/*线程对象*/
-		FFplayCallable ffplayCallable = null;
-		Future<Integer> ffplayFuture = null;
-		
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
 		String fileID = null;//文件名
 		String extension = null;//扩展名
@@ -54,14 +50,10 @@ public class VodCallable implements Callable<Integer>{
 			extension = videoInfo.getExtension();//扩展名
 			
 			fileRelativePath = relativePath+fileID+"."+extension;//拼凑相对路径
-			ffplayCallable = new FFplayCallable("rtsp://"
-					+serverIP+"/file/"+fileRelativePath);
-			ffplayFuture = Executors.newSingleThreadExecutor().submit(ffplayCallable);
-			/*
-			 * 线程call函数的返回值对我们没用，
-			 * 这里只是为了等待播放线程FFplayCallable死亡
-			 * */
-			ffplayFuture.get();
+			String rtspUrl = "rtsp://"
+					+serverIP+"/file/"+fileRelativePath;
+			FFplay ffplay = new FFplay(rtspUrl);
+			ffplay.play();
 			
 		} catch (Exception e) {
 			e.printStackTrace();

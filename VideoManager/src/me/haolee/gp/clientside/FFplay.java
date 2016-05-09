@@ -8,14 +8,13 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import javax.swing.JOptionPane;
 
-class FFplayCallable implements Callable<Integer>{
+class FFplay{
 
 	private String rtspURL = null;
-	public FFplayCallable(String url) {
-		this.rtspURL = url;
+	public FFplay(String rtspUrl) {
+		this.rtspURL = rtspUrl;
 	}
-	@Override
-	public Integer call() throws Exception {
+	public void play() {
 		//开启ffplay进程播放视频
 		try {
 			Process pc = null;
@@ -27,7 +26,7 @@ class FFplayCallable implements Callable<Integer>{
 				if(!file.exists()){
 					JOptionPane.showMessageDialog(null, "ffplay.exe不存在"
 							, "错误", JOptionPane.ERROR_MESSAGE);
-					return null;
+					return;
 				}
 				command.add("ffplay.exe");
 			}
@@ -70,7 +69,6 @@ class FFplayCallable implements Callable<Integer>{
 			pc.destroy();
 			
 		} catch (Exception e) {e.printStackTrace();}
-		return null;
 	}
 	
 }

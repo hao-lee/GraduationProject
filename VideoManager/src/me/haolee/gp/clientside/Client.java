@@ -40,11 +40,14 @@ public class Client {
 	private ExecutorService executorService = null;
 	/*事件监听里面只能用final变量或类成员变量，在此定义好成员变量*/
 	private JFrame mainFrame = null;
+	private static JPanel mainPanel = null;//子线程要用，静态方便
 	private JList<String> categoryList = null;
 	private DefaultListModel<String> categoryListModel = null;
 	public HashMap<String, String> categoryMap = null;
-	
 	private int mode = Convention.MODE_LIVE;//播放模式初始值
+
+	//用于显示总记录条数的标签
+	private static JLabel lblTotalCount = null;
 	//起始序号和步长
 	private static int videoDisplayStart = 0;//行数默认从0计
 	private static int videoDisplayStep = 9;//默认步长
@@ -120,7 +123,7 @@ public class Client {
 		/*
 		 * 新建主面板，并使之具备滚动功能
 		 * */
-		JPanel mainPanel = new JPanel(new FlowLayout
+		mainPanel = new JPanel(new FlowLayout
 				(FlowLayout.LEFT, 5, 5));/*主面板上可以添加显示块，注意每行有5像素间隔*/
 		jScrollPane.setViewportView(mainPanel);//具备滚动功能
 		jScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -211,7 +214,7 @@ public class Client {
 				SelectBlock.resetSelectedBlock();
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory,mainPanel);
+						serverIP, serverPort, mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -220,9 +223,9 @@ public class Client {
 		 * 首页
 		 * */
 		JButton btnFirst = new JButton(new ImageIcon(((new ImageIcon(
-	            "firstpage.png").getImage().getScaledInstance(96, 32,
+	            "firstpage.png").getImage().getScaledInstance(32, 32,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnFirst.setBounds(100, 5, 101, 36);
+		btnFirst.setBounds(100, 5, 36, 36);
 		downPanel.add(btnFirst);
 		btnFirst.addActionListener(new ActionListener() {
 			@Override
@@ -242,7 +245,7 @@ public class Client {
 				SelectBlock.resetSelectedBlock();
 				videoDisplayStart = 0;//起点0
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory, mainPanel);
+						serverIP, serverPort, mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -251,9 +254,9 @@ public class Client {
 		 * 末页
 		 * */
 		JButton btnLast = new JButton(new ImageIcon(((new ImageIcon(
-	            "lastpage.png").getImage().getScaledInstance(96, 32,
+	            "lastpage.png").getImage().getScaledInstance(32, 32,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnLast.setBounds(800, 5, 101, 36);
+		btnLast.setBounds(800, 5, 36, 36);
 		downPanel.add(btnLast);
 		btnLast.addActionListener(new ActionListener() {
 			@Override
@@ -273,7 +276,7 @@ public class Client {
 				SelectBlock.resetSelectedBlock();
 				videoDisplayStart = -1;//起点-1表示末页
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory, mainPanel);
+						serverIP, serverPort, mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -316,7 +319,7 @@ public class Client {
 				videoDisplayStart -= videoDisplayStep;//起点减少
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory, mainPanel);
+						serverIP, serverPort, mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -358,7 +361,7 @@ public class Client {
 				
 				videoDisplayStart += videoDisplayStep;//起点增加
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory, mainPanel);
+						serverIP, serverPort, mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -397,6 +400,14 @@ public class Client {
 		}// actionPerformed
 		});// addActionListener
 
+		/*
+		 * 总记录数
+		 * */
+		lblTotalCount = new JLabel("");
+		lblTotalCount.setFont(new Font("Dialog", Font.BOLD, 15));
+		lblTotalCount.setBounds(919, 5, 69, 36);
+		downPanel.add(lblTotalCount);
+		
 		/*
 		 * 菜单设置
 		 * */
@@ -499,4 +510,25 @@ public class Client {
 	public static int getVideoDisplayStep () {
 		return videoDisplayStep;
 	}
+	//设置显示总记录条数的JLabel
+	public static void setLblTotalCount(int totalCount) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				lblTotalCount.setText("共计"+String.valueOf(totalCount)+"条");
+			}
+		});
+	}
+	//向主面板JPanel mainPanel添加视频显示块
+	synchronized public static void addToMainpanel(DisplayBlock displayBlock) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				mainPanel.add(displayBlock);
+				mainPanel.revalidate();
+				//mainPanel.repaint();//添加组件不许要调用repaint
+			}
+		});
+	}
+	
 }// class

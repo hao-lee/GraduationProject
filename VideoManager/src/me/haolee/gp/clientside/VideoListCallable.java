@@ -29,18 +29,15 @@ public class VideoListCallable implements Callable<Integer> {
 	private int videoDisplayStart = 0;//起始行数从0计
 	private int videoDisplayStep = 9;
 	
-	private JPanel mainPanel = null;
-	
 	/*刷新视频列表用*/
 	public VideoListCallable(String serverIP, int serverPort,int mode
-		, String category,JPanel mainPanel) {
+		, String category) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
 		this.mode = mode;
 		this.category = category;
 		this.videoDisplayStart = Client.getVideoDisplayStart();
 		this.videoDisplayStep = Client.getVideoDisplayStep();
-		this.mainPanel = mainPanel;
 	}
 
 	@Override
@@ -55,7 +52,6 @@ public class VideoListCallable implements Callable<Integer> {
 		PrintWriter printToServer = null;
 		
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
-		
 		try {
 			//点播不需要建立连接
 			// 客户端暂时不用设置SO_REUSEADDR
@@ -127,16 +123,12 @@ public class VideoListCallable implements Callable<Integer> {
 			for(;count != 0;count --){
 				videoInfo = (VideoInfo)objectInputStream.readObject();
 				DisplayBlock displayBlock = new DisplayBlock(videoInfo);
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						mainPanel.add(displayBlock);
-						mainPanel.revalidate();
-						//mainPanel.repaint();//添加组件不许要调用repaint
-					}
-				});
+				Client.addToMainpanel(displayBlock);
 			}
-
+			
+			//设置窗口上的标签显示总数
+			Client.setLblTotalCount(totalCount);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "无法连接服务器", "错误", JOptionPane.ERROR_MESSAGE);
