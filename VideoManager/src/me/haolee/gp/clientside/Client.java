@@ -471,10 +471,10 @@ public class Client {
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();
-		CatagoryListCallable catagoryCallable = new CatagoryListCallable(serverIP,
+		CatagoryListCallable catagoryListCallable = new CatagoryListCallable(serverIP,
 				serverPort, mode);
 		Future<HashMap<String, String>> future = 
-				executorService.submit(catagoryCallable);// 不需要收集返回值
+				executorService.submit(catagoryListCallable);// 不需要收集返回值
 		try {
 			categoryMap = future.get();//这里等着拿到分类，不然以后的功能没有意义
 		} catch (Exception e) {

@@ -70,8 +70,9 @@ public class Interaction {
 		if(videoDisplayStart == -1){
 			//根据总记录数和步长，算出最后一页的起点
 			videoDisplayStart = (totalCount/videoDisplayStep)*videoDisplayStart;
-			//总记录数恰好为步长倍数，最后一页没内容，自动前推一页
-			if(totalCount%videoDisplayStep == 0)
+			//总记录数恰好为步长倍数（1倍、2倍等），最后一页没内容，自动前推一页
+			if((totalCount/videoDisplayStep)>=1 
+					&& (totalCount%videoDisplayStep == 0))
 				videoDisplayStart -=videoDisplayStep;
 		}
 		System.out.println(videoDisplayStart);

@@ -26,9 +26,6 @@ public class VideoListCallable implements Callable<Integer> {
 	private int mode = -1;
 	private String category = null;
 	
-	private int videoDisplayStart = Client.getVideoDisplayStart();//起始行数从0计
-	private int videoDisplayStep = Client.getVideoDisplayStep();
-	
 	/*刷新视频列表用*/
 	public VideoListCallable(String serverIP, int serverPort,int mode
 		, String category) {
@@ -49,7 +46,9 @@ public class VideoListCallable implements Callable<Integer> {
 		BufferedReader readFromServer = null;
 		PrintWriter printToServer = null;
 		
-		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
+		int videoDisplayStart = Client.getVideoDisplayStart();//起始行数从0计
+		int videoDisplayStep = Client.getVideoDisplayStep();
+		
 		try {
 			//点播不需要建立连接
 			// 客户端暂时不用设置SO_REUSEADDR
@@ -92,6 +91,11 @@ public class VideoListCallable implements Callable<Integer> {
 			/*
 			 * 直到此时起点才完全消除不缺定因素并确定下来
 			 * */
+			//我们用-1表示请求最后一页的列表，所以这里还要重设起点值
+			//注意此时的videoDisplayStart早已经被重置为正数。
+			Client.setVideoDisplayStart(videoDisplayStart);
+			
+			//检测一下是否允许上翻
 			if(videoDisplayStart == 0)//起点是0，禁止上翻
 				Client.ProhibitPreviousPage();
 			else Client.AllowPreviousPage();
@@ -104,12 +108,9 @@ public class VideoListCallable implements Callable<Integer> {
 			int remain = totalLastIndex-videoDisplayStart+1;
 			int count;
 			if( remain <= videoDisplayStep){
-				//库存不够或刚够，都不允许再翻页
+				//库存不够或刚够，都不允许再向下翻页
 				count = totalLastIndex-videoDisplayStart+1;
 				Client.ProhibitNextPage();//本次起点距末尾不够数（或恰好够数），不能再下翻了
-				//我们用-1标识请求最后一页的列表，所以这里还要重置起点值为正数起点
-				//注意此时的videoDisplayStart早已经被重置为正数。
-				Client.setVideoDisplayStart(videoDisplayStart);
 			}
 			else{
 				//库存充足
@@ -119,7 +120,7 @@ public class VideoListCallable implements Callable<Integer> {
 			/*不可直接用videoDisplayStep，
 			因为实际查到的个数可能小于videoDisplayStep*/
 			for(;count != 0;count --){
-				videoInfo = (VideoInfo)objectInputStream.readObject();
+				VideoInfo videoInfo = (VideoInfo)objectInputStream.readObject();
 				DisplayBlock displayBlock = new DisplayBlock(videoInfo);
 				Client.addToMainpanel(displayBlock);
 			}
