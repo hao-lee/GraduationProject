@@ -11,10 +11,10 @@ import java.util.concurrent.Callable;
 
 import me.haolee.gp.common.Convention;
 
-class AnalyseRequest implements Callable<Integer> {
+class RequestAnalyser implements Callable<Integer> {
 	private Socket socketToClient = null;
 	
-	public AnalyseRequest(Socket s) {
+	public RequestAnalyser(Socket s) {
 		this.socketToClient = s;
 	}
 
@@ -42,7 +42,7 @@ class AnalyseRequest implements Callable<Integer> {
 
 				mode = Integer.valueOf(readFromClient.readLine());
 				objectOutputStream = new ObjectOutputStream(outputStream);
-				new SendCategoryList().sendCategoryList(mode,objectOutputStream);
+				new CategoryListSender().sendCategoryList(mode,objectOutputStream);
 				break;
 				
 			case Convention.ACTION_GETVIDEOLIST:
@@ -51,7 +51,7 @@ class AnalyseRequest implements Callable<Integer> {
 				int videoDisplayStart = Integer.valueOf(readFromClient.readLine());
 				int videoDisplayStep = Integer.valueOf(readFromClient.readLine());
 				objectOutputStream = new ObjectOutputStream(outputStream);
-				new SendVideoList().sendVideoList(mode, category, 
+				new VideoListSender().sendVideoList(mode, category, 
 						videoDisplayStart, videoDisplayStep,
 						objectOutputStream);
 				break;
@@ -60,7 +60,7 @@ class AnalyseRequest implements Callable<Integer> {
 				//不需要加双引号，对于文件名的空格，java会自动处理
 				String fileRelativePath = readFromClient.readLine();
 				printToClient = new PrintWriter(outputStream, true);// auto flush
-				new SendVideoStream().sendVideoStream(fileRelativePath, 
+				new VideoStreamSender().sendVideoStream(fileRelativePath, 
 						readFromClient, printToClient);
 				break;
 			default:

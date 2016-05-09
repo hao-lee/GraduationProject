@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import me.haolee.gp.common.Config;
 import me.haolee.gp.common.Convention;
 
-public class SendVideoStream {
+public class VideoStreamSender {
 	/*
 	 * 发送视频流
 	 * */

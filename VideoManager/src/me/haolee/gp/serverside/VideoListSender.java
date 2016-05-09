@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import me.haolee.gp.common.Config;
 import me.haolee.gp.common.VideoInfo;
 
-public class SendVideoList {
+public class VideoListSender {
 	/*
 	 * 发送视频列表
 	 * */

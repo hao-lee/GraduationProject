@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
-public class SendCategoryList {
+public class CategoryListSender {
 	/*
 	 * 发送分类列表
 	 * */
