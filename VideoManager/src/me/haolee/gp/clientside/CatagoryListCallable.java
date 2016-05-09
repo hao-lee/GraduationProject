@@ -47,7 +47,7 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 		ObjectInputStream objectInputStream = null;
 		BufferedReader readFromServer = null;
 		PrintWriter printToServer = null;
-		HashMap<String, String> categoryList = null;
+		HashMap<String, String> categoryMap = null;
 		try {
 			// 客户端暂时不用设置SO_REUSEADDR
 			socketToServer = new Socket(serverIP, serverPort);
@@ -65,10 +65,10 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 			/*打开反序列化输入流，
 			这时服务端已经得到了categorySet并准备发给客户端*/
 			objectInputStream = new ObjectInputStream(inputStream);
-			categoryList = (HashMap<String, String>)
+			categoryMap = (HashMap<String, String>)
 					objectInputStream.readObject();
 			
-			Set set = categoryList.entrySet();
+			Set set = categoryMap.entrySet();
 			for(Iterator iter = set.iterator();iter.hasNext();){
 				Map.Entry<String, String> categoryElement = 
 						(Map.Entry<String, String>)iter.next();
@@ -91,6 +91,6 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 				e.printStackTrace();
 			}
 		}
-		return categoryList;
+		return categoryMap;
 	}// function call
 }

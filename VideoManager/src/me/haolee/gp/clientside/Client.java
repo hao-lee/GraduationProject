@@ -43,7 +43,7 @@ public class Client {
 	private static JPanel mainPanel = null;//子线程要用，静态方便
 	private JList<String> categoryList = null;
 	private static DefaultListModel<String> categoryListModel = null;
-	public HashMap<String, String> categoryMap = null;
+	private HashMap<String, String> categoryMap = null;
 	private int mode = Convention.MODE_LIVE;//播放模式初始值
 
 	//用于显示总记录条数的标签
@@ -385,15 +385,15 @@ public class Client {
 			}
 			//获得分类
 			String selectedCatagory = categoryList.getSelectedValue();
-			String relativePath = categoryMap.get(selectedCatagory);
+			String categoryRelativePath = categoryMap.get(selectedCatagory);
 			LiveCallable liveCallable = null;
 			VodCallable vodCallable = null;
 			if(mode==Convention.MODE_VOD){
-				vodCallable = new VodCallable(serverIP, serverPort,relativePath);
+				vodCallable = new VodCallable(serverIP, serverPort,categoryRelativePath);
 				executorService.submit(vodCallable);
 			}
 			else{//live
-				liveCallable = new LiveCallable(serverIP, serverPort,relativePath);
+				liveCallable = new LiveCallable(serverIP, serverPort,categoryRelativePath);
 				executorService.submit(liveCallable);
 			}
 			

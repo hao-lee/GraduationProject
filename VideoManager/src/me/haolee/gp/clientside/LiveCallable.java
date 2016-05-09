@@ -23,13 +23,13 @@ public class LiveCallable implements Callable<Integer> {
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
-	private String relativePath = null;
+	private String categoryRelativePath = null;
 	
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
-	public LiveCallable(String serverIP, int serverPort, String relativePath) {
+	public LiveCallable(String serverIP, int serverPort, String categoryRelativePath) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
-		this.relativePath = relativePath;
+		this.categoryRelativePath = categoryRelativePath;
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class LiveCallable implements Callable<Integer> {
 			fileID = videoInfo.getFileID();//文件ID
 			extension = videoInfo.getExtension();//扩展名
 			
-			fileRelativePath = relativePath+fileID+"."+extension;//拼凑相对路径
+			fileRelativePath = categoryRelativePath+fileID+"."+extension;//拼凑相对路径
 			
 			/*请求格式：req|fileRelativePath，
 			 * 服务端会再加上前缀拼凑出文件绝对路径送给ffmpeg

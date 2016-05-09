@@ -41,7 +41,6 @@ class DisplayBlock extends JPanel{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
 	private int tnWidth = 300, tnHeight = 200;//缩略图面板大小，也是图片大小
 	private int blockWidth = -1,blockHeight  = -1;//DisplayBlock显示块大小
 	private int padding = 10;//显示块面板与缩略图面板之间的内边距
@@ -84,12 +83,12 @@ class DisplayBlock extends JPanel{
 		this.add(thumbnailPanel);//将缩略图面板加到显示块上去
 		thumbnailPanel.setBounds(padding,padding, tnWidth,tnHeight);//定位缩略图面板的位置,同时设置大小
 		//在显示块上添加文本信息面板
-		Info info = new Info(
+		Info infoPanel = new Info(
 				videoInfo.getVideoName(),
 				videoInfo.getDuration(),
 				videoInfo.getResolution());
-		this.add(info);
-		info.setBounds(padding, tnHeight+2*padding, tnWidth,infoHeight);//定位信息面板的位置,同时设置大小
+		this.add(infoPanel);
+		infoPanel.setBounds(padding, tnHeight+2*padding, tnWidth,infoHeight);//定位信息面板的位置,同时设置大小
 	}
 }
 
@@ -97,11 +96,8 @@ class DisplayBlock extends JPanel{
  * 缩略图面板，不用设置布局，图片直接画上去
  * */
 class Thumbnail extends JPanel{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	Image scaledImage = null;
+	
+	private Image scaledImage = null;
 	//构造函数
 	public Thumbnail(int tnWidth , int tnHeight, BufferedImage bufferedImage) {
 		this.scaledImage = bufferedImage.getScaledInstance(tnWidth, tnHeight, Image.SCALE_DEFAULT);
@@ -123,7 +119,6 @@ class Thumbnail extends JPanel{
 /*视频信息显示面板，包括视频名、时长、分辨率*/
 class Info extends JPanel{
 
-	private static final long serialVersionUID = -8194540666523790574L;
 	public Info(String videoName,String duration,String resolution) {
 		this.setBackground(new Color(255, 204, 204));
 		this.setLayout(new GridLayout(3, 1, 0, 2));//行数 列数 水平间隔 竖直间隔
