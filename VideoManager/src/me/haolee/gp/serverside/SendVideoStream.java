@@ -22,12 +22,12 @@ public class SendVideoStream {
 		ProcessBuilder pb = null;
 		try {
 			
-			int streamName = StreamName.getStreamName();
-			if(streamName == -1)//返回-1说明所有可用的流标识都被占用
+			int streamID = StreamID.getStreamID();
+			if(streamID == -1)//返回-1说明所有可用的流标识都被占用
 				return;//不用再往下执行了。客户端会收到一系列null自动退出的。
 			
 			//告诉客户端流名称，本次发送不需要心跳应答
-			printToClient.println(streamName);
+			printToClient.println(streamID);
 			
 			ArrayList<String> command = new ArrayList<>();//命令数组
 			command.add("ffmpeg");
@@ -53,7 +53,7 @@ public class SendVideoStream {
 			command.add("libfaac");
 			command.add("-f");
 			command.add("rtsp");
-			command.add("rtsp://"+"127.0.0.1"+"/live/"+streamName);
+			command.add("rtsp://"+"127.0.0.1"+"/live/"+streamID);
 			pb = new ProcessBuilder(command);
 			pb.redirectErrorStream(true);
 			pc = pb.start();
@@ -88,7 +88,7 @@ public class SendVideoStream {
 				//客户端死了就没必要继续了
 			} while ((readFromClient.readLine()) != null);
 			pc.destroy();
-			StreamName.releaseStreamName(streamName);//释放数据流名字
+			StreamID.releaseStreamID(streamID);//释放数据流名字
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
