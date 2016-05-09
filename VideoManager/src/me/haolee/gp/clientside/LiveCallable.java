@@ -99,6 +99,7 @@ public class LiveCallable implements Callable<Integer> {
 			 * */
 			if(response == null){
 				System.out.println("服务端可能播放失败");
+				JOptionPane.showMessageDialog(null, "服务端视频播放失败", "错误", JOptionPane.ERROR_MESSAGE);
 				return null;
 			}
 			//现在可以开启播放线程播放视频了

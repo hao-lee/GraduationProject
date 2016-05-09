@@ -23,6 +23,9 @@ public class SendVideoStream {
 		try {
 			
 			int streamName = StreamName.getStreamName();
+			if(streamName == -1)//返回-1说明所有可用的流标识都被占用
+				return;//不用再往下执行了。客户端会收到一系列null自动退出的。
+			
 			//告诉客户端流名称，本次发送不需要心跳应答
 			printToClient.println(streamName);
 			
