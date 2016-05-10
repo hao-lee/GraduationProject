@@ -64,16 +64,18 @@ public class VideoListSender {
 		Iterator<VideoInfo> iterator = videoInfoList.iterator();
 		//对每个视频分别取截图并设置到视频对象里，然后写回客户端
 		try{
+			//默认绝对路径前缀
+			String pathPrefix = Config.getValue("pathPrefix"
+					, "/home/mirage/rtsp-relay/file/");
+			/*获得缩略图路径，以便读取缩略图*/
+			String thumbnailRelativePath = Config.getValue(
+					"thumbnailRelativePath","thumbnail/");//缩略图路径
+			//缩略图绝对路径
+			String thumbnailPath = null;
 			while(iterator.hasNext()){
 				VideoInfo videoInfo = iterator.next();
-				
-				/*获得缩略图路径，以便读取缩略图*/
-				String thumbnailRelativePath = Config.getValue("thumbnailRelativePath","thumbnail/");//缩略图路径
 				String fileID = videoInfo.getFileID();
-				//默认绝对路径前缀
-				String pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
-				//拼接绝对路径
-				String thumbnailPath = null;
+				
 				//如果是直播就用默认贴图
 				if(videoInfo.getExtension().equals("live"))
 					thumbnailPath = "live_defaultcover.png";
