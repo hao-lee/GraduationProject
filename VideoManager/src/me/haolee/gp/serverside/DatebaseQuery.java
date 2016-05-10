@@ -53,7 +53,7 @@ class DatebaseQuery{
 			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			sql = "select * from ";
-			if(mode == Convention.MODE_VOD)
+			if(mode == Command.MODE_VOD)
 				sql += vodCategoryTable;
 			else sql += liveCategoryTable;
 			resultSet = stmt.executeQuery(sql);
@@ -99,7 +99,7 @@ class DatebaseQuery{
 
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
 			sql = "SELECT * FROM ";//拼接初始化
-			if(mode == Convention.MODE_VOD)
+			if(mode == Command.MODE_VOD)
 				sql += vodTable;
 			else sql += liveTable;
 			sql += " WHERE CategoryName="+"\""+category+"\" "
@@ -149,7 +149,7 @@ class DatebaseQuery{
 			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			
-			if(mode == Convention.MODE_VOD)
+			if(mode == Command.MODE_VOD)
 				resultSet = stmt.executeQuery("select count(*) from "
 							+vodTable+" WHERE CategoryName="+"\""+category+"\" ");
 			else

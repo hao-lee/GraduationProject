@@ -8,7 +8,7 @@ package me.haolee.gp.common;
  * @author mirage
  *
  */
-public class Convention {
+public class Command {
 	//用于发送控制指令
 	//点播模式不与服务器交互，所以不需要请求码
 	public static final int ACTION_PLAYLIVE = 1;

@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import me.haolee.gp.common.Config;
-import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.Command;
 
 public class VideoStreamSender {
 	/*
@@ -66,9 +66,9 @@ public class VideoStreamSender {
 			while ((tmp_in = readFromShell.readLine()) != null) {
 				System.out.println(tmp_in);
 				if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
-					printToClient.println(Convention.CTRL_WAIT);
+					printToClient.println(Command.CTRL_WAIT);
 				else{//开始发送视频了
-					printToClient.println(Convention.CTRL_OK);
+					printToClient.println(Command.CTRL_OK);
 					break;
 				}
 			}

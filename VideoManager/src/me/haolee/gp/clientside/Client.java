@@ -10,7 +10,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import me.haolee.gp.common.Config;
-import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.Command;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
@@ -44,7 +44,7 @@ public class Client {
 	private JList<String> categoryList = null;
 	private static DefaultListModel<String> categoryListModel = null;
 	private HashMap<String, String> categoryMap = null;
-	private int mode = Convention.MODE_LIVE;//播放模式初始值
+	private int mode = Command.MODE_LIVE;//播放模式初始值
 
 	//用于显示总记录条数的标签
 	private static JLabel lblTotalCount = null;
@@ -162,7 +162,7 @@ public class Client {
 		/*
 		 * 获取分类
 		 * */
-		getCategoryManually(categoryList);
+		getCategory(categoryList);
 		
 		/*
 		 * 显示块要追加到主面板mainPanel上，
@@ -179,10 +179,10 @@ public class Client {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.DESELECTED)//liveRButton被取消，切换到点播
-					mode = Convention.MODE_VOD;
+					mode = Command.MODE_VOD;
 				else								//liveRButton被选择，切换成直播
-					mode = Convention.MODE_LIVE;
-				getCategoryManually(categoryList);//重新获取分类
+					mode = Command.MODE_LIVE;
+				getCategory(categoryList);//重新获取分类
 			}
 		});
 		
@@ -388,7 +388,7 @@ public class Client {
 			String categoryRelativePath = categoryMap.get(selectedCatagory);
 			LiveCallable liveCallable = null;
 			VodCallable vodCallable = null;
-			if(mode==Convention.MODE_VOD){
+			if(mode==Command.MODE_VOD){
 				vodCallable = new VodCallable(serverIP, serverPort,categoryRelativePath);
 				executorService.submit(vodCallable);
 			}
@@ -427,7 +427,7 @@ public class Client {
 		mntmGetCategory.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getCategoryManually(categoryList);
+				getCategory(categoryList);
 			}
 		});
 		
@@ -467,7 +467,7 @@ public class Client {
 	}// create
 
 	//获取分类
-	private void getCategoryManually(JList<String> categoryList){
+	private void getCategory(JList<String> categoryList){
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();

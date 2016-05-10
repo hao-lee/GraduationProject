@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.Command;
 import me.haolee.gp.common.VideoInfo;
 
 public class VideoListCallable implements Callable<Integer> {
@@ -60,7 +60,7 @@ public class VideoListCallable implements Callable<Integer> {
 			printToServer = new PrintWriter(outputStream, true);
 			
 			/*请求格式：req|mode|cate|start|step*/
-			printToServer.println(Convention.ACTION_GETVIDEOLIST);
+			printToServer.println(Command.ACTION_GETVIDEOLIST);
 			printToServer.println(mode);
 			printToServer.println(category);
 			printToServer.println(videoDisplayStart);

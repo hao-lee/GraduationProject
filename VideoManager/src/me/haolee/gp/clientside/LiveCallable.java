@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.swing.JOptionPane;
 
-import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.Command;
 import me.haolee.gp.common.VideoInfo;
 
 public class LiveCallable implements Callable<Integer> {
@@ -75,7 +75,7 @@ public class LiveCallable implements Callable<Integer> {
 			/*请求格式：req|fileRelativePath，
 			 * 服务端会再加上前缀拼凑出文件绝对路径送给ffmpeg
 			 * 客户端只需要知道流的名字即可*/
-			printToServer.println(Convention.ACTION_PLAYLIVE);
+			printToServer.println(Command.ACTION_PLAYLIVE);
 			printToServer.println(fileRelativePath);
 			
 			String streamID = null;
@@ -86,7 +86,7 @@ public class LiveCallable implements Callable<Integer> {
 			String response = null;
 			while ((response = readFromServer.readLine()) != null){
 			//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
-				if(Integer.valueOf(response) == Convention.CTRL_WAIT){
+				if(Integer.valueOf(response) == Command.CTRL_WAIT){
 					continue;	
 				}else{//收到OK消息，跳出循环
 					break;

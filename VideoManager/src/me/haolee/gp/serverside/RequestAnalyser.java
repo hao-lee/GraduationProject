@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 
-import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.Command;
 
 class RequestAnalyser implements Callable<Integer> {
 	private Socket socketToClient = null;
@@ -38,14 +38,14 @@ class RequestAnalyser implements Callable<Integer> {
 			int mode = -1;
 			
 			switch (requestCode) {
-			case Convention.ACTION_GETCATEGORY:
+			case Command.ACTION_GETCATEGORY:
 
 				mode = Integer.valueOf(readFromClient.readLine());
 				objectOutputStream = new ObjectOutputStream(outputStream);
 				new CategoryListSender().sendCategoryList(mode,objectOutputStream);
 				break;
 				
-			case Convention.ACTION_GETVIDEOLIST:
+			case Command.ACTION_GETVIDEOLIST:
 				mode = Integer.valueOf(readFromClient.readLine());
 				String category = readFromClient.readLine();
 				int videoDisplayStart = Integer.valueOf(readFromClient.readLine());
@@ -55,7 +55,7 @@ class RequestAnalyser implements Callable<Integer> {
 						videoDisplayStart, videoDisplayStep,
 						objectOutputStream);
 				break;
-			case Convention.ACTION_PLAYLIVE:
+			case Command.ACTION_PLAYLIVE:
 				//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，
 				//不需要加双引号，对于文件名的空格，java会自动处理
 				String fileRelativePath = readFromClient.readLine();

@@ -16,7 +16,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import me.haolee.gp.common.Convention;
+import me.haolee.gp.common.Command;
 
 
 
@@ -59,7 +59,7 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 			
 			/*要发送的请求*/
 			/* 请求格式：reqCode | mode */
-			printToServer.println(Convention.ACTION_GETCATEGORY);
+			printToServer.println(Command.ACTION_GETCATEGORY);
 			printToServer.println(mode);
 			
 			/*打开反序列化输入流，
@@ -78,7 +78,12 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "无法连接服务器", "错误", JOptionPane.ERROR_MESSAGE);
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					JOptionPane.showMessageDialog(null, "无法连接服务器", "错误", JOptionPane.ERROR_MESSAGE);
+				}
+			});
 			System.out.println("无法连接服务器"+serverIP+serverPort);
 		} finally {
 			try {
