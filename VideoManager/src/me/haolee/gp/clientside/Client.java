@@ -386,14 +386,13 @@ public class Client {
 			//获得分类
 			String selectedCatagory = categoryList.getSelectedValue();
 			String categoryRelativePath = categoryMap.get(selectedCatagory);
-			LiveCallable liveCallable = null;
-			VodCallable vodCallable = null;
+
 			if(mode==Command.MODE_VOD){
-				vodCallable = new VodCallable(serverIP, serverPort,categoryRelativePath);
+				VodCallable vodCallable = new VodCallable(serverIP, serverPort,categoryRelativePath);
 				executorService.submit(vodCallable);
 			}
 			else{//live
-				liveCallable = new LiveCallable(serverIP, serverPort,categoryRelativePath);
+				LiveCallable liveCallable = new LiveCallable(serverIP, serverPort,categoryRelativePath);
 				executorService.submit(liveCallable);
 			}
 			

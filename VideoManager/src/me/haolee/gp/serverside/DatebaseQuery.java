@@ -60,7 +60,7 @@ class DatebaseQuery{
 			while (resultSet.next()) {
 				//System.out.println(resultSet.getString(1));
 				categoryMap.put(resultSet.getString("CategoryName"),
-						resultSet.getString("RelativePath"));
+						resultSet.getString("CategoryRelativePath"));
 			}
 			
 		} catch (Exception e) {
