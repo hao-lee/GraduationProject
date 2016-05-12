@@ -43,7 +43,7 @@ public class Client {
 	private static JPanel mainPanel = null;//子线程要用，静态方便
 	private JList<String> categoryList = null;
 	private static DefaultListModel<String> categoryListModel = null;
-	private HashMap<String, String> categoryMap = null;
+	private static HashMap<String, String> categoryMap = null;
 	private int mode = Command.MODE_LIVE;//播放模式初始值
 
 	//用于显示总记录条数的标签
@@ -162,7 +162,7 @@ public class Client {
 		/*
 		 * 获取分类
 		 * */
-		getCategory(categoryList);
+		getCategory();
 		
 		/*
 		 * 显示块要追加到主面板mainPanel上，
@@ -182,7 +182,7 @@ public class Client {
 					mode = Command.MODE_VOD;
 				else								//liveRButton被选择，切换成直播
 					mode = Command.MODE_LIVE;
-				getCategory(categoryList);//重新获取分类
+				getCategory();//重新获取分类
 			}
 		});
 		
@@ -426,7 +426,7 @@ public class Client {
 		mntmGetCategory.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getCategory(categoryList);
+				getCategory();
 			}
 		});
 		
@@ -466,19 +466,13 @@ public class Client {
 	}// create
 
 	//获取分类
-	private void getCategory(JList<String> categoryList){
+	private void getCategory(){
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();
 		CatagoryListCallable catagoryListCallable = new CatagoryListCallable(serverIP,
 				serverPort, mode);
-		Future<HashMap<String, String>> future = 
-				executorService.submit(catagoryListCallable);// 不需要收集返回值
-		try {
-			categoryMap = future.get();//这里等着拿到分类，不然以后的功能没有意义
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		executorService.submit(catagoryListCallable);// 不需要收集返回值
 	}
 
 	//禁止上翻
@@ -536,6 +530,10 @@ public class Client {
 				//mainPanel.repaint();//添加组件不许要调用repaint
 			}
 		});
+	}
+	//将分类名和路径名的HashMap对象设置到成员变量
+	public static void setCategoryMap(HashMap<String, String> cMap) {
+		categoryMap = cMap;
 	}
 	
 }// class

@@ -117,7 +117,6 @@ public class LiveCallable implements Callable<Integer> {
 			/*
 			 * 播放器线程已经启动，现在本线程进入心跳包应答模式
 			 * */
-			/*接受到的服务端应答信息*/
 			do {
 				//Thread.sleep(1000);
 				if(readFromServer.readLine() != null)
@@ -138,7 +137,7 @@ public class LiveCallable implements Callable<Integer> {
 			 * */
 			/*
 			 * 线程call函数的返回值对我们没用，
-			 * 这里只是为了等待播放线程FFplayCallable死亡
+			 * 这里只是为了等待播放线程FFplayCallable因用户关闭播放窗口而死亡
 			 * */
 			ffplayFuture.get();
 			

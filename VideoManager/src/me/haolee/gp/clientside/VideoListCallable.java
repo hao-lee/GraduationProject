@@ -87,13 +87,12 @@ public class VideoListCallable implements Callable<Integer> {
 				if((totalCount/videoDisplayStep)>=1 
 						&& (totalCount%videoDisplayStep == 0))
 					videoDisplayStart -=videoDisplayStep;
+				//我们用-1表示请求最后一页的列表，所以这里还要重设起点值
+				Client.setVideoDisplayStart(videoDisplayStart);
 			}
 			/*
 			 * 直到此时起点才完全消除不缺定因素并确定下来
 			 * */
-			//我们用-1表示请求最后一页的列表，所以这里还要重设起点值
-			//注意此时的videoDisplayStart早已经被重置为正数。
-			Client.setVideoDisplayStart(videoDisplayStart);
 			
 			//检测一下是否允许上翻
 			if(videoDisplayStart == 0)//起点是0，禁止上翻
@@ -109,7 +108,7 @@ public class VideoListCallable implements Callable<Integer> {
 			int count;
 			if( remain <= videoDisplayStep){
 				//库存不够或刚够，都不允许再向下翻页
-				count = totalLastIndex-videoDisplayStart+1;
+				count = remain;
 				Client.ProhibitNextPage();//本次起点距末尾不够数（或恰好够数），不能再下翻了
 			}
 			else{

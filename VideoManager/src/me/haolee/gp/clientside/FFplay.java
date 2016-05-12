@@ -58,6 +58,7 @@ class FFplay{
 				}
 			} catch (Exception e) {e.printStackTrace();
 			}finally {
+				if(readFFplayStatus != null)readFFplayStatus.close();
 				if (inputFFplayStatus != null)inputFFplayStatus.close();
 				System.out.println("FFplay has finished");
 			}
@@ -68,7 +69,9 @@ class FFplay{
 			pc.waitFor();
 			pc.destroy();
 			
-		} catch (Exception e) {e.printStackTrace();}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

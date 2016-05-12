@@ -20,7 +20,7 @@ import me.haolee.gp.common.Command;
 
 
 
-public class CatagoryListCallable implements Callable<HashMap<String, String>> {
+public class CatagoryListCallable implements Callable<Integer> {
 	
 	/*
 	 * 这些变量都要接收上级函数传值，而call方法本身无法接收参数
@@ -38,7 +38,7 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 	}
 
 	@Override
-	public HashMap<String, String> call() throws Exception {
+	public Integer call() throws Exception {
 		/*套接字和原生输入输出流*/
 		Socket socketToServer = null;
 		InputStream inputStream = null;
@@ -75,7 +75,8 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 				//不要把iter.next()直接放入事件调度线程，会出现异常的
 				Client.addToCategoryList(categoryElement.getKey());
 			}
-
+			
+			Client.setCategoryMap(categoryMap);
 		} catch (Exception e) {
 			e.printStackTrace();
 			SwingUtilities.invokeLater(new Runnable() {
@@ -96,6 +97,6 @@ public class CatagoryListCallable implements Callable<HashMap<String, String>> {
 				e.printStackTrace();
 			}
 		}
-		return categoryMap;
+		return null;
 	}// function call
 }
