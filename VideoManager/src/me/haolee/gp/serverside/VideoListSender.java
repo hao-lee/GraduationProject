@@ -61,15 +61,15 @@ public class VideoListSender {
 		 * 从数据库读取到的videoInfo集合，每个对象的bufferedImage字段没有被填充*
 		 * 现在开始填充，填充完一个就发给客户端一个
 		 */
+		//默认绝对路径前缀
+		String pathPrefix = Config.getValue("pathPrefix"
+				, "/home/mirage/rtsp-relay/file/");
+		/*获得缩略图路径，以便读取缩略图*/
+		String thumbnailRelativePath = Config.getValue(
+				"thumbnailRelativePath","thumbnail/");//缩略图路径
 		Iterator<VideoInfo> iterator = videoInfoList.iterator();
 		//对每个视频分别取截图并设置到视频对象里，然后写回客户端
 		try{
-			//默认绝对路径前缀
-			String pathPrefix = Config.getValue("pathPrefix"
-					, "/home/mirage/rtsp-relay/file/");
-			/*获得缩略图路径，以便读取缩略图*/
-			String thumbnailRelativePath = Config.getValue(
-					"thumbnailRelativePath","thumbnail/");//缩略图路径
 			//缩略图绝对路径
 			String thumbnailPath = null;
 			while(iterator.hasNext()){
