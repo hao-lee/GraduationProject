@@ -17,8 +17,8 @@ public class StreamID {
 				return -1;//如果集合满了说明当前达到了视频流数量的极限，返回-1
 		}
 	}
-	//释放用完的数据流名字
-	public static void releaseStreamID(int sname) {
-		streamIDSet.remove(sname);
+	//释放用完的流媒体ID
+	public static void releaseStreamID(int streamID) {
+		streamIDSet.remove(streamID);
 	}
 }

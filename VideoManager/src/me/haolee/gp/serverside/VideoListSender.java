@@ -26,7 +26,7 @@ public class VideoListSender {
 		/*数据库查询对象*/
 		datebaseQuery = new DatebaseQuery();
 		/*总条数*/
-		int totalCount = datebaseQuery.totalCount(mode, category);
+		int totalCount = datebaseQuery.getTotalCount(mode, category);
 
 		/*
 		 * 序列化对象不能用读取到null这样的方法来判断读取完毕，

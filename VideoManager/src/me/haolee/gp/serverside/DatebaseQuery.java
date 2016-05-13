@@ -129,7 +129,7 @@ class DatebaseQuery{
 		return videoInfoList;//包含了videoDisplayStep个视频的详细信息，每个视频占一条
 	}
 
-	public int totalCount(int mode, String category) {
+	public int getTotalCount(int mode, String category) {
 		
 		/*
 		 * 数据库表名
