@@ -63,7 +63,7 @@ public class VideoListSender {
 		 */
 		//默认绝对路径前缀
 		String pathPrefix = Config.getValue("pathPrefix"
-				, "/home/mirage/rtsp-relay/file/");
+				, "/home/mirage/EasyDarwin/Movies/");
 		/*获得缩略图路径，以便读取缩略图*/
 		String thumbnailRelativePath = Config.getValue(
 				"thumbnailRelativePath","thumbnail/");//缩略图路径

@@ -53,7 +53,7 @@ class FFplay{
 			try {
 				String tmp_in = null;
 				while ((tmp_in = readFFplayStatus.readLine()) != null) {
-					System.out.println(tmp_in);//读取输入流防止因为缓冲区满了而阻塞
+					//System.out.println(tmp_in);//读取输入流防止因为缓冲区满了而阻塞
 					//stringBuffer.append(tmp_in+"\n");
 				}
 			} catch (Exception e) {e.printStackTrace();

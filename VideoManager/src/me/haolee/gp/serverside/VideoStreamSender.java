@@ -1,6 +1,7 @@
 package me.haolee.gp.serverside;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,38 +23,50 @@ public class VideoStreamSender {
 		ProcessBuilder pb = null;
 		try {
 			
-			int streamID = StreamID.getStreamID();
-			if(streamID == -1)//返回-1说明所有可用的流标识都被占用
-				return;//不用再往下执行了。客户端会收到一系列null自动退出的。
-			
-			//告诉客户端流名称，本次发送不需要心跳应答
-			printToClient.println(streamID);
-			
-			ArrayList<String> command = new ArrayList<>();//命令数组
-			command.add("ffmpeg");
-			
 			//文件的默认绝对路径前缀
 			String pathPrefix = Config.getValue("pathPrefix", "/home/mirage/rtsp-relay/file/");
 			//拼接绝对路径
 			String fileAbsolutePath = pathPrefix + fileRelativePath;
-			//如果是.live文件则读出里面的内容作为输入地址(网络地址)
-			if(fileAbsolutePath.endsWith(".live")){
-				fileAbsolutePath = new BufferedReader(new InputStreamReader(new FileInputStream(fileAbsolutePath))).readLine();
-				command.add("-rtsp_transport");
-				command.add("tcp");
+			
+			//新建文件对象，借用它的getName方法获得文件全名
+			String fileName = new File(fileAbsolutePath).getName();
+			int dot = fileName.lastIndexOf(".");
+			//主文件名（不含扩展名）
+			String fileID = fileName.substring(0, dot);//0~dot-1
+			//扩展名
+			String fileExtension = fileName.substring(dot+1);
+			//获取流媒体ID
+			String streamID = StreamIDManager.getStreamID(fileID);
+			
+			//告诉客户端流名称，本次发送不需要心跳应答
+			printToClient.println(streamID);
+			System.out.println(streamID);
+			
+			ArrayList<String> command = new ArrayList<>();//命令数组
+			command.add("ffmpeg");
+			
+			//如果扩展名是live，则读出里面的内容作为输入地址(网络地址)
+			if(fileExtension.equals("live")){
+				String cameraURL = new BufferedReader(new InputStreamReader(new FileInputStream(fileAbsolutePath))).readLine();
+				command.add("-i");
+				command.add(cameraURL);
 			}else{//读取的本地文件
 				command.add("-re");
+				command.add("-i");
+				command.add(fileAbsolutePath);
 			}
 			
-			command.add("-i");
-			command.add(fileAbsolutePath);
-			command.add("-c:v");
-			command.add("libx264");
-			command.add("-c:a");
-			command.add("libfaac");
+			command.add("-c");
+			command.add("copy");
+			//转码占用CPU过高，直接原样拷贝
+//			command.add("-c:v");
+//			command.add("libx264");
+//			command.add("-c:a");
+//			command.add("libfaac");
 			command.add("-f");
 			command.add("rtsp");
-			command.add("rtsp://"+"127.0.0.1"+"/live/"+streamID);
+			//command.add("rtsp://"+"127.0.0.1"+"/live/"+streamID);
+			command.add("rtsp://"+"127.0.0.1"+"/"+streamID+".sdp");
 			pb = new ProcessBuilder(command);
 			pb.redirectErrorStream(true);
 			pc = pb.start();
@@ -88,7 +101,8 @@ public class VideoStreamSender {
 				//客户端死了就没必要继续了
 			} while ((readFromClient.readLine()) != null);
 			pc.destroy();
-			StreamID.releaseStreamID(streamID);//释放数据流名字
+			StreamIDManager.releaseStreamID(fileID);//释放流媒体ID
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

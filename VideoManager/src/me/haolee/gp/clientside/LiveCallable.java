@@ -78,10 +78,9 @@ public class LiveCallable implements Callable<Integer> {
 			printToServer.println(Command.ACTION_PLAYLIVE);
 			printToServer.println(fileRelativePath);
 			
-			String streamID = null;
 			//读取服务器发来的视频流名字，本次接收不需要发送心跳应答
 			readFromServer = new BufferedReader(new InputStreamReader(inputStream));
-			streamID = readFromServer.readLine();
+			String streamID = readFromServer.readLine();
 			
 			String response = null;
 			while ((response = readFromServer.readLine()) != null){
@@ -103,7 +102,8 @@ public class LiveCallable implements Callable<Integer> {
 				return null;
 			}
 			//现在可以开启播放线程播放视频了
-			String rtspURL = "rtsp://"+serverIP+"/live/"+streamID;
+			//String rtspURL = "rtsp://"+serverIP+"/live/"+streamID;
+			String rtspURL = "rtsp://"+serverIP+"/"+streamID+".sdp";
 			Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {
