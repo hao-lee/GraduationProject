@@ -8,16 +8,12 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import me.haolee.gp.common.Command;
+import me.haolee.gp.common.Config;
 
 
 
@@ -32,9 +28,9 @@ public class CatagoryListCallable implements Callable<Integer> {
 	private int mode = -1;
 	
 	/*获取分类用*/
-	public CatagoryListCallable(String serverIP, int serverPort,int mode) {
-		this.serverIP = serverIP;
-		this.serverPort = serverPort;
+	public CatagoryListCallable(int mode) {
+		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
+		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 		this.mode = mode;
 	}
 

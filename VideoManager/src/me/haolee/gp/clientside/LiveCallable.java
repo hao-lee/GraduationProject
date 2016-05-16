@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 import javax.swing.JOptionPane;
 
 import me.haolee.gp.common.Command;
+import me.haolee.gp.common.Config;
 import me.haolee.gp.common.VideoInfo;
 
 public class LiveCallable implements Callable<Integer> {
@@ -25,9 +26,9 @@ public class LiveCallable implements Callable<Integer> {
 	private int serverPort = -1;
 	
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
-	public LiveCallable(String serverIP, int serverPort) {
-		this.serverIP = serverIP;
-		this.serverPort = serverPort;
+	public LiveCallable() {
+		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
+		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 	}
 
 	@Override

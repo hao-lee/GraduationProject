@@ -31,8 +31,6 @@ import java.awt.Font;
 
 // main function
 public class Client {
-	private String serverIP = null;//服务器IP
-	private int serverPort = -1;//服务器端口
 	private ExecutorService executorService = null;
 	/*事件监听里面只能用final变量或类成员变量，在此定义好成员变量*/
 	private JFrame mainFrame = null;
@@ -66,9 +64,6 @@ public class Client {
 		this.executorService = Executors.newCachedThreadPool();
 		//读取配置文件
 		Config.readConfigFile("client.config");
-		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
-		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
-		
 	}
 
 	// 创建客户端主界面
@@ -209,7 +204,7 @@ public class Client {
 				SelectedBlock.resetSelectedBlock();
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory);
+						mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -240,7 +235,7 @@ public class Client {
 				SelectedBlock.resetSelectedBlock();
 				videoDisplayStart = 0;//起点0
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory);
+						mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -271,7 +266,7 @@ public class Client {
 				SelectedBlock.resetSelectedBlock();
 				videoDisplayStart = -1;//起点-1表示末页
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory);
+						mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -314,7 +309,7 @@ public class Client {
 				videoDisplayStart -= videoDisplayStep;//起点减少
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory);
+						mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -356,7 +351,7 @@ public class Client {
 				
 				videoDisplayStart += videoDisplayStep;//起点增加
 				VideoListCallable videoListCallable = new VideoListCallable(
-						serverIP, serverPort, mode, selectedCategory);
+						mode, selectedCategory);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -380,11 +375,11 @@ public class Client {
 			}
 
 			if(mode==Command.MODE_VOD){
-				VodCallable vodCallable = new VodCallable(serverIP, serverPort);
+				VodCallable vodCallable = new VodCallable();
 				executorService.submit(vodCallable);
 			}
 			else{//live
-				LiveCallable liveCallable = new LiveCallable(serverIP, serverPort);
+				LiveCallable liveCallable = new LiveCallable();
 				executorService.submit(liveCallable);
 			}
 			
@@ -423,35 +418,6 @@ public class Client {
 		});
 		
 		/*
-		 * 更改要连接的服务器IP地址
-		 */
-		JMenuItem mntmServerIp = new JMenuItem("Server IP");
-		mntmServerIp.setFont(new Font("Dialog", Font.BOLD, 18));
-		menuSetting.add(mntmServerIp);
-		mntmServerIp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String str = JOptionPane.showInputDialog(mainFrame, "Enter server ip", "127.0.0.1");
-				serverIP = (str == null ? "127.0.0.1" : str);
-			}
-		});
-
-		/*
-		 * 更改要连接的服务器Port端口
-		 */
-		JMenuItem mntmServerPort = new JMenuItem("Server Port");
-		mntmServerPort.setFont(new Font("Dialog", Font.BOLD, 18));
-		menuSetting.add(mntmServerPort);
-		;
-		mntmServerPort.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String str = JOptionPane.showInputDialog(mainFrame, "Enter server port", "10000");
-				serverPort = (str == null ? 10000 : Integer.valueOf(str));
-			}
-		});
-
-		/*
 		 * 显示主窗口
 		 */
 		mainFrame.setVisible(true);
@@ -462,8 +428,7 @@ public class Client {
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();
-		CatagoryListCallable catagoryListCallable = new CatagoryListCallable(serverIP,
-				serverPort, mode);
+		CatagoryListCallable catagoryListCallable = new CatagoryListCallable(mode);
 		executorService.submit(catagoryListCallable);// 不需要收集返回值
 	}
 

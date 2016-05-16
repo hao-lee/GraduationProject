@@ -3,6 +3,7 @@ package me.haolee.gp.clientside;
 import java.util.concurrent.Callable;
 import javax.swing.JOptionPane;
 
+import me.haolee.gp.common.Config;
 import me.haolee.gp.common.VideoInfo;
 
 public class VodCallable implements Callable<Integer>{
@@ -14,15 +15,10 @@ public class VodCallable implements Callable<Integer>{
 	private String serverIP = null;
 	private int serverPort = -1;
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
-	/**
-	 * 
-	 * @param serverIP
-	 * @param serverPort
-	 * @param relativePath 视频所在分类的路径
-	 */
-	public VodCallable(String serverIP, int serverPort) {
-		this.serverIP = serverIP;
-		this.serverPort = serverPort;
+
+	public VodCallable() {
+		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
+		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 	}
 
 

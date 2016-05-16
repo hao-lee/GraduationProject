@@ -9,10 +9,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
 import me.haolee.gp.common.Command;
+import me.haolee.gp.common.Config;
 import me.haolee.gp.common.VideoInfo;
 
 public class VideoListCallable implements Callable<Integer> {
@@ -27,10 +25,9 @@ public class VideoListCallable implements Callable<Integer> {
 	private String category = null;
 	
 	/*刷新视频列表用*/
-	public VideoListCallable(String serverIP, int serverPort,int mode
-		, String category) {
-		this.serverIP = serverIP;
-		this.serverPort = serverPort;
+	public VideoListCallable(int mode, String category) {
+		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
+		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 		this.mode = mode;
 		this.category = category;
 	}
