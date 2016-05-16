@@ -34,19 +34,21 @@ public class Client {
 	private ExecutorService executorService = null;
 	/*事件监听里面只能用final变量或类成员变量，在此定义好成员变量*/
 	private JFrame mainFrame = null;
-	private static JPanel mainPanel = null;//子线程要用，静态方便
+	private JPanel mainPanel = null;//子线程要用，静态方便
 	private JList<String> categoryList = null;
-	private static DefaultListModel<String> categoryListModel = null;
+	private DefaultListModel<String> categoryListModel = null;
 	private int mode = Command.MODE_LIVE;//播放模式初始值
-
 	//用于显示总记录条数的标签
-	private static JLabel lblTotalCount = null;
+	private JLabel lblTotalCount = null;
+	/*
+	 * 一些子线程和主线程共享的静态变量
+	 * */
 	//起始序号和步长
-	private static int videoDisplayStart = 0;//行数默认从0计
-	private static int videoDisplayStep = 9;//默认步长
+	public static int videoDisplayStart = 0;//行数默认从0计
+	public static int videoDisplayStep = 9;//默认步长
 	/*是否可以上下翻页，用于防止过度上翻和下翻*/
-	private static boolean canPreviousPage = false;//默认禁止，会在ClientCallable中打开
-	private static boolean canNextPage = false;//默认禁止，会在ClientCallable中打开
+	public static boolean canPreviousPage = false;//默认禁止，会在ClientCallable中打开
+	public static boolean canNextPage = false;//默认禁止，会在ClientCallable中打开
 	
 	public static void main(String[] args) {
 		Client client = new Client();
@@ -204,7 +206,7 @@ public class Client {
 				SelectedBlock.resetSelectedBlock();
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory);
+						mode, selectedCategory,mainPanel,lblTotalCount);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -235,7 +237,7 @@ public class Client {
 				SelectedBlock.resetSelectedBlock();
 				videoDisplayStart = 0;//起点0
 				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory);
+						mode, selectedCategory,mainPanel,lblTotalCount);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -266,7 +268,7 @@ public class Client {
 				SelectedBlock.resetSelectedBlock();
 				videoDisplayStart = -1;//起点-1表示末页
 				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory);
+						mode, selectedCategory,mainPanel,lblTotalCount);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -309,7 +311,7 @@ public class Client {
 				videoDisplayStart -= videoDisplayStep;//起点减少
 				
 				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory);
+						mode, selectedCategory,mainPanel,lblTotalCount);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -351,7 +353,7 @@ public class Client {
 				
 				videoDisplayStart += videoDisplayStep;//起点增加
 				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory);
+						mode, selectedCategory,mainPanel,lblTotalCount);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -389,7 +391,7 @@ public class Client {
 		/*
 		 * 总记录数
 		 * */
-		lblTotalCount = new JLabel("");
+		lblTotalCount = new JLabel("共计 条");
 		lblTotalCount.setFont(new Font("Dialog", Font.BOLD, 15));
 		lblTotalCount.setBounds(919, 5, 69, 36);
 		downPanel.add(lblTotalCount);
@@ -428,65 +430,8 @@ public class Client {
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();
-		CatagoryListCallable catagoryListCallable = new CatagoryListCallable(mode);
+		CatagoryListCallable catagoryListCallable = new CatagoryListCallable(mode,categoryListModel);
 		executorService.submit(catagoryListCallable);// 不需要收集返回值
-	}
-
-	//禁止上翻
-	public static void ProhibitPreviousPage(){
-		canPreviousPage = false;
-	}
-	//禁止下翻
-	public static void ProhibitNextPage(){
-		canNextPage = false;
-	}
-	//开启上翻
-	public static void AllowPreviousPage(){
-		canPreviousPage = true;
-	}
-	//开启下翻
-	public static void AllowNextPage(){
-		canNextPage = true;
-	}
-	//设置请求记录的起点
-	public static void setVideoDisplayStart(int start) {
-		videoDisplayStart = start;
-	}
-	//取得请求记录的起点
-	public static int getVideoDisplayStart () {
-		return videoDisplayStart;
-	}
-	//取得请求记录的步长
-	public static int getVideoDisplayStep () {
-		return videoDisplayStep;
-	}
-	//显示视频分类
-	public static void addToCategoryList(String element) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				categoryListModel.addElement(element);
-			}});
-	}
-	//设置显示总记录条数的JLabel
-	public static void setLblTotalCount(int totalCount) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				lblTotalCount.setText("共计"+String.valueOf(totalCount)+"条");
-			}
-		});
-	}
-	//向主面板JPanel mainPanel添加视频显示块
-	synchronized public static void addToMainpanel(DisplayBlock displayBlock) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				mainPanel.add(displayBlock);
-				mainPanel.revalidate();
-				//mainPanel.repaint();//添加组件不许要调用repaint
-			}
-		});
 	}
 	
 }// class

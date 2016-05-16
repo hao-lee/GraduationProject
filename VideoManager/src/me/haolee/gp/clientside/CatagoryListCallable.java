@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
+
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -26,12 +28,14 @@ public class CatagoryListCallable implements Callable<Integer> {
 	private String serverIP = null;
 	private int serverPort = -1;
 	private int mode = -1;
-	
+	private DefaultListModel<String> categoryListModel = null;
 	/*获取分类用*/
-	public CatagoryListCallable(int mode) {
+	public CatagoryListCallable(int mode
+			,DefaultListModel<String> categoryListModel) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 		this.mode = mode;
+		this.categoryListModel = categoryListModel;
 	}
 
 	@Override
@@ -67,7 +71,11 @@ public class CatagoryListCallable implements Callable<Integer> {
 			
 			for(int i = 0; i< categoryList.size();i++){
 				String item = categoryList.get(i);
-				Client.addToCategoryList(item);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						categoryListModel.addElement(item);
+					}});
 			}
 			
 		} catch (Exception e) {
