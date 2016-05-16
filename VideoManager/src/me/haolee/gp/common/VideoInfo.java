@@ -14,23 +14,19 @@ public class VideoInfo implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String fileID = null;
-	private String extension = null;
 	private String videoName = null;
 	private String duration = null;
 	private String resolution = null;
-	private String categoryName = null;
+	private String fileRelativePath = null;
 	//private BufferedImage bufferedImage = null;
 	private byte[] imageByteArray= null;//类的使用者对这种内部转换不可知
 	//前几个属性从数据库获取，最后的bufferedImage会在ServerCallable调用ffmpeg获取
-	public VideoInfo(String fileID,String extension,String videoName,String duration,String resolution,
-			String category) {
-		this.fileID = fileID;
-		this.extension = extension;
+	public VideoInfo(String videoName,String duration,String resolution
+			, String relativePath) {
 		this.videoName = videoName;
 		this.duration = duration;
 		this.resolution = resolution;
-		this.categoryName = category;
+		this.fileRelativePath = relativePath;
 	}
 	/*getter*/
 	public String getVideoName() {
@@ -42,15 +38,10 @@ public class VideoInfo implements Serializable{
 	public String getResolution(){
 		return resolution;
 	}
-	public String getCategoryName() {
-		return categoryName;
+	public String getFileRelativePath() {
+		return fileRelativePath;
 	}
-	public String getFileID() {
-		return fileID;
-	}
-	public String getExtension() {
-		return extension;
-	}
+	//缩略图
 	public BufferedImage getBufferedImage() {
 		ByteArrayInputStream bytein = new ByteArrayInputStream(this.imageByteArray);
 		BufferedImage bufferedImage = null;

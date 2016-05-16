@@ -8,10 +8,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-
 import me.haolee.gp.common.Config;
 import me.haolee.gp.common.Command;
-
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -19,10 +17,8 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -43,7 +39,6 @@ public class Client {
 	private static JPanel mainPanel = null;//子线程要用，静态方便
 	private JList<String> categoryList = null;
 	private static DefaultListModel<String> categoryListModel = null;
-	private static HashMap<String, String> categoryMap = null;
 	private int mode = Command.MODE_LIVE;//播放模式初始值
 
 	//用于显示总记录条数的标签
@@ -162,7 +157,7 @@ public class Client {
 		/*
 		 * 获取分类
 		 * */
-		getCategory();
+		getCategoryList();
 		
 		/*
 		 * 显示块要追加到主面板mainPanel上，
@@ -182,7 +177,7 @@ public class Client {
 					mode = Command.MODE_VOD;
 				else								//liveRButton被选择，切换成直播
 					mode = Command.MODE_LIVE;
-				getCategory();//重新获取分类
+				getCategoryList();//重新获取分类
 			}
 		});
 		
@@ -383,16 +378,13 @@ public class Client {
 						, "提示", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			//获得分类
-			String selectedCatagory = categoryList.getSelectedValue();
-			String categoryRelativePath = categoryMap.get(selectedCatagory);
 
 			if(mode==Command.MODE_VOD){
-				VodCallable vodCallable = new VodCallable(serverIP, serverPort,categoryRelativePath);
+				VodCallable vodCallable = new VodCallable(serverIP, serverPort);
 				executorService.submit(vodCallable);
 			}
 			else{//live
-				LiveCallable liveCallable = new LiveCallable(serverIP, serverPort,categoryRelativePath);
+				LiveCallable liveCallable = new LiveCallable(serverIP, serverPort);
 				executorService.submit(liveCallable);
 			}
 			
@@ -426,7 +418,7 @@ public class Client {
 		mntmGetCategory.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getCategory();
+				getCategoryList();
 			}
 		});
 		
@@ -466,7 +458,7 @@ public class Client {
 	}// create
 
 	//获取分类
-	private void getCategory(){
+	private void getCategoryList(){
 		categoryListModel.removeAllElements();
 		categoryList.revalidate();
 		categoryList.repaint();
@@ -530,10 +522,6 @@ public class Client {
 				//mainPanel.repaint();//添加组件不许要调用repaint
 			}
 		});
-	}
-	//将分类名和路径名的HashMap对象设置到成员变量
-	public static void setCategoryMap(HashMap<String, String> cMap) {
-		categoryMap = cMap;
 	}
 	
 }// class

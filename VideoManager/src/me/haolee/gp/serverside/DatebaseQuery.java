@@ -35,7 +35,7 @@ class DatebaseQuery{
 	/*
 	 * 取出所有分类名称
 	 * */
-	public HashMap<String, String> getCategory(int mode) {
+	public ArrayList<String> getCategoryList(int mode) {
 		/*
 		 * 数据库表名
 		 * */
@@ -46,7 +46,7 @@ class DatebaseQuery{
 		String sql = null;
 		Statement stmt = null;
 		ResultSet resultSet = null;
-		HashMap<String, String> categoryMap = new HashMap<>();
+		ArrayList<String> categoryList = new ArrayList<>();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			System.out.println("成功加载MySQL驱动程序");
@@ -59,8 +59,7 @@ class DatebaseQuery{
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
 				//System.out.println(resultSet.getString(1));
-				categoryMap.put(resultSet.getString("CategoryName"),
-						resultSet.getString("CategoryRelativePath"));
+				categoryList.add(resultSet.getString("CategoryName"));
 			}
 			
 		} catch (Exception e) {
@@ -72,7 +71,7 @@ class DatebaseQuery{
 				if(connection!=null)connection.close();
 			} catch (SQLException e) {e.printStackTrace();}
 		}//finally
-		return categoryMap;
+		return categoryList;
 	}
 
 	/*
@@ -98,21 +97,35 @@ class DatebaseQuery{
 			stmt = connection.createStatement();
 
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
-			sql = "SELECT * FROM ";//拼接初始化
+			//sql = "SELECT * FROM ";//拼接初始化
 			if(mode == Command.MODE_VOD)
-				sql += vodTable;
-			else sql += liveTable;
-			sql += " WHERE CategoryName="+"\""+category+"\" "
-						+"LIMIT "+videoDisplayStart+","+videoDisplayStep;
+				sql = "SELECT vod.FileID,vod.Extension,vod.VideoName"
+						+ ",vod.Duration,vod.Resolution,vod.CategoryName"
+						+ ",vodcategory.CategoryRelativePath "
+						+ "FROM vod INNER JOIN vodcategory "
+						+ "ON vod.CategoryName = vodcategory.CategoryName"
+						+ " WHERE vod.CategoryName="+"\""+category+"\" "
+						+ "LIMIT "+videoDisplayStart+","+videoDisplayStep;
+			else 
+				sql = "SELECT live.FileID,live.Extension,live.VideoName"
+						+ ",live.Duration,live.Resolution,live.CategoryName"
+						+ ",livecategory.CategoryRelativePath "
+						+ "FROM live INNER JOIN livecategory "
+						+ "ON live.CategoryName = livecategory.CategoryName"
+						+ " WHERE live.CategoryName="+"\""+category+"\" "
+						+ "LIMIT "+videoDisplayStart+","+videoDisplayStep;
+			
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {
 				VideoInfo videoInfo = new VideoInfo(
-						resultSet.getString("FileID"),
-						resultSet.getString("Extension"),
 						resultSet.getString("VideoName"),
 						resultSet.getString("Duration"), 
-						resultSet.getString("Resolution"), 
-						resultSet.getString("CategoryName"));
+						resultSet.getString("Resolution"),
+						
+						resultSet.getString("CategoryRelativePath")
+						+resultSet.getString("FileID")
+						+"."
+						+resultSet.getString("Extension"));
 				
 				videoInfoList.add(videoInfo);
 			}
@@ -138,7 +151,6 @@ class DatebaseQuery{
 		String liveTable = "live";
 		
 		Connection connection = null;
-		String sql = null;
 		Statement stmt = null;
 		ResultSet resultSet = null;
 		int recordCount = 0;

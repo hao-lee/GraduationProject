@@ -1,8 +1,6 @@
 package me.haolee.gp.clientside;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import javax.swing.JOptionPane;
 
 import me.haolee.gp.common.VideoInfo;
@@ -15,7 +13,6 @@ public class VodCallable implements Callable<Integer>{
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
-	private String categoryRelativePath = null;
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
 	/**
 	 * 
@@ -23,18 +20,15 @@ public class VodCallable implements Callable<Integer>{
 	 * @param serverPort
 	 * @param relativePath 视频所在分类的路径
 	 */
-	public VodCallable(String serverIP, int serverPort, String relativePath) {
+	public VodCallable(String serverIP, int serverPort) {
 		this.serverIP = serverIP;
 		this.serverPort = serverPort;
-		this.categoryRelativePath = relativePath;
 	}
 
 
 	@Override
 	public Integer call() throws Exception {
 		VideoInfo videoInfo = null;//获取本显示块内的视频信息数据结构
-		String fileID = null;//文件名
-		String extension = null;//扩展名
 		String fileRelativePath = null;//相对路径（包括文件名）
 		
 		try {
@@ -46,10 +40,8 @@ public class VodCallable implements Callable<Integer>{
 			
 			
 			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
-			fileID = videoInfo.getFileID();//文件ID
-			extension = videoInfo.getExtension();//扩展名
 			
-			fileRelativePath = categoryRelativePath+fileID+"."+extension;//拼凑相对路径
+			fileRelativePath = videoInfo.getFileRelativePath();//相对路径
 //			String rtspURL = "rtsp://"
 //					+serverIP+"/file/"+fileRelativePath;
 			String rtspURL = "rtsp://"+serverIP+"/"+fileRelativePath;

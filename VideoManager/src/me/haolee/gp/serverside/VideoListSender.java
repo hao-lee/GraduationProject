@@ -1,6 +1,7 @@
 package me.haolee.gp.serverside;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -74,10 +75,17 @@ public class VideoListSender {
 			String thumbnailPath = null;
 			while(iterator.hasNext()){
 				VideoInfo videoInfo = iterator.next();
-				String fileID = videoInfo.getFileID();
+				
+				//新建文件对象，借用它的getName方法获得文件全名
+				String fileName = new File(videoInfo.getFileRelativePath()).getName();
+				int dot = fileName.lastIndexOf(".");
+				//主文件名（不含扩展名）
+				String fileID = fileName.substring(0, dot);//0~dot-1
+				//扩展名
+				String fileExtension = fileName.substring(dot+1);
 				
 				//如果是直播就用默认贴图
-				if(videoInfo.getExtension().equals("live"))
+				if(fileExtension.equals("live"))
 					thumbnailPath = "live_defaultcover.png";
 				else
 					thumbnailPath = pathPrefix+thumbnailRelativePath+fileID+".jpg";

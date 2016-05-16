@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,7 +48,7 @@ public class CatagoryListCallable implements Callable<Integer> {
 		ObjectInputStream objectInputStream = null;
 		BufferedReader readFromServer = null;
 		PrintWriter printToServer = null;
-		HashMap<String, String> categoryMap = null;
+		ArrayList<String> categoryList = null;
 		try {
 			// 客户端暂时不用设置SO_REUSEADDR
 			socketToServer = new Socket(serverIP, serverPort);
@@ -65,18 +66,14 @@ public class CatagoryListCallable implements Callable<Integer> {
 			/*打开反序列化输入流，
 			这时服务端已经得到了categorySet并准备发给客户端*/
 			objectInputStream = new ObjectInputStream(inputStream);
-			categoryMap = (HashMap<String, String>)
+			categoryList = (ArrayList<String>)
 					objectInputStream.readObject();
 			
-			Set set = categoryMap.entrySet();
-			for(Iterator iter = set.iterator();iter.hasNext();){
-				Map.Entry<String, String> categoryElement = 
-						(Map.Entry<String, String>)iter.next();
-				//不要把iter.next()直接放入事件调度线程，会出现异常的
-				Client.addToCategoryList(categoryElement.getKey());
+			for(int i = 0; i< categoryList.size();i++){
+				String item = categoryList.get(i);
+				Client.addToCategoryList(item);
 			}
 			
-			Client.setCategoryMap(categoryMap);
 		} catch (Exception e) {
 			e.printStackTrace();
 			SwingUtilities.invokeLater(new Runnable() {
