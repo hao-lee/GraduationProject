@@ -9,6 +9,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -23,9 +25,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import me.haolee.gp.common.CommandWord;
 import me.haolee.gp.common.Config;
@@ -41,15 +46,13 @@ public class Client {
 	private CommandWord mode = CommandWord.MODE_LIVE;//播放模式初始值
 	//用于显示总记录条数的标签
 	private JLabel lblTotalCount = null;
-	/*
-	 * 一些子线程和主线程共享的静态变量
-	 * */
+	//分类下总数
+	public int totalNumber = 0;
 	//起始序号和步长
-	public static int videoDisplayStart = 0;//行数默认从0计
-	public static int videoDisplayStep = 9;//默认步长
-	/*是否可以上下翻页，用于防止过度上翻和下翻*/
-	public static boolean canPreviousPage = false;//默认禁止，会在ClientCallable中打开
-	public static boolean canNextPage = false;//默认禁止，会在ClientCallable中打开
+	public int videoDisplayStart = 0;//行数默认从0计
+	public int videoDisplayStep = 9;//默认步长
+	
+	private JTextField tfPageNo;
 	
 	public static void main(String[] args) {
 		Client client = new Client();
@@ -161,8 +164,42 @@ public class Client {
 		 * 显示块要追加到主面板mainPanel上，
 		 * 不要搞成contentPane，contentPane使命到此完成
 		 * */
-		
-		
+		//更换分类时，刷新视频记录总数
+		categoryList.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				/*
+				 * http://stackoverflow.com/questions/12461627/jlist-fires-valuechanged-twice-when-a-value-is-changed-via-mouse
+				 * 点击选择某个表项会触发两次valueChanged事件，为了避免这样，
+				 * 用了链接中的方法，也就是!e.getValueIsAdjusting()才进行处理
+				 * ，这样就能只响应一次了。
+				 * 但是，当模式切换，分类刷新时，!e.getValueIsAdjusting()没法拦住没用的事件
+				 * 还是会响应两次，所以再加上categoryList.getSelectedValue来拦掉分类刷新时的无谓触发
+				 * */
+				if(!e.getValueIsAdjusting() && categoryList.getSelectedValue()!=null){
+					String selectedCategory = categoryList.getSelectedValue();//取被选目录
+					if(selectedCategory == null){//这是分类切换事件，所以这个检测提示应该不会发生
+						JOptionPane.showMessageDialog(null, "这个提示应该不会发生"
+								, "提示", JOptionPane.INFORMATION_MESSAGE);
+						return;
+					}
+					//开线程
+					TotalNumberCallable totalNumberCallable = new TotalNumberCallable(mode, selectedCategory);
+					Future<Integer> future = executorService.submit(totalNumberCallable);
+					try {
+						totalNumber = future.get();
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								int numberOfPages = totalNumber/videoDisplayStep;//页数自0计算
+								lblTotalCount.setText("/"+(numberOfPages+1)+"页");
+							}
+						});
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
+			}
+		});
 		/*
 		 * 单选按钮，设置播放模式
 		 * */
@@ -192,7 +229,7 @@ public class Client {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许刷新视频列表*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -206,8 +243,8 @@ public class Client {
 				/*复位“记忆被选择视频块”的全局变量为null*/
 				SelectedBlock.resetSelectedBlock();
 				
-				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory,mainPanel,lblTotalCount);
+				VideoListCallable videoListCallable = new VideoListCallable(mode
+						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -224,7 +261,7 @@ public class Client {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许翻页*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -237,8 +274,8 @@ public class Client {
 				/*复位“记忆被选择视频块”的全局变量为null*/
 				SelectedBlock.resetSelectedBlock();
 				videoDisplayStart = 0;//起点0
-				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory,mainPanel,lblTotalCount);
+				VideoListCallable videoListCallable = new VideoListCallable(mode
+						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -249,13 +286,13 @@ public class Client {
 		JButton btnLast = new JButton(new ImageIcon(((new ImageIcon(
 	            "lastpage.png").getImage().getScaledInstance(32, 32,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnLast.setBounds(800, 5, 36, 36);
+		btnLast.setBounds(759, 5, 36, 36);
 		downPanel.add(btnLast);
 		btnLast.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许翻页*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -267,9 +304,16 @@ public class Client {
 				mainPanel.repaint();
 				/*复位“记忆被选择视频块”的全局变量为null*/
 				SelectedBlock.resetSelectedBlock();
-				videoDisplayStart = -1;//起点-1表示末页
-				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory,mainPanel,lblTotalCount);
+				
+				//根据总记录数和步长，算出最后一页的起点
+				videoDisplayStart = (totalNumber/videoDisplayStep)*videoDisplayStart;
+				//总记录数恰好为步长倍数（1倍、2倍等），最后一页没内容，自动前推一页
+				if((totalNumber/videoDisplayStep)>=1 
+						&& (totalNumber%videoDisplayStep == 0))
+					videoDisplayStart -=videoDisplayStep;
+				//至此，最后一页的起点已经确定
+				VideoListCallable videoListCallable = new VideoListCallable(mode
+						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -287,20 +331,19 @@ public class Client {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许翻页*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				
-				if(canPreviousPage)
-					;
-				else {
+				if(videoDisplayStart == 0){
 					JOptionPane.showMessageDialog(null, "已经是第一页"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
-				}
+				}else 
+					;
 				/*先刷新主面板*/
 				mainPanel.removeAll();
 				mainPanel.revalidate();
@@ -311,8 +354,8 @@ public class Client {
 				
 				videoDisplayStart -= videoDisplayStep;//起点减少
 				
-				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory,mainPanel,lblTotalCount);
+				VideoListCallable videoListCallable = new VideoListCallable(mode
+						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -324,26 +367,26 @@ public class Client {
 		JButton btnNext = new JButton(new ImageIcon(((new ImageIcon(
 	            "nextpage.gif").getImage().getScaledInstance(96, 32,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnNext.setBounds(640, 5, 101, 36);
+		btnNext.setBounds(614, 5, 101, 36);
 		downPanel.add(btnNext);
 		btnNext.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				/*获取被选择的列表是哪个，没选择不允许翻页*/
-				String selectedCategory = (String) categoryList.getSelectedValue();//取被选目录
+				String selectedCategory = categoryList.getSelectedValue();//取被选目录
 				if(selectedCategory == null){//没选择分类
 					JOptionPane.showMessageDialog(null, "请选择分类"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
 				}
 				
-				if(canNextPage)
-					;
-				else {
+				if(videoDisplayStart+videoDisplayStep-1 >= totalNumber-1){
 					JOptionPane.showMessageDialog(null, "已经是最后一页"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
-				}
+				}else 
+					;
+				
 				/*先刷新主面板*/
 				mainPanel.removeAll();
 				mainPanel.revalidate();
@@ -353,8 +396,8 @@ public class Client {
 				SelectedBlock.resetSelectedBlock();
 				
 				videoDisplayStart += videoDisplayStep;//起点增加
-				VideoListCallable videoListCallable = new VideoListCallable(
-						mode, selectedCategory,mainPanel,lblTotalCount);
+				VideoListCallable videoListCallable = new VideoListCallable(mode
+						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -388,14 +431,67 @@ public class Client {
 			
 		}// actionPerformed
 		});// addActionListener
-
+		
 		/*
 		 * 总记录数
 		 * */
-		lblTotalCount = new JLabel("共计 条");
+		lblTotalCount = new JLabel("/ 页");
 		lblTotalCount.setFont(new Font("Dialog", Font.BOLD, 15));
-		lblTotalCount.setBounds(919, 5, 69, 36);
+		lblTotalCount.setBounds(939, 5, 50, 36);
 		downPanel.add(lblTotalCount);
+		
+		//跳页
+		JButton btnJumpPage = new JButton("跳到");
+		btnJumpPage.setFont(new Font("Dialog", Font.BOLD, 15));
+		btnJumpPage.setBounds(823, 5, 66, 36);
+		downPanel.add(btnJumpPage);
+		
+		//跳页输入框
+		tfPageNo = new JTextField();
+		tfPageNo.setBounds(894, 5, 41, 36);
+		downPanel.add(tfPageNo);
+		tfPageNo.setColumns(10);
+		
+		btnJumpPage.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				/*获取被选择的列表是哪个，没选择不允许翻页*/
+				String selectedCategory = categoryList.getSelectedValue();//取被选目录
+				if(selectedCategory == null){//没选择分类
+					JOptionPane.showMessageDialog(null, "请选择分类"
+							, "提示", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+				String pageNoText = tfPageNo.getText();
+				if(pageNoText.equals("")){
+					JOptionPane.showMessageDialog(null, "请输入页号"
+							, "提示", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+				
+				//显示的页数比我们计算用的要大1
+				int pageNo = Integer.valueOf(pageNoText) - 1;
+				//pageNo是用户填入的页号，numberOfPages是总页数，都从0计算
+				int numberOfPages = totalNumber/videoDisplayStep;//页数自0计算
+				if(pageNo > numberOfPages || pageNo < 0){
+					JOptionPane.showMessageDialog(null, "页号过大或过小"
+							, "提示", JOptionPane.INFORMATION_MESSAGE);
+					return;
+				}
+				
+				/*先刷新主面板*/
+				mainPanel.removeAll();
+				mainPanel.revalidate();
+				mainPanel.repaint();
+				
+				/*复位“记忆被选择视频块”的全局变量为null*/
+				SelectedBlock.resetSelectedBlock();
+				
+				videoDisplayStart = pageNo * videoDisplayStep;//定位起点
+				VideoListCallable videoListCallable = new VideoListCallable(mode
+						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
+				executorService.submit(videoListCallable);
+			}
+		});
 		
 		/*
 		 * 菜单设置
@@ -434,5 +530,4 @@ public class Client {
 		CatagoryListCallable catagoryListCallable = new CatagoryListCallable(mode,categoryListModel);
 		executorService.submit(catagoryListCallable);// 不需要收集返回值
 	}
-	
 }// class

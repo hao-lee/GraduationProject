@@ -3,7 +3,6 @@ package me.haolee.gp.serverside;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,34 +27,7 @@ public class VideoListSender {
 		DatebaseQuery datebaseQuery = null;//数据库查询类
 		/*数据库查询对象*/
 		datebaseQuery = new DatebaseQuery();
-		/*总条数*/
-		int totalCount = datebaseQuery.getTotalCount(mode, category);
-
-		/*
-		 * 序列化对象不能用读取到null这样的方法来判断读取完毕，
-		 * 所以先告诉客户端有几个对象。不同类型的流不可混用，在此全部用对象流*/
-		//打开序列化输出流
-		//告诉客户端，该分类下的视频总数
-		try {
-			Packet sendPacket = new Packet(CommandWord.RESPONSE_DATA,totalCount);
-			objectOutputStream.writeObject(sendPacket);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 		
-		/*
-		 * 小插曲：如果videoDisplayStart==-1说明要取最后一页，
-		 * 根据总记录数和步长，重置此时的起点
-		 * */
-		if(videoDisplayStart == -1){
-			//根据总记录数和步长，算出最后一页的起点
-			videoDisplayStart = (totalCount/videoDisplayStep)*videoDisplayStart;
-			//总记录数恰好为步长倍数（1倍、2倍等），最后一页没内容，自动前推一页
-			if((totalCount/videoDisplayStep)>=1 
-					&& (totalCount%videoDisplayStep == 0))
-				videoDisplayStart -=videoDisplayStep;
-		}
-		System.out.println(videoDisplayStart);
 		/*
 		 * 查询指定范围的视频
 		 * */
@@ -101,6 +73,8 @@ public class VideoListSender {
 				Packet sendPacket = new Packet(CommandWord.RESPONSE_DATA,videoInfo);
 				objectOutputStream.writeObject(sendPacket);//序列化发给客户端
 			}
+			objectOutputStream.writeObject(new Packet(CommandWord.CTRL_END, null));
+			
 		}catch(Exception e){
 			e.printStackTrace();
 		}

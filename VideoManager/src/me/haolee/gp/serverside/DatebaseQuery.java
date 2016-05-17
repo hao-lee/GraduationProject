@@ -143,7 +143,7 @@ class DatebaseQuery{
 		return videoInfoList;//包含了videoDisplayStep个视频的详细信息，每个视频占一条
 	}
 
-	public int getTotalCount(CommandWord mode, String category) {
+	public int getTotalNumber(CommandWord mode, String category) {
 		
 		/*
 		 * 数据库表名
@@ -170,7 +170,6 @@ class DatebaseQuery{
 							+liveTable+" WHERE CategoryName="+"\""+category+"\" ");
 			resultSet.next();
 			recordCount = resultSet.getInt(1);
-			
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally {

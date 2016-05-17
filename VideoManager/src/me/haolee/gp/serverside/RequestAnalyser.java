@@ -38,16 +38,25 @@ class RequestAnalyser implements Callable<Integer> {
 			/*根据请求的不同，行为不同*/
 			
 			CommandWord mode = null;
+			String category = null;
+			ArrayList<String> fields = null;
 			switch (commandWord) {
 			case REQUEST_CATEGORYLIST:
 				mode = (CommandWord)recvPacket.getFields();
 				new CategoryListSender().sendCategoryList(mode,objectOutputStream);
 				break;
-				
-			case REQUEST_VIDEOLIST:
-				ArrayList<String> fields = (ArrayList<String>)recvPacket.getFields();
+			case REQUEST_TOTALNUMBER:
+				fields = (ArrayList<String>)recvPacket.getFields();
 				mode = CommandWord.valueOf(fields.get(0));
-				String category = (String)fields.get(1);
+				category = (String)fields.get(1);
+				int totalNumber = new DatebaseQuery().getTotalNumber(mode, category);
+				objectOutputStream.writeObject(new Packet(
+						CommandWord.RESPONSE_DATA, totalNumber));
+				break;
+			case REQUEST_VIDEOLIST:
+				fields = (ArrayList<String>)recvPacket.getFields();
+				mode = CommandWord.valueOf(fields.get(0));
+				category = (String)fields.get(1);
 				int videoDisplayStart = Integer.valueOf(fields.get(2));
 				int videoDisplayStep = Integer.valueOf(fields.get(3));
 				new VideoListSender().sendVideoList(mode, category, 

@@ -2,9 +2,10 @@ package me.haolee.gp.common;
 
 public enum CommandWord {
 	//请求命令字
-	REQUEST_STREAMINGMEDIA,
 	REQUEST_CATEGORYLIST,
+	REQUEST_TOTALNUMBER,
 	REQUEST_VIDEOLIST,
+	REQUEST_STREAMINGMEDIA,
 	
 	//应答命令字
 	RESPONSE_DATA,
