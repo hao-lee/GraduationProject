@@ -52,7 +52,7 @@ public class Server {
 		while (true) {
 			try {
 				socketToClient = serverSocket.accept();
-				executorService.submit(new RequestAnalyser(socketToClient));
+				executorService.submit(new RequestHandler(socketToClient));
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("Exception in listenAccetp!");

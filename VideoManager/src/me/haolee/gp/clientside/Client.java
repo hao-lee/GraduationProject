@@ -500,21 +500,15 @@ public class Client {
 		JMenu menuMain = new JMenu("主菜单");
 		menuMain.setFont(new Font("Dialog", Font.BOLD, 18));
 		menuBar.add(menuMain);
-
-		JMenu menuSetting = new JMenu("网络设置");
-		menuSetting.setFont(new Font("Dialog", Font.BOLD, 18));
-		menuBar.add(menuSetting);
-
-		/*手动获取分类*/
-		JMenuItem mntmGetCategory = new JMenuItem("手动获取列表");
-		mntmGetCategory.setFont(new Font("Dialog", Font.BOLD, 18));
-		menuMain.add(mntmGetCategory);
-		mntmGetCategory.addActionListener(new ActionListener() {
-			@Override
+		
+		JMenuItem menuItemExit = new JMenuItem("退出");
+		menuItemExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				getCategoryList();
+				System.exit(0);
 			}
 		});
+		menuItemExit.setFont(new Font("Dialog", Font.BOLD, 18));
+		menuMain.add(menuItemExit);
 		
 		/*
 		 * 显示主窗口

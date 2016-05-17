@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.1.9" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
   associations="true" dependencies="false" nesting-relationships="true" router="FAN">  
-  <class id="1" language="java" name="me.haolee.gp.serverside.CategoryListSender" project="VideoManager" 
-    file="/VideoManager/src/me/haolee/gp/serverside/CategoryListSender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="413" y="13"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
-    </display>  
-  </class>  
-  <class id="2" language="java" name="me.haolee.gp.serverside.VideoStreamSender" project="VideoManager" 
+  <class id="1" language="java" name="me.haolee.gp.serverside.VideoStreamSender" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/VideoStreamSender.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="448" y="536"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
@@ -19,34 +10,34 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="3" language="java" name="me.haolee.gp.serverside.RequestAnalyser" project="VideoManager" 
-    file="/VideoManager/src/me/haolee/gp/serverside/RequestAnalyser.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="173" y="342"/>    
+  <class id="2" language="java" name="me.haolee.gp.serverside.RequestHandler" project="VideoManager" 
+    file="/VideoManager/src/me/haolee/gp/serverside/RequestHandler.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="70" y="366"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="4" language="java" name="me.haolee.gp.serverside.Server" project="VideoManager" 
+  <class id="3" language="java" name="me.haolee.gp.serverside.Server" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/Server.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="-154" y="277"/>    
+    <position height="-1" width="-1" x="-225" y="409"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="5" language="java" name="me.haolee.gp.serverside.VideoListSender" project="VideoManager" 
+  <class id="4" language="java" name="me.haolee.gp.serverside.VideoListSender" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/VideoListSender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="478" y="169"/>    
+    <position height="-1" width="-1" x="440" y="252"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="6" language="java" name="me.haolee.gp.serverside.DatebaseQuery" project="VideoManager" 
+  <class id="5" language="java" name="me.haolee.gp.serverside.DatebaseQuery" project="VideoManager" 
     file="/VideoManager/src/me/haolee/gp/serverside/DatebaseQuery.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="925" y="67"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
@@ -55,29 +46,51 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <dependency id="7">    
-    <end type="SOURCE" refId="3"/>    
-    <end type="TARGET" refId="5"/>  
-  </dependency>  
-  <dependency id="8">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="6"/>  
-  </dependency>  
-  <dependency id="9">    
-    <end type="SOURCE" refId="1"/>    
-    <end type="TARGET" refId="6"/>  
-  </dependency>  
-  <dependency id="10">    
-    <end type="SOURCE" refId="4"/>    
-    <end type="TARGET" refId="3"/>  
-  </dependency>  
+  <class id="6" language="java" name="me.haolee.gp.serverside.StreamIDInfo" project="VideoManager" 
+    file="/VideoManager/src/me/haolee/gp/serverside/StreamIDManager.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1154" y="465"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <class id="7" language="java" name="me.haolee.gp.serverside.StreamIDManager" project="VideoManager" 
+    file="/VideoManager/src/me/haolee/gp/serverside/StreamIDManager.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="898" y="564"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
+  <association id="8">    
+    <end type="SOURCE" refId="7" navigable="false">      
+      <attribute id="9" name="fileID_streamID_MAP"/>      
+      <multiplicity id="10" minimum="0" maximum="2147483647"/>    
+    </end>    
+    <end type="TARGET" refId="6" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
   <dependency id="11">    
-    <end type="SOURCE" refId="3"/>    
-    <end type="TARGET" refId="1"/>  
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="7"/>  
   </dependency>  
   <dependency id="12">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <dependency id="13">    
     <end type="SOURCE" refId="3"/>    
     <end type="TARGET" refId="2"/>  
+  </dependency>  
+  <dependency id="14">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="5"/>  
+  </dependency>  
+  <dependency id="15">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="4"/>  
   </dependency>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     sort-features="false" accessors="true" visibility="true">    

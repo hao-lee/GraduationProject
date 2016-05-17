@@ -1,5 +1,6 @@
 package me.haolee.gp.serverside;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -11,10 +12,10 @@ import java.util.concurrent.Callable;
 import me.haolee.gp.common.CommandWord;
 import me.haolee.gp.common.Packet;
 
-class RequestAnalyser implements Callable<Integer> {
+class RequestHandler implements Callable<Integer> {
 	private Socket socketToClient = null;
 	
-	public RequestAnalyser(Socket s) {
+	public RequestHandler(Socket s) {
 		this.socketToClient = s;
 	}
 
@@ -40,18 +41,22 @@ class RequestAnalyser implements Callable<Integer> {
 			CommandWord mode = null;
 			String category = null;
 			ArrayList<String> fields = null;
+			Packet sendPacket = null;
 			switch (commandWord) {
 			case REQUEST_CATEGORYLIST:
 				mode = (CommandWord)recvPacket.getFields();
-				new CategoryListSender().sendCategoryList(mode,objectOutputStream);
+				ArrayList<String> categoryList = new DatebaseQuery()
+													.getCategoryList(mode);
+				sendPacket = new Packet(CommandWord.RESPONSE_DATA,categoryList);
+				objectOutputStream.writeObject(sendPacket);
 				break;
 			case REQUEST_TOTALNUMBER:
 				fields = (ArrayList<String>)recvPacket.getFields();
 				mode = CommandWord.valueOf(fields.get(0));
 				category = (String)fields.get(1);
 				int totalNumber = new DatebaseQuery().getTotalNumber(mode, category);
-				objectOutputStream.writeObject(new Packet(
-						CommandWord.RESPONSE_DATA, totalNumber));
+				sendPacket = new Packet(CommandWord.RESPONSE_DATA, totalNumber);
+				objectOutputStream.writeObject(sendPacket);
 				break;
 			case REQUEST_VIDEOLIST:
 				fields = (ArrayList<String>)recvPacket.getFields();
