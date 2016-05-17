@@ -38,6 +38,8 @@ infoAreaHeight |i |                                |   |
  * 视频显示块面板
  * */
 class DisplayBlock extends JPanel{
+
+	private static final long serialVersionUID = 5857923303664996266L;
 	/**
 	 * 
 	 */
@@ -97,6 +99,10 @@ class DisplayBlock extends JPanel{
  * */
 class Thumbnail extends JPanel{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2070125390008961705L;
 	private Image scaledImage = null;
 	//构造函数
 	public Thumbnail(int tnWidth , int tnHeight, BufferedImage bufferedImage) {
@@ -118,6 +124,11 @@ class Thumbnail extends JPanel{
 
 /*视频信息显示面板，包括视频名、时长、分辨率*/
 class Info extends JPanel{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2611671258325196571L;
 
 	public Info(String videoName,String duration,String resolution) {
 		this.setBackground(new Color(255, 204, 204));

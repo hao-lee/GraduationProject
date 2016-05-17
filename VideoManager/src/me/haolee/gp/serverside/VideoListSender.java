@@ -10,14 +10,16 @@ import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 
+import me.haolee.gp.common.CommandWord;
 import me.haolee.gp.common.Config;
+import me.haolee.gp.common.Packet;
 import me.haolee.gp.common.VideoInfo;
 
 public class VideoListSender {
 	/*
 	 * 发送视频列表
 	 * */
-	public void sendVideoList(int mode,String category,
+	public void sendVideoList(CommandWord mode,String category,
 			int videoDisplayStart,int videoDisplayStep,
 			ObjectOutputStream objectOutputStream) {
 		/* 这个功能：
@@ -35,7 +37,8 @@ public class VideoListSender {
 		//打开序列化输出流
 		//告诉客户端，该分类下的视频总数
 		try {
-			objectOutputStream.writeObject(new Integer(totalCount));
+			Packet sendPacket = new Packet(CommandWord.RESPONSE_DATA,totalCount);
+			objectOutputStream.writeObject(sendPacket);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -95,7 +98,8 @@ public class VideoListSender {
 				/*缩略图设入videoInfo*/
 				videoInfo.setBufferedImage(bufferedImage);//将图片对象设入videoInfo对象
 				/*将填充好的videoInfo发给客户端*/
-				objectOutputStream.writeObject(videoInfo);//序列化发给客户端
+				Packet sendPacket = new Packet(CommandWord.RESPONSE_DATA,videoInfo);
+				objectOutputStream.writeObject(sendPacket);//序列化发给客户端
 			}
 		}catch(Exception e){
 			e.printStackTrace();

@@ -6,9 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 
-import me.haolee.gp.common.*;
+import me.haolee.gp.common.CommandWord;
+import me.haolee.gp.common.Config;
+import me.haolee.gp.common.VideoInfo;
 
 class DatebaseQuery{
 	/*
@@ -35,7 +36,7 @@ class DatebaseQuery{
 	/*
 	 * 取出所有分类名称
 	 * */
-	public ArrayList<String> getCategoryList(int mode) {
+	public ArrayList<String> getCategoryList(CommandWord mode) {
 		/*
 		 * 数据库表名
 		 * */
@@ -53,7 +54,7 @@ class DatebaseQuery{
 			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			sql = "select * from ";
-			if(mode == Command.MODE_VOD)
+			if(mode == CommandWord.MODE_VOD)
 				sql += vodCategoryTable;
 			else sql += liveCategoryTable;
 			resultSet = stmt.executeQuery(sql);
@@ -77,7 +78,7 @@ class DatebaseQuery{
 	/*
 	 * 取出指定数量的视频记录
 	 */
-	public ArrayList<VideoInfo> getVideoSet(int mode, String category, 
+	public ArrayList<VideoInfo> getVideoSet(CommandWord mode, String category, 
 							int videoDisplayStart,int videoDisplayStep) {
 		/*
 		 * 数据库表名
@@ -98,7 +99,7 @@ class DatebaseQuery{
 
 			//SELECT * FROM vod WHERE Category="游戏" LIMIT 0,2
 			//sql = "SELECT * FROM ";//拼接初始化
-			if(mode == Command.MODE_VOD)
+			if(mode == CommandWord.MODE_VOD)
 				sql = "SELECT vod.FileID,vod.Extension,vod.VideoName"
 						+ ",vod.Duration,vod.Resolution,vod.CategoryName"
 						+ ",vodcategory.CategoryRelativePath "
@@ -142,7 +143,7 @@ class DatebaseQuery{
 		return videoInfoList;//包含了videoDisplayStep个视频的详细信息，每个视频占一条
 	}
 
-	public int getTotalCount(int mode, String category) {
+	public int getTotalCount(CommandWord mode, String category) {
 		
 		/*
 		 * 数据库表名
@@ -161,7 +162,7 @@ class DatebaseQuery{
 			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			
-			if(mode == Command.MODE_VOD)
+			if(mode == CommandWord.MODE_VOD)
 				resultSet = stmt.executeQuery("select count(*) from "
 							+vodTable+" WHERE CategoryName="+"\""+category+"\" ");
 			else

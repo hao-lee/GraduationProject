@@ -1,12 +1,12 @@
 package me.haolee.gp.clientside;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import javax.swing.JLabel;
@@ -14,8 +14,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import me.haolee.gp.common.Command;
+import me.haolee.gp.common.CommandWord;
 import me.haolee.gp.common.Config;
+import me.haolee.gp.common.Packet;
 import me.haolee.gp.common.VideoInfo;
 
 public class VideoListCallable implements Callable<Integer> {
@@ -26,13 +27,13 @@ public class VideoListCallable implements Callable<Integer> {
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
-	private int mode = -1;
+	private CommandWord mode = null;
 	private String category = null;
 	private JPanel mainPanel = null;//子线程要用，静态方便
 	private JLabel lblTotalCount = null;
 	
 	/*刷新视频列表用*/
-	public VideoListCallable(int mode, String category
+	public VideoListCallable(CommandWord mode, String category
 			,JPanel mainPanel,JLabel lblTotalCount) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
@@ -49,9 +50,8 @@ public class VideoListCallable implements Callable<Integer> {
 		InputStream inputStream = null;
 		OutputStream outputStream =null;
 		/*包装后的输入输出流*/
+		ObjectOutputStream objectOutputStream = null;
 		ObjectInputStream objectInputStream = null;
-		BufferedReader readFromServer = null;
-		PrintWriter printToServer = null;
 		
 		int videoDisplayStart = Client.videoDisplayStart;//起始行数从0计
 		int videoDisplayStep = Client.videoDisplayStep;
@@ -61,26 +61,27 @@ public class VideoListCallable implements Callable<Integer> {
 			// 客户端暂时不用设置SO_REUSEADDR
 			socketToServer = new Socket(serverIP, serverPort);
 			// 打开输入输出流
-			inputStream = socketToServer.getInputStream();
 			outputStream = socketToServer.getOutputStream();
-			// auto flush
-			printToServer = new PrintWriter(outputStream, true);
+			objectOutputStream = new ObjectOutputStream(outputStream);
+			inputStream = socketToServer.getInputStream();
+			objectInputStream = new ObjectInputStream(inputStream);
 			
 			/*请求格式：req|mode|cate|start|step*/
-			printToServer.println(Command.ACTION_GETVIDEOLIST);
-			printToServer.println(mode);
-			printToServer.println(category);
-			printToServer.println(videoDisplayStart);
-			printToServer.println(videoDisplayStep);
+			ArrayList<String> fields = new ArrayList<>();
+			fields.add(String.valueOf(mode));
+			fields.add(category);
+			fields.add(String.valueOf(videoDisplayStart));
+			fields.add(String.valueOf(videoDisplayStep));
+			Packet sendPacket = new Packet(CommandWord.REQUEST_VIDEOLIST,fields);
+			objectOutputStream.writeObject(sendPacket);
 
-			/*打开反序列化输入流*/
-			objectInputStream = new ObjectInputStream(inputStream);
 			/*
-			 * 读取该模式该分类下的视频总数,
-			 * 这里是用的Integer对象来传送，因为对象流和普通流不能混用
-			所以我们就统一用对象流来输入
+			 * 读取该模式该分类下的视频总数
 			*/
-			int totalCount = (Integer)objectInputStream.readObject();
+			Packet recvPacket = (Packet)objectInputStream.readObject();
+			//CommandWord commandWord = recvPacket.getCommandWord();
+			int totalCount = (Integer)recvPacket.getFields();
+			
 			int totalLastIndex = totalCount -1;
 			
 			/*
@@ -126,9 +127,9 @@ public class VideoListCallable implements Callable<Integer> {
 			/*不可直接用videoDisplayStep，
 			因为实际查到的个数可能小于videoDisplayStep*/
 			for(;count != 0;count --){
-				VideoInfo videoInfo = (VideoInfo)objectInputStream.readObject();
+				recvPacket = (Packet)objectInputStream.readObject();
+				VideoInfo videoInfo = (VideoInfo)recvPacket.getFields();
 				DisplayBlock displayBlock = new DisplayBlock(videoInfo);
-				
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -154,8 +155,7 @@ public class VideoListCallable implements Callable<Integer> {
 		} finally {
 			try {
 				if(objectInputStream!=null)objectInputStream.close();
-				if (readFromServer != null)readFromServer.close();
-				if (printToServer != null)printToServer.close();
+				if(objectOutputStream!=null)objectOutputStream.close();
 				if (socketToServer != null)socketToServer.close();
 				System.out.println("All Has been closed! in GUICallable finally block");
 			} catch (IOException e) {

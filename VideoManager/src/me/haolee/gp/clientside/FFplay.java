@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
+
 import javax.swing.JOptionPane;
 
 class FFplay{
@@ -48,13 +48,10 @@ class FFplay{
 			pc = pb.start();
 			InputStream inputFFplayStatus = pc.getInputStream();
 			BufferedReader readFFplayStatus = new BufferedReader(new InputStreamReader(inputFFplayStatus));
-//			StringBuffer stringBuffer = new StringBuffer();
-//			stringBuffer.append(cmd[0]+cmd[1]);
+			
 			try {
-				String tmp_in = null;
-				while ((tmp_in = readFFplayStatus.readLine()) != null) {
+				while (readFFplayStatus.readLine() != null) {
 					//System.out.println(tmp_in);//读取输入流防止因为缓冲区满了而阻塞
-					//stringBuffer.append(tmp_in+"\n");
 				}
 			} catch (Exception e) {e.printStackTrace();
 			}finally {

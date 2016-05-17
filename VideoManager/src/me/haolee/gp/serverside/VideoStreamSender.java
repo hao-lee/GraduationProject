@@ -6,18 +6,21 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
+import me.haolee.gp.common.CommandWord;
 import me.haolee.gp.common.Config;
-import me.haolee.gp.common.Command;
+import me.haolee.gp.common.Packet;
 
 public class VideoStreamSender {
 	/*
 	 * 发送视频流
 	 * */
 	public void sendVideoStream(String fileRelativePath,
-			BufferedReader readFromClient, PrintWriter printToClient) {
+			ObjectInputStream objectInputStream
+			, ObjectOutputStream objectOutputStream) {
 		InputStream inputFromShell = null;//读取shell
 		Process pc = null;
 		ProcessBuilder pb = null;
@@ -39,7 +42,8 @@ public class VideoStreamSender {
 			String streamID = StreamIDManager.getStreamID(fileID);
 			
 			//告诉客户端流名称，本次发送不需要心跳应答
-			printToClient.println(streamID);
+			Packet sendPacket = new Packet(CommandWord.RESPONSE_DATA,streamID);
+			objectOutputStream.writeObject(sendPacket);
 			System.out.println(streamID);
 			
 			ArrayList<String> command = new ArrayList<>();//命令数组
@@ -47,7 +51,9 @@ public class VideoStreamSender {
 			
 			//如果扩展名是live，则读出里面的内容作为输入地址(网络地址)
 			if(fileExtension.equals("live")){
-				String cameraURL = new BufferedReader(new InputStreamReader(new FileInputStream(fileAbsolutePath))).readLine();
+				InputStream fileInputStream = new FileInputStream(fileAbsolutePath);
+				String cameraURL = new BufferedReader(new InputStreamReader(fileInputStream)).readLine();
+				fileInputStream.close();
 				command.add("-i");
 				command.add(cameraURL);
 			}else{//读取的本地文件
@@ -78,28 +84,46 @@ public class VideoStreamSender {
 			// 所以客户端暂时不用设置SO_REUSEADDR。
 			while ((tmp_in = readFromShell.readLine()) != null) {
 				System.out.println(tmp_in);
-				if( ! tmp_in.toLowerCase().startsWith("frame="))//还没开始正式发送
-					printToClient.println(Command.CTRL_WAIT);
+				
+				if( ! tmp_in.toLowerCase().startsWith("frame=")){//还没开始正式发送
+					sendPacket = new Packet(CommandWord.RESPONSE_IDLE,null);
+					objectOutputStream.writeObject(sendPacket);
+				}
 				else{//开始发送视频了
-					printToClient.println(Command.CTRL_OK);
+					sendPacket = new Packet(CommandWord.RESPONSE_CONTINUE,null);
+					objectOutputStream.writeObject(sendPacket);
 					break;
 				}
 			}
-			//System.out.println(":::"+tmp_in);
 			/*
 			 * 如果FFmpeg播放出错，则此时它已经死了，不需要交互了
 			 * 如果没死就是一切正常，可以进入心跳包应答模式
 			 * */
-			do {
-				//Thread.sleep(1000);
-				//读取FFmpeg的输出防止缓冲区满了而阻塞，字符串太长，丢弃不用
-				if((tmp_in = readFromShell.readLine()) != null)
+			while(true){
+				//如果FFMPEG没死，就发送探测心跳包
+				if((tmp_in = readFromShell.readLine()) != null){
+					System.out.println(tmp_in);
+					//send
+					sendPacket = new Packet(CommandWord.CTRL_HARTBEAT,null);
+					objectOutputStream.writeObject(sendPacket);
+				}else{//FFMPEG死了，发送END包告诉客户端自己要死了，然后直接退出
+					sendPacket = new Packet(CommandWord.CTRL_END,null);
+					objectOutputStream.writeObject(sendPacket);
+					break;//退出
+				}
+				/*
+				 * 如果上一步发送了心跳包，则本次接收应答看看客户端给出了什么回复
+				 * 如果客户端也是心跳包，则继续下一次循环
+				 * 否则，说明客户端死了，直接退出。
+				 * */
+				Packet recvPacket = (Packet)objectInputStream.readObject();
+				if(recvPacket.getCommandWord() == CommandWord.CTRL_HARTBEAT)
 					;
-				else
-					break;//FFmpeg死了，没必要再探测客户端了
-				printToClient.println("Probe");//发送一个短字符串探测客户端是否死亡
-				//客户端死了就没必要继续了
-			} while ((readFromClient.readLine()) != null);
+				else//收到CommandWord.CTRL_END，说明客户端已经结束 
+					break;//退出
+			}
+
+
 			pc.destroy();
 			StreamIDManager.releaseStreamID(fileID);//释放流媒体ID
 			

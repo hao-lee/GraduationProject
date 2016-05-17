@@ -1,15 +1,15 @@
 package me.haolee.gp.serverside;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-import me.haolee.gp.common.Command;
+import me.haolee.gp.common.CommandWord;
+import me.haolee.gp.common.Packet;
 
 class RequestAnalyser implements Callable<Integer> {
 	private Socket socketToClient = null;
@@ -22,49 +22,47 @@ class RequestAnalyser implements Callable<Integer> {
 	public Integer call() throws Exception {
 		InputStream inputStream = null;
 		OutputStream outputStream = null;
-		PrintWriter printToClient = null;
-		BufferedReader readFromClient = null;
+		ObjectInputStream objectInputStream = null;
 		ObjectOutputStream objectOutputStream = null;//序列化输出流，需要时再打开
 		
 		try {
 			inputStream = socketToClient.getInputStream();
+			objectInputStream = new ObjectInputStream(inputStream);
 			outputStream = socketToClient.getOutputStream();
+			objectOutputStream = new ObjectOutputStream(outputStream);
 			
 			// 分析客户端请求	
-			readFromClient = new BufferedReader(new InputStreamReader(inputStream));
-			int requestCode = Integer.valueOf(readFromClient.readLine());
+			Packet recvPacket = (Packet)objectInputStream.readObject();
+			CommandWord commandWord = recvPacket.getCommandWord();
 			
 			/*根据请求的不同，行为不同*/
-			int mode = -1;
 			
-			switch (requestCode) {
-			case Command.ACTION_GETCATEGORY:
-
-				mode = Integer.valueOf(readFromClient.readLine());
-				objectOutputStream = new ObjectOutputStream(outputStream);
+			CommandWord mode = null;
+			switch (commandWord) {
+			case REQUEST_CATEGORYLIST:
+				mode = (CommandWord)recvPacket.getFields();
 				new CategoryListSender().sendCategoryList(mode,objectOutputStream);
 				break;
 				
-			case Command.ACTION_GETVIDEOLIST:
-				mode = Integer.valueOf(readFromClient.readLine());
-				String category = readFromClient.readLine();
-				int videoDisplayStart = Integer.valueOf(readFromClient.readLine());
-				int videoDisplayStep = Integer.valueOf(readFromClient.readLine());
-				objectOutputStream = new ObjectOutputStream(outputStream);
+			case REQUEST_VIDEOLIST:
+				ArrayList<String> fields = (ArrayList<String>)recvPacket.getFields();
+				mode = CommandWord.valueOf(fields.get(0));
+				String category = (String)fields.get(1);
+				int videoDisplayStart = Integer.valueOf(fields.get(2));
+				int videoDisplayStep = Integer.valueOf(fields.get(3));
 				new VideoListSender().sendVideoList(mode, category, 
 						videoDisplayStart, videoDisplayStep,
 						objectOutputStream);
 				break;
-			case Command.ACTION_PLAYLIVE:
+			case REQUEST_STREAMINGMEDIA:
 				//filePath是相对路径+文件名，还需要拼接前缀组成绝对路径，
 				//不需要加双引号，对于文件名的空格，java会自动处理
-				String fileRelativePath = readFromClient.readLine();
-				printToClient = new PrintWriter(outputStream, true);// auto flush
+				String fileRelativePath = (String)recvPacket.getFields();
 				new VideoStreamSender().sendVideoStream(fileRelativePath, 
-						readFromClient, printToClient);
+						objectInputStream, objectOutputStream);
 				break;
 			default:
-				System.out.println("Undefined Command: "+requestCode);
+				System.out.println("Undefined Command: ");
 				break;
 			}
 
@@ -74,8 +72,7 @@ class RequestAnalyser implements Callable<Integer> {
 		} finally {
 			try {
 				if (objectOutputStream!=null)objectOutputStream.close();
-				if (readFromClient != null)readFromClient.close();
-				if (printToClient != null)printToClient.close();
+				if (objectInputStream!=null)objectInputStream.close();
 				if (inputStream != null)inputStream.close();
 				if (outputStream != null)outputStream.close();
 				if (socketToClient != null)socketToClient.close();

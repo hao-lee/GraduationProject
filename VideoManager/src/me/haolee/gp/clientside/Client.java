@@ -1,33 +1,34 @@
 package me.haolee.gp.clientside;
 
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import me.haolee.gp.common.Config;
-import me.haolee.gp.common.Command;
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.awt.event.ActionEvent;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JRadioButton;
-import javax.swing.JLabel;
-import java.awt.Font;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import me.haolee.gp.common.CommandWord;
+import me.haolee.gp.common.Config;
 
 // main function
 public class Client {
@@ -37,7 +38,7 @@ public class Client {
 	private JPanel mainPanel = null;//子线程要用，静态方便
 	private JList<String> categoryList = null;
 	private DefaultListModel<String> categoryListModel = null;
-	private int mode = Command.MODE_LIVE;//播放模式初始值
+	private CommandWord mode = CommandWord.MODE_LIVE;//播放模式初始值
 	//用于显示总记录条数的标签
 	private JLabel lblTotalCount = null;
 	/*
@@ -171,9 +172,9 @@ public class Client {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.DESELECTED)//liveRButton被取消，切换到点播
-					mode = Command.MODE_VOD;
+					mode = CommandWord.MODE_VOD;
 				else								//liveRButton被选择，切换成直播
-					mode = Command.MODE_LIVE;
+					mode = CommandWord.MODE_LIVE;
 				getCategoryList();//重新获取分类
 			}
 		});
@@ -376,7 +377,7 @@ public class Client {
 				return;
 			}
 
-			if(mode==Command.MODE_VOD){
+			if(mode==CommandWord.MODE_VOD){
 				VodCallable vodCallable = new VodCallable();
 				executorService.submit(vodCallable);
 			}

@@ -1,21 +1,19 @@
 package me.haolee.gp.clientside;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
-
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-
-import me.haolee.gp.common.Command;
+import me.haolee.gp.common.CommandWord;
 import me.haolee.gp.common.Config;
+import me.haolee.gp.common.Packet;
 
 
 
@@ -27,10 +25,10 @@ public class CatagoryListCallable implements Callable<Integer> {
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
-	private int mode = -1;
+	private CommandWord mode = null;
 	private DefaultListModel<String> categoryListModel = null;
 	/*获取分类用*/
-	public CatagoryListCallable(int mode
+	public CatagoryListCallable(CommandWord mode
 			,DefaultListModel<String> categoryListModel) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
@@ -45,29 +43,27 @@ public class CatagoryListCallable implements Callable<Integer> {
 		InputStream inputStream = null;
 		OutputStream outputStream =null;
 		/*包装后的输入输出流*/
+		ObjectOutputStream objectOutputStream = null;
 		ObjectInputStream objectInputStream = null;
-		BufferedReader readFromServer = null;
-		PrintWriter printToServer = null;
 		ArrayList<String> categoryList = null;
 		try {
 			// 客户端暂时不用设置SO_REUSEADDR
 			socketToServer = new Socket(serverIP, serverPort);
 			// 打开输入输出流
-			inputStream = socketToServer.getInputStream();
 			outputStream = socketToServer.getOutputStream();
-			// auto flush
-			printToServer = new PrintWriter(outputStream, true);
+			objectOutputStream = new ObjectOutputStream(outputStream);
+			inputStream = socketToServer.getInputStream();
+			objectInputStream = new ObjectInputStream(inputStream);
 			
 			/*要发送的请求*/
 			/* 请求格式：reqCode | mode */
-			printToServer.println(Command.ACTION_GETCATEGORY);
-			printToServer.println(mode);
+			Packet sendPacket = new Packet(CommandWord.REQUEST_CATEGORYLIST,mode);
+			objectOutputStream.writeObject(sendPacket);
 			
-			/*打开反序列化输入流，
-			这时服务端已经得到了categorySet并准备发给客户端*/
-			objectInputStream = new ObjectInputStream(inputStream);
-			categoryList = (ArrayList<String>)
-					objectInputStream.readObject();
+			/*这时服务端已经得到了categoryList并发给客户端*/
+			Packet recvPacket = (Packet)objectInputStream.readObject();
+			//CommandWord commandWord = recvPacket.getCommandWord();
+			categoryList = (ArrayList<String>)recvPacket.getFields();
 			
 			for(int i = 0; i< categoryList.size();i++){
 				String item = categoryList.get(i);
@@ -89,9 +85,8 @@ public class CatagoryListCallable implements Callable<Integer> {
 			System.out.println("无法连接服务器"+serverIP+serverPort);
 		} finally {
 			try {
+				if(objectOutputStream !=null)objectOutputStream.close();
 				if(objectInputStream != null) objectInputStream.close();
-				if (readFromServer != null)readFromServer.close();
-				if (printToServer != null)printToServer.close();
 				if (socketToServer != null)socketToServer.close();
 				System.out.println("All Has been closed! in GUICallable finally block");
 			} catch (IOException e) {

@@ -5,14 +5,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
 public class VideoInfo implements Serializable{
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private String videoName = null;
 	private String duration = null;
