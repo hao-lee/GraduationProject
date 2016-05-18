@@ -23,11 +23,14 @@ public class LiveCallable implements Callable<Integer> {
 	 * */
 	private String serverIP = null;
 	private int serverPort = -1;
+	/*被选择的块，由静态全局方法和变量得到*/
+	private DisplayBlock selectedVideoBlock = null;
 	
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
-	public LiveCallable() {
+	public LiveCallable(DisplayBlock selectedVideoBlock) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
+		this.selectedVideoBlock = selectedVideoBlock;
 	}
 
 	@Override
@@ -52,16 +55,12 @@ public class LiveCallable implements Callable<Integer> {
 			objectOutputStream = new ObjectOutputStream(outputStream);
 			inputStream = socketToServer.getInputStream();
 			objectInputStream = new ObjectInputStream(inputStream);
-
-			/*被选择的块，由静态全局方法和变量得到*/
-			DisplayBlock selectedVideoBlock = null;
+			
 			/*因为视频列表刷新时，已经用mode和category进行了过滤，
 			 * 所以看到的都是符合要求的，所以播放视频时只需要获取哪个显示块被选中了，
 			 * 然后找到所对应视频的路径+文件名即可
 			 * */
 			/*只需告诉服务端请求码+(视频相对路径+视频文件名)*/
-			selectedVideoBlock = SelectedBlock.getSelectedBlock();//获得被选视频块
-			
 			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
 			
 			fileRelativePath = videoInfo.getFileRelativePath();//相对路径

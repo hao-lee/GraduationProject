@@ -12,11 +12,11 @@ public enum CommandWord {
 	RESPONSE_IDLE,
 	RESPONSE_CONTINUE,
 
-	//连接控制字，表示数据已经发送完毕
+	//控制命令字
 	CTRL_END,
 	CTRL_HARTBEAT,
 	
-	//播放模式
+	//播放模式命令字
 	MODE_LIVE,
 	MODE_VOD
 }

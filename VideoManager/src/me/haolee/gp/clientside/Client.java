@@ -414,18 +414,19 @@ public class Client {
 		btnPlayVideo.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			//检测是否有视频被选择
-			if(SelectedBlock.getSelectedBlock() == null){
+			DisplayBlock selectedVideoBlock = SelectedBlock.getSelectedBlock();
+			if(selectedVideoBlock == null){
 				JOptionPane.showMessageDialog(null, "没有视频被选择"
 						, "提示", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 
 			if(mode==CommandWord.MODE_VOD){
-				VodCallable vodCallable = new VodCallable();
+				VodCallable vodCallable = new VodCallable(selectedVideoBlock);
 				executorService.submit(vodCallable);
 			}
 			else{//live
-				LiveCallable liveCallable = new LiveCallable();
+				LiveCallable liveCallable = new LiveCallable(selectedVideoBlock);
 				executorService.submit(liveCallable);
 			}
 			
