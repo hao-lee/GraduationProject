@@ -19,7 +19,7 @@ public class VideoListSender {
 	 * 发送视频列表
 	 * */
 	public void sendVideoList(CommandWord mode,String category,
-			int videoDisplayStart,int videoDisplayStep,
+			int videoListStart,int videoListStep,
 			ObjectOutputStream objectOutputStream) {
 		/* 这个功能：
 		 * 使用DatebaseOperation类获取指定数量的视频
@@ -32,7 +32,7 @@ public class VideoListSender {
 		 * 查询指定范围的视频
 		 * */
 		ArrayList<VideoInfo> videoInfoList=datebaseQuery.getVideoSet(mode, 
-				category, videoDisplayStart, videoDisplayStep);
+				category, videoListStart, videoListStep);
 		/*
 		 * 从数据库读取到的videoInfo集合，每个对象的bufferedImage字段没有被填充*
 		 * 现在开始填充，填充完一个就发给客户端一个

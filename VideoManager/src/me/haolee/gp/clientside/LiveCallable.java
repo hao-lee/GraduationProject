@@ -24,13 +24,13 @@ public class LiveCallable implements Callable<Integer> {
 	private String serverIP = null;
 	private int serverPort = -1;
 	/*被选择的块，由静态全局方法和变量得到*/
-	private DisplayBlock selectedVideoBlock = null;
+	private VideoPanel selectedVideoPanel = null;
 	
 	/*播放视频用，具体的视频信息可以通过取读SelectBlock全局类来得到*/
-	public LiveCallable(DisplayBlock selectedVideoBlock) {
+	public LiveCallable(VideoPanel selectedVideoPanel) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
-		this.selectedVideoBlock = selectedVideoBlock;
+		this.selectedVideoPanel = selectedVideoPanel;
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class LiveCallable implements Callable<Integer> {
 			 * 然后找到所对应视频的路径+文件名即可
 			 * */
 			/*只需告诉服务端请求码+(视频相对路径+视频文件名)*/
-			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
+			videoInfo = selectedVideoPanel.getVideoInfo();//获取本显示块内的视频信息数据结构
 			
 			fileRelativePath = videoInfo.getFileRelativePath();//相对路径
 			
@@ -128,25 +128,6 @@ public class LiveCallable implements Callable<Integer> {
 					break;//退出
 				}
 			}
-//			do {
-//				recvPacket = (Packet)objectInputStream.readObject();
-//				if(recvPacket.getCommandWord() != CommandWord.CTRL_END){
-//					sendPacket = new Packet();
-//					sendPacket.setCommandWord(CommandWord.CTRL_HARTBEAT);
-//					sendPacket.setField(null);
-//					objectOutputStream.writeObject(sendPacket);
-//				}else{ //服务端死了，没必要再应答了，等待播放线程去吧
-//					break;
-//				}
-//			} while (!ffplayFuture.isDone());//播放线程死了就没必要继续了
-//			//如果是服务端死了
-//			if(recvPacket.getCommandWord() != CommandWord.CTRL_END)
-//				;
-//			else{//播放线程死了,跟服务端告个别
-//				sendPacket = new Packet();
-//				sendPacket.setCommandWord(CommandWord.CTRL_END);
-//				sendPacket.setField(null);
-//			}
 			/*
 			 * 注意，上面的循环正常结束的原因就是服务器不再发送数据，可能是视频传输完毕，
 			 * 也可能服务器因为未知原因异常终止，但是这种情况基本不会出现。

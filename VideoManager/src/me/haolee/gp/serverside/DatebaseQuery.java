@@ -79,7 +79,7 @@ class DatebaseQuery{
 	 * 取出指定数量的视频记录
 	 */
 	public ArrayList<VideoInfo> getVideoSet(CommandWord mode, String category, 
-							int videoDisplayStart,int videoDisplayStep) {
+							int videoListStart,int videoListStep) {
 		/*
 		 * 数据库表名
 		 * */
@@ -106,7 +106,7 @@ class DatebaseQuery{
 						+ "FROM vod INNER JOIN vodcategory "
 						+ "ON vod.CategoryName = vodcategory.CategoryName"
 						+ " WHERE vod.CategoryName="+"\""+category+"\" "
-						+ "LIMIT "+videoDisplayStart+","+videoDisplayStep;
+						+ "LIMIT "+videoListStart+","+videoListStep;
 			else 
 				sql = "SELECT live.FileID,live.Extension,live.VideoName"
 						+ ",live.Duration,live.Resolution,live.CategoryName"
@@ -114,7 +114,7 @@ class DatebaseQuery{
 						+ "FROM live INNER JOIN livecategory "
 						+ "ON live.CategoryName = livecategory.CategoryName"
 						+ " WHERE live.CategoryName="+"\""+category+"\" "
-						+ "LIMIT "+videoDisplayStart+","+videoDisplayStep;
+						+ "LIMIT "+videoListStart+","+videoListStep;
 			
 			resultSet = stmt.executeQuery(sql);
 			while (resultSet.next()) {

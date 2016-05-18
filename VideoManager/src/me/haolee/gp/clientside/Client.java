@@ -49,8 +49,8 @@ public class Client {
 	//分类下总数
 	public int totalNumber = 0;
 	//起始序号和步长
-	public int videoDisplayStart = 0;//行数默认从0计
-	public int videoDisplayStep = 9;//默认步长
+	public int videoListStart = 0;//行数默认从0计
+	public int videoListStep = 9;//默认步长
 	
 	private JTextField tfPageNo;
 	
@@ -76,7 +76,7 @@ public class Client {
 	private void createMainInterface() {
 		int windowWidth = 1000;//宽度
 		int windowHeight = 650;//高度
-		int mainPanelHeight = DisplayBlock.getTotalHeight()+4*5;//行间距为5
+		int mainPanelHeight = VideoPanel.getTotalHeight()+4*5;//行间距为5
 		// user-interface
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -190,8 +190,8 @@ public class Client {
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								int numberOfPages = totalNumber/videoDisplayStep;//页数自0计算
-								lblTotalCount.setText("/"+(numberOfPages+1)+"页");
+								int numberOfPages = (totalNumber-1)/videoListStep+1;//页数自1计算
+								lblTotalCount.setText("/"+numberOfPages+"页");
 							}
 						});
 					} catch (Exception ex) {
@@ -241,10 +241,10 @@ public class Client {
 				mainPanel.repaint();
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectedBlock.resetSelectedBlock();
+				SelectedVideoPanel.resetSelectedBlock();
 				
 				VideoListCallable videoListCallable = new VideoListCallable(mode
-						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
+						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -272,10 +272,10 @@ public class Client {
 				mainPanel.revalidate();
 				mainPanel.repaint();
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectedBlock.resetSelectedBlock();
-				videoDisplayStart = 0;//起点0
+				SelectedVideoPanel.resetSelectedBlock();
+				videoListStart = 0;//起点0
 				VideoListCallable videoListCallable = new VideoListCallable(mode
-						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
+						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -303,17 +303,14 @@ public class Client {
 				mainPanel.revalidate();
 				mainPanel.repaint();
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectedBlock.resetSelectedBlock();
+				SelectedVideoPanel.resetSelectedBlock();
 				
 				//根据总记录数和步长，算出最后一页的起点
-				videoDisplayStart = (totalNumber/videoDisplayStep)*videoDisplayStart;
-				//总记录数恰好为步长倍数（1倍、2倍等），最后一页没内容，自动前推一页
-				if((totalNumber/videoDisplayStep)>=1 
-						&& (totalNumber%videoDisplayStep == 0))
-					videoDisplayStart -=videoDisplayStep;
+				int numberOfPages = (totalNumber-1)/videoListStep+1;//总页数
+				videoListStart = (numberOfPages-1)*videoListStep;
 				//至此，最后一页的起点已经确定
 				VideoListCallable videoListCallable = new VideoListCallable(mode
-						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
+						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -338,7 +335,7 @@ public class Client {
 					return;
 				}
 				
-				if(videoDisplayStart == 0){
+				if(videoListStart == 0){
 					JOptionPane.showMessageDialog(null, "已经是第一页"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
@@ -350,12 +347,12 @@ public class Client {
 				mainPanel.repaint();
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectedBlock.resetSelectedBlock();
+				SelectedVideoPanel.resetSelectedBlock();
 				
-				videoDisplayStart -= videoDisplayStep;//起点减少
+				videoListStart -= videoListStep;//起点减少
 				
 				VideoListCallable videoListCallable = new VideoListCallable(mode
-						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
+						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -380,7 +377,7 @@ public class Client {
 					return;
 				}
 				
-				if(videoDisplayStart+videoDisplayStep-1 >= totalNumber-1){
+				if(videoListStart+videoListStep-1 >= totalNumber-1){
 					JOptionPane.showMessageDialog(null, "已经是最后一页"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
@@ -393,11 +390,11 @@ public class Client {
 				mainPanel.repaint();
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectedBlock.resetSelectedBlock();
+				SelectedVideoPanel.resetSelectedBlock();
 				
-				videoDisplayStart += videoDisplayStep;//起点增加
+				videoListStart += videoListStep;//起点增加
 				VideoListCallable videoListCallable = new VideoListCallable(mode
-						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
+						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});
@@ -414,19 +411,19 @@ public class Client {
 		btnPlayVideo.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			//检测是否有视频被选择
-			DisplayBlock selectedVideoBlock = SelectedBlock.getSelectedBlock();
-			if(selectedVideoBlock == null){
+			VideoPanel selectedVideoPanel = SelectedVideoPanel.getSelectedBlock();
+			if(selectedVideoPanel == null){
 				JOptionPane.showMessageDialog(null, "没有视频被选择"
 						, "提示", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
 
 			if(mode==CommandWord.MODE_VOD){
-				VodCallable vodCallable = new VodCallable(selectedVideoBlock);
+				VodCallable vodCallable = new VodCallable(selectedVideoPanel);
 				executorService.submit(vodCallable);
 			}
 			else{//live
-				LiveCallable liveCallable = new LiveCallable(selectedVideoBlock);
+				LiveCallable liveCallable = new LiveCallable(selectedVideoPanel);
 				executorService.submit(liveCallable);
 			}
 			
@@ -469,11 +466,10 @@ public class Client {
 					return;
 				}
 				
-				//显示的页数比我们计算用的要大1
-				int pageNo = Integer.valueOf(pageNoText) - 1;
-				//pageNo是用户填入的页号，numberOfPages是总页数，都从0计算
-				int numberOfPages = totalNumber/videoDisplayStep;//页数自0计算
-				if(pageNo > numberOfPages || pageNo < 0){
+				int pageNo = Integer.valueOf(pageNoText);
+				//pageNo是用户填入的页号，numberOfPages是总页数，都从1计算
+				int numberOfPages = (totalNumber-1)/videoListStep+1;//页数自1计算
+				if(pageNo > numberOfPages || pageNo < 1){
 					JOptionPane.showMessageDialog(null, "页号过大或过小"
 							, "提示", JOptionPane.INFORMATION_MESSAGE);
 					return;
@@ -485,11 +481,11 @@ public class Client {
 				mainPanel.repaint();
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
-				SelectedBlock.resetSelectedBlock();
+				SelectedVideoPanel.resetSelectedBlock();
 				
-				videoDisplayStart = pageNo * videoDisplayStep;//定位起点
+				videoListStart = (pageNo-1) * videoListStep;//定位起点
 				VideoListCallable videoListCallable = new VideoListCallable(mode
-						, selectedCategory,videoDisplayStart,videoDisplayStep,mainPanel);
+						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
 			}
 		});

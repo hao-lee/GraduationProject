@@ -37,7 +37,7 @@ infoAreaHeight |i |                                |   |
 
  * 视频显示块面板
  * */
-class DisplayBlock extends JPanel{
+class VideoPanel extends JPanel{
 
 	private static final long serialVersionUID = 5857923303664996266L;
 	/**
@@ -58,14 +58,14 @@ class DisplayBlock extends JPanel{
 		return videoInfo;
 	}
 	//HashMap<>()存储视频时长等信息
-	public DisplayBlock(VideoInfo videoInfo) {
+	public VideoPanel(VideoInfo videoInfo) {
 		
 		this.videoInfo = videoInfo;
 		//计算DisplayBlock显示块大小
 		blockWidth = tnWidth+2*padding;
 		blockHeight = tnHeight+3*padding+infoHeight;
 		this.setPreferredSize(new Dimension(blockWidth,blockHeight));//显示块面板大小，上下左右各比缩略图面板大padding
-		this.setBackground(SelectedBlock.getNoSelectionColor());//显示块面板初始背景
+		this.setBackground(SelectedVideoPanel.getNoSelectionColor());//显示块面板初始背景
 		this.setLayout(null);//绝对布局
 		//鼠标点击时呈现出该显示块被选择的效果
 		this.addMouseListener(new MouseAdapter() {
@@ -74,18 +74,18 @@ class DisplayBlock extends JPanel{
 				super.mouseClicked(e);
 				System.out.println("Click");
 				//从事件里反向获取当前组件的索引
-				DisplayBlock thisDisplayBlock = (DisplayBlock)e.getSource();
-				SelectedBlock.changeSelectionBlock(thisDisplayBlock);//选块切换
+				VideoPanel thisDisplayBlock = (VideoPanel)e.getSource();
+				SelectedVideoPanel.changeSelectionBlock(thisDisplayBlock);//选块切换
 			}
 		});
 		BufferedImage bufferedImage = videoInfo.getBufferedImage();
 		//在显示块上添加缩略图面板
-		Thumbnail thumbnailPanel = new Thumbnail(tnWidth,tnHeight,bufferedImage);
+		ThumbnailPanel thumbnailPanel = new ThumbnailPanel(tnWidth,tnHeight,bufferedImage);
 		thumbnailPanel.repaint();//在显示块上画出缩略图
 		this.add(thumbnailPanel);//将缩略图面板加到显示块上去
 		thumbnailPanel.setBounds(padding,padding, tnWidth,tnHeight);//定位缩略图面板的位置,同时设置大小
 		//在显示块上添加文本信息面板
-		Info infoPanel = new Info(
+		InfoPanel infoPanel = new InfoPanel(
 				videoInfo.getVideoName(),
 				videoInfo.getDuration(),
 				videoInfo.getResolution());
@@ -97,7 +97,7 @@ class DisplayBlock extends JPanel{
 /*
  * 缩略图面板，不用设置布局，图片直接画上去
  * */
-class Thumbnail extends JPanel{
+class ThumbnailPanel extends JPanel{
 	
 	/**
 	 * 
@@ -105,7 +105,7 @@ class Thumbnail extends JPanel{
 	private static final long serialVersionUID = 2070125390008961705L;
 	private Image scaledImage = null;
 	//构造函数
-	public Thumbnail(int tnWidth , int tnHeight, BufferedImage bufferedImage) {
+	public ThumbnailPanel(int tnWidth , int tnHeight, BufferedImage bufferedImage) {
 		this.scaledImage = bufferedImage.getScaledInstance(tnWidth, tnHeight, Image.SCALE_DEFAULT);
 	}
 	
@@ -123,14 +123,14 @@ class Thumbnail extends JPanel{
 }
 
 /*视频信息显示面板，包括视频名、时长、分辨率*/
-class Info extends JPanel{
+class InfoPanel extends JPanel{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 2611671258325196571L;
 
-	public Info(String videoName,String duration,String resolution) {
+	public InfoPanel(String videoName,String duration,String resolution) {
 		this.setBackground(new Color(255, 204, 204));
 		this.setLayout(new GridLayout(3, 1, 0, 2));//行数 列数 水平间隔 竖直间隔
 		JLabel jLabelVideoName = new JLabel("VideoName:"+videoName);
@@ -144,19 +144,19 @@ class Info extends JPanel{
 
 
 /*静态变量和全局方法，记录当前被选中的块*/
-class SelectedBlock{
-	private static DisplayBlock selectedBlock = null;//被选择视频块对象的引用
+class SelectedVideoPanel{
+	private static VideoPanel selectedVideoPanel = null;//被选择视频块对象的引用
 	private static Color noSelectionColor = new Color(199, 237, 204);//未选择时颜色
 	private static Color selectionColor = new Color(51, 85, 254);//被选择时颜色
 	/*获得被选择的视频块*/
-	public static DisplayBlock getSelectedBlock() {
-		return selectedBlock;
+	public static VideoPanel getSelectedBlock() {
+		return selectedVideoPanel;
 	}
-	public static void changeSelectionBlock(DisplayBlock displayBlock) {
-		if(selectedBlock != null)//第一次清空时，它没有上一块
-			selectedBlock.setBackground(noSelectionColor);//清空上一块颜色
-		displayBlock.setBackground(selectionColor);//设置本块颜色
-		selectedBlock = displayBlock;//本块变为上一块
+	public static void changeSelectionBlock(VideoPanel videoPanel) {
+		if(selectedVideoPanel != null)//第一次清空时，它没有上一块
+			selectedVideoPanel.setBackground(noSelectionColor);//清空上一块颜色
+		videoPanel.setBackground(selectionColor);//设置本块颜色
+		selectedVideoPanel = videoPanel;//本块变为上一块
 	}
 	public static Color getNoSelectionColor() {
 		return noSelectionColor;
@@ -165,6 +165,6 @@ class SelectedBlock{
 	 * 该函数将lastBlock置为Null
 	 */
 	public static void resetSelectedBlock() {
-		selectedBlock = null;
+		selectedVideoPanel = null;
 	}
 }

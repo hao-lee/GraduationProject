@@ -80,11 +80,11 @@ public class VideoListCallable implements Callable<Integer> {
 			while((recvPacket = (Packet)objectInputStream.readObject())
 					.getCommandWord()!=CommandWord.CTRL_END){
 				VideoInfo videoInfo = (VideoInfo)recvPacket.getFields();
-				DisplayBlock displayBlock = new DisplayBlock(videoInfo);
+				VideoPanel displayPanel = new VideoPanel(videoInfo);
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						mainPanel.add(displayBlock);
+						mainPanel.add(displayPanel);
 						mainPanel.revalidate();
 						//mainPanel.repaint();//添加组件不许要调用repaint
 					}

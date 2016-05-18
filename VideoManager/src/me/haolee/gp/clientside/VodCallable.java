@@ -15,9 +15,9 @@ public class VodCallable implements Callable<Integer>{
 	private String serverIP = null;
 	private int serverPort = -1;
 	/*被选择的块，由静态全局方法和变量得到*/
-	private DisplayBlock selectedVideoBlock = null;
+	private VideoPanel selectedVideoBlock = null;
 
-	public VodCallable(DisplayBlock selectedVideoBlock) {
+	public VodCallable(VideoPanel selectedVideoBlock) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 		this.selectedVideoBlock = selectedVideoBlock;
