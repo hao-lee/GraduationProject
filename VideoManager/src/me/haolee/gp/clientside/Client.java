@@ -45,12 +45,12 @@ public class Client {
 	private DefaultListModel<String> categoryListModel = null;
 	private CommandWord mode = CommandWord.MODE_LIVE;//播放模式初始值
 	//用于显示总记录条数的标签
-	private JLabel lblTotalCount = null;
+	private JLabel lblTotalNumber = null;
 	//分类下总数
-	public int totalNumber = 0;
+	private int totalNumber = 0;
 	//起始序号和步长
-	public int videoListStart = 0;//行数默认从0计
-	public int videoListStep = 9;//默认步长
+	private int videoListStart = 0;//行数默认从0计
+	private int videoListStep = 9;//默认步长
 	
 	private JTextField tfPageNo;
 	
@@ -191,7 +191,7 @@ public class Client {
 							@Override
 							public void run() {
 								int numberOfPages = (totalNumber-1)/videoListStep+1;//页数自1计算
-								lblTotalCount.setText("/"+numberOfPages+"页");
+								lblTotalNumber.setText("/"+numberOfPages+"页");
 							}
 						});
 					} catch (Exception ex) {
@@ -411,7 +411,7 @@ public class Client {
 		btnPlayVideo.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			//检测是否有视频被选择
-			VideoPanel selectedVideoPanel = SelectedVideoPanel.getSelectedBlock();
+			VideoPanel selectedVideoPanel = SelectedVideoPanel.getSelectedVideoPanel();
 			if(selectedVideoPanel == null){
 				JOptionPane.showMessageDialog(null, "没有视频被选择"
 						, "提示", JOptionPane.INFORMATION_MESSAGE);
@@ -433,10 +433,10 @@ public class Client {
 		/*
 		 * 总记录数
 		 * */
-		lblTotalCount = new JLabel("/ 页");
-		lblTotalCount.setFont(new Font("Dialog", Font.BOLD, 15));
-		lblTotalCount.setBounds(939, 5, 50, 36);
-		downPanel.add(lblTotalCount);
+		lblTotalNumber = new JLabel("/ 页");
+		lblTotalNumber.setFont(new Font("Dialog", Font.BOLD, 15));
+		lblTotalNumber.setBounds(939, 5, 50, 36);
+		downPanel.add(lblTotalNumber);
 		
 		//跳页
 		JButton btnJumpPage = new JButton("跳到");

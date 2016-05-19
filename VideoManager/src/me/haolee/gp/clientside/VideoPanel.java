@@ -149,7 +149,7 @@ class SelectedVideoPanel{
 	private static Color noSelectionColor = new Color(199, 237, 204);//未选择时颜色
 	private static Color selectionColor = new Color(51, 85, 254);//被选择时颜色
 	/*获得被选择的视频块*/
-	public static VideoPanel getSelectedBlock() {
+	public static VideoPanel getSelectedVideoPanel() {
 		return selectedVideoPanel;
 	}
 	public static void changeSelectionBlock(VideoPanel videoPanel) {

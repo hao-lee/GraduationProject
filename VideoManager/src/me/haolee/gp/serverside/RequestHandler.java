@@ -1,6 +1,5 @@
 package me.haolee.gp.serverside;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -62,10 +61,10 @@ class RequestHandler implements Callable<Integer> {
 				fields = (ArrayList<String>)recvPacket.getFields();
 				mode = CommandWord.valueOf(fields.get(0));
 				category = (String)fields.get(1);
-				int videoDisplayStart = Integer.valueOf(fields.get(2));
-				int videoDisplayStep = Integer.valueOf(fields.get(3));
+				int videoListStart = Integer.valueOf(fields.get(2));
+				int videoListStep = Integer.valueOf(fields.get(3));
 				new VideoListSender().sendVideoList(mode, category, 
-						videoDisplayStart, videoDisplayStep,
+						videoListStart, videoListStep,
 						objectOutputStream);
 				break;
 			case REQUEST_STREAMINGMEDIA:

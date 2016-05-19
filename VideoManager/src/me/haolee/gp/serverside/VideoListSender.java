@@ -43,27 +43,19 @@ public class VideoListSender {
 		/*获得缩略图路径，以便读取缩略图*/
 		String thumbnailRelativePath = Config.getValue(
 				"thumbnailRelativePath","thumbnail/");//缩略图路径
-		Iterator<VideoInfo> iterator = videoInfoList.iterator();
 		//对每个视频分别取截图并设置到视频对象里，然后写回客户端
 		try{
 			//缩略图绝对路径
 			String thumbnailPath = null;
-			while(iterator.hasNext()){
-				VideoInfo videoInfo = iterator.next();
-				
+			for(int i = 0; i < videoInfoList.size(); i++){
+				VideoInfo videoInfo = videoInfoList.get(i);
 				//新建文件对象，借用它的getName方法获得文件全名
-				String fileName = new File(videoInfo.getFileRelativePath()).getName();
+				String fileName = new File(pathPrefix+videoInfo.getFileRelativePath()).getName();
 				int dot = fileName.lastIndexOf(".");
 				//主文件名（不含扩展名）
 				String fileID = fileName.substring(0, dot);//0~dot-1
-				//扩展名
-				String fileExtension = fileName.substring(dot+1);
 				
-				//如果是直播就用默认贴图
-				if(fileExtension.equals("live"))
-					thumbnailPath = "live_defaultcover.png";
-				else
-					thumbnailPath = pathPrefix+thumbnailRelativePath+fileID+".jpg";
+				thumbnailPath = pathPrefix+thumbnailRelativePath+fileID+".jpg";
 				/*读取缩略图*/
 				BufferedImage bufferedImage = 
 						ImageIO.read(new FileInputStream(thumbnailPath));

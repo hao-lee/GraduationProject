@@ -1,5 +1,6 @@
 package me.haolee.gp.clientside;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -71,32 +72,33 @@ public class LiveCallable implements Callable<Integer> {
 			Packet sendPacket = new Packet(CommandWord.REQUEST_STREAMINGMEDIA,fileRelativePath);
 			objectOutputStream.writeObject(sendPacket);
 			
-			//读取服务器发来的视频流名字，本次接收不需要发送心跳应答
-			Packet recvPacket = (Packet)objectInputStream.readObject();
-			//CommandWord commandWord = recvPacket.getCommandWord();
-			String streamID = (String)recvPacket.getFields();
-			
-			while ((recvPacket = (Packet)objectInputStream.readObject())
-					.getCommandWord()!= CommandWord.CTRL_END){
-				//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
-				if(recvPacket.getCommandWord()==CommandWord.RESPONSE_IDLE)
-					continue;	
-				else//收到CommandWord.RESPONSE_CONTINUE消息，跳出循环
-					break;
-			}
+			//服务端开启流化进程后会发送一个数据包告知，这里仅为了获取这个通知，内容无意义
+			Packet recvPacket = null;
+			recvPacket = (Packet)objectInputStream.readObject();
+//			while ((recvPacket = (Packet)objectInputStream.readObject())
+//					.getCommandWord()!= CommandWord.CTRL_END){
+//				//如果持续接收到WAIT信息，说明服务端ffmpeg还没还是发送数据帧
+//				if(recvPacket.getCommandWord()==CommandWord.RESPONSE_IDLE)
+//					continue;	
+//				else//收到CommandWord.RESPONSE_CONTINUE消息，跳出循环
+//					break;
+//			}
 			
 			/*
 			 * 如果此时response为null，说明服务端的FFmpeg没有正常开启，可能遇到了错误
 			 * 后面就不用费劲了，直接结束吧，省得浪费资源。
 			 * */
-			if(recvPacket.getCommandWord() == CommandWord.CTRL_END){
-				System.out.println("服务端可能播放失败");
-				JOptionPane.showMessageDialog(null, "服务端视频播放失败", "错误", JOptionPane.ERROR_MESSAGE);
-				return null;
-			}
+//			if(recvPacket.getCommandWord() == CommandWord.CTRL_END){
+//				System.out.println("服务端可能播放失败");
+//				JOptionPane.showMessageDialog(null, "服务端视频播放失败", "错误", JOptionPane.ERROR_MESSAGE);
+//				return null;
+//			}
 			//现在可以开启播放线程播放视频了
+			String fileName = new File(fileRelativePath).getName();
+			int dot = fileName.lastIndexOf(".");
+			String fileID = fileName.substring(0, dot);
 			//String rtspURL = "rtsp://"+serverIP+"/live/"+streamID;
-			String rtspURL = "rtsp://"+serverIP+"/"+streamID+".sdp";
+			String rtspURL = "rtsp://"+serverIP+"/"+fileID+".sdp";
 			Callable<Integer> callable = new Callable<Integer>() {
 				@Override
 				public Integer call() throws Exception {

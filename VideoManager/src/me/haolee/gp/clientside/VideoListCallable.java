@@ -28,19 +28,19 @@ public class VideoListCallable implements Callable<Integer> {
 	private int serverPort = -1;
 	private CommandWord mode = null;
 	private String category = null;
-	int videoDisplayStart = 0;
-	int videoDisplayStep = 9;
+	int videoListStart = 0;
+	int videoListStep = 9;
 	private JPanel mainPanel = null;//子线程要用，静态方便
 	
 	/*刷新视频列表用*/
 	public VideoListCallable(CommandWord mode, String category
-			,int videoDisplayStart,int videoDisplayStep,JPanel mainPanel) {
+			,int videoListStart,int videoListStep,JPanel mainPanel) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
 		this.mode = mode;
 		this.category = category;
-		this.videoDisplayStart = videoDisplayStart;
-		this.videoDisplayStep = videoDisplayStep;
+		this.videoListStart = videoListStart;
+		this.videoListStep = videoListStep;
 		this.mainPanel = mainPanel;
 	}
 
@@ -68,8 +68,8 @@ public class VideoListCallable implements Callable<Integer> {
 			ArrayList<String> fields = new ArrayList<>();
 			fields.add(String.valueOf(mode));
 			fields.add(category);
-			fields.add(String.valueOf(videoDisplayStart));
-			fields.add(String.valueOf(videoDisplayStep));
+			fields.add(String.valueOf(videoListStart));
+			fields.add(String.valueOf(videoListStep));
 			Packet sendPacket = new Packet(CommandWord.REQUEST_VIDEOLIST,fields);
 			objectOutputStream.writeObject(sendPacket);
 
@@ -80,11 +80,11 @@ public class VideoListCallable implements Callable<Integer> {
 			while((recvPacket = (Packet)objectInputStream.readObject())
 					.getCommandWord()!=CommandWord.CTRL_END){
 				VideoInfo videoInfo = (VideoInfo)recvPacket.getFields();
-				VideoPanel displayPanel = new VideoPanel(videoInfo);
+				VideoPanel videoPanel = new VideoPanel(videoInfo);
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						mainPanel.add(displayPanel);
+						mainPanel.add(videoPanel);
 						mainPanel.revalidate();
 						//mainPanel.repaint();//添加组件不许要调用repaint
 					}

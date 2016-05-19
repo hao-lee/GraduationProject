@@ -15,12 +15,12 @@ public class VodCallable implements Callable<Integer>{
 	private String serverIP = null;
 	private int serverPort = -1;
 	/*被选择的块，由静态全局方法和变量得到*/
-	private VideoPanel selectedVideoBlock = null;
+	private VideoPanel selectedVideoPanel = null;
 
-	public VodCallable(VideoPanel selectedVideoBlock) {
+	public VodCallable(VideoPanel selectedVideoPanel) {
 		this.serverIP = Config.getValue("serverIP", "127.0.0.1");
 		this.serverPort = Integer.valueOf(Config.getValue("serverPort", "10000"));
-		this.selectedVideoBlock = selectedVideoBlock;
+		this.selectedVideoPanel = selectedVideoPanel;
 	}
 
 
@@ -33,7 +33,7 @@ public class VodCallable implements Callable<Integer>{
 			//点播不需要建立server连接
 			/*点播功能不需要再给服务端发消息了，直接干*/
 
-			videoInfo = selectedVideoBlock.getVideoInfo();//获取本显示块内的视频信息数据结构
+			videoInfo = selectedVideoPanel.getVideoInfo();//获取本显示块内的视频信息数据结构
 			
 			fileRelativePath = videoInfo.getFileRelativePath();//相对路径
 //			String rtspURL = "rtsp://"
