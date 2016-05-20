@@ -29,17 +29,27 @@ public class VideoStreamSender {
 			//扩展名
 			String fileExtension = fileName.substring(dot+1);
 
-			StreamManager.sendStream(fileAbsolutePath);//启动流传输
+			StreamManager.generateStream(fileAbsolutePath);//启动流传输
 			//上述方法返回后，要么复用流，要么创建了流。
-			//告诉客户端可以开始接收了
-			Packet sendPacket = new Packet(CommandWord.RESPONSE_CONTINUE,null);
-			objectOutputStream.writeObject(sendPacket);
+			/*
+			 * 如果此时流ID fileID又不存在了，说明FFmpeg播放失败
+			 * */
+			Packet sendPacket = null;
+			if (StreamManager.exists(fileID)) {
+				sendPacket = new Packet(CommandWord.RESPONSE_CONTINUE,null);
+				objectOutputStream.writeObject(sendPacket);
+			} else {//播放失败
+				sendPacket = new Packet(CommandWord.RESPONSE_ABORT,null);
+				objectOutputStream.writeObject(sendPacket);
+				return;
+			}
 			
 			/*
 			 * 如果FFmpeg播放出错，则此时它已经死了，不需要交互了
 			 * 如果没死就是一切正常，可以进入心跳包应答模式
 			 * */
 			while(true){
+				Thread.sleep(2000);
 				//只要fileID还在引用数组里就说明FFMPEG没死，就发送探测心跳包
 				if(StreamManager.exists(fileID)){
 					//send

@@ -13,50 +13,50 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StreamManager {
-	private static HashMap<String, Integer> streamRefCounter = new HashMap<>();
+	private static HashMap<String, Integer> streamIDRefCounter = new HashMap<>();
 	private static ExecutorService executorService = Executors.newCachedThreadPool();
 	
-	public synchronized static void sendStream(String fileAbsolutePath) {
+	public synchronized static void generateStream(String fileAbsolutePath) {
 		
 		String fileName = new File(fileAbsolutePath).getName();
 		int dot = fileName.lastIndexOf(".");
-		String fileID = fileName.substring(0, dot);
+		String streamID = fileName.substring(0, dot);
 		
-		if(exists(fileID)){//fileID的流已经存在，借用一下，引用计数加1
-			int refCounter = streamRefCounter.get(fileID);
+		if(exists(streamID)){//fileID的流已经存在，借用一下，引用计数加1
+			int refCounter = streamIDRefCounter.get(streamID);
 			refCounter++;
-			streamRefCounter.put(fileID, refCounter);
+			streamIDRefCounter.put(streamID, refCounter);
 			
 		}else{//不存在则创建流
 			FFmpegCallable ffmpegCallable = new FFmpegCallable(fileAbsolutePath);
 			executorService.submit(ffmpegCallable);
-			streamRefCounter.put(fileID, 1);
+			streamIDRefCounter.put(streamID, 1);
 		}
 		
 	}
-	public static boolean exists(String fileID) {
-		if(streamRefCounter.containsKey(fileID))
+	public static boolean exists(String streamID) {
+		if(streamIDRefCounter.containsKey(streamID))
 			return true;
 		else 
 			return false;
 	}
 	//用于ffmpeg结束前自己将fileID移除
-	public synchronized static void removeStream(String fileID) {
-		streamRefCounter.remove(fileID);
+	public synchronized static void removeStream(String streamID) {
+		streamIDRefCounter.remove(streamID);
 	}
 	//用于当客户端中断时，给流ID的引用计数减1，减到0就说明没有人在观看了，
 	//，于是干掉ffmpeg进程并删除对应的streamRefCounter元素
-	public synchronized static void releaseStream(String fileID) {
-		int refCounter = streamRefCounter.get(fileID);
+	public synchronized static void releaseStream(String streamID) {
+		int refCounter = streamIDRefCounter.get(streamID);
 		refCounter --;
 		if(refCounter != 0)//还有客户端在使用fileID流
-			streamRefCounter.put(fileID, refCounter);
+			streamIDRefCounter.put(streamID, refCounter);
 		else{//没人用了，终止进程，删除元素
 			InputStream inputFromShell = null;
 			try {
 			    Process pc = null;
 			    ProcessBuilder pb = null;
-			    String[] cmd = { "sh", "-c", "ps aux | grep ffmpeg |grep " + fileID + " | grep -v grep | awk '{print $2}' | xargs kill -9"};
+			    String[] cmd = { "sh", "-c", "ps aux | grep ffmpeg |grep " + streamID + " | grep -v grep | awk '{print $2}' | xargs kill -9"};
 			    pb = new ProcessBuilder(cmd);
 			    pb.redirectErrorStream(true);
 			    pc = pb.start();
@@ -78,7 +78,7 @@ public class StreamManager {
 			        e.printStackTrace();
 			    }
 			}
-			streamRefCounter.remove(fileID);//删除元素
+			streamIDRefCounter.remove(streamID);//删除元素
 		}
 	}
 }
@@ -132,6 +132,7 @@ class FFmpegCallable implements Callable<Integer>{
 		}
 		pc.destroy();
 		System.out.println("FFmpeg stoped");
+		StreamManager.removeStream(fileID);//确保fileID被删除
 		return null;
 	}
 }

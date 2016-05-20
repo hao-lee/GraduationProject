@@ -9,7 +9,7 @@ public enum CommandWord {
 	
 	//应答命令字
 	RESPONSE_DATA,
-	RESPONSE_IDLE,
+	RESPONSE_ABORT,
 	RESPONSE_CONTINUE,
 
 	//控制命令字
