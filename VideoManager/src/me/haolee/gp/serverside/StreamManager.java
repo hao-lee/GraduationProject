@@ -88,7 +88,6 @@ class FFmpegCallable implements Callable<Integer>{
 	public FFmpegCallable(String fileAbsolutePath) {
 		this.fileAbsolutePath = fileAbsolutePath;
 	}
-
 	@Override
 	public Integer call() throws Exception {
 		
@@ -115,10 +114,10 @@ class FFmpegCallable implements Callable<Integer>{
 			command.add("-re");
 			command.add("-i");
 			command.add(fileAbsolutePath);
+			command.add("-c");
+			command.add("copy");
 		}
 		
-		command.add("-c");
-		command.add("copy");
 		command.add("-f");
 		command.add("rtsp");
 		command.add("rtsp://"+"127.0.0.1"+"/"+fileID+".sdp");
@@ -129,7 +128,7 @@ class FFmpegCallable implements Callable<Integer>{
 		BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
 		String string = null;
 		while((string = readFromShell.readLine()) != null){
-			//System.out.println(string);
+			System.out.println(string);
 		}
 		pc.destroy();
 		System.out.println("FFmpeg stoped");

@@ -1,15 +1,8 @@
 package me.haolee.gp.serverside;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-
 import me.haolee.gp.common.CommandWord;
 import me.haolee.gp.common.Config;
 import me.haolee.gp.common.Packet;
@@ -37,6 +30,7 @@ public class VideoStreamSender {
 			String fileExtension = fileName.substring(dot+1);
 
 			StreamManager.sendStream(fileAbsolutePath);//启动流传输
+			//上述方法返回后，要么复用流，要么创建了流。
 			//告诉客户端可以开始接收了
 			Packet sendPacket = new Packet(CommandWord.RESPONSE_CONTINUE,null);
 			objectOutputStream.writeObject(sendPacket);
