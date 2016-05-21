@@ -56,8 +56,8 @@ public class StreamManager {
 			try {
 			    Process pc = null;
 			    ProcessBuilder pb = null;
-			    String[] cmd = { "sh", "-c", "ps aux | grep ffmpeg |grep " + streamID + " | grep -v grep | awk '{print $2}' | xargs kill -9"};
-			    pb = new ProcessBuilder(cmd);
+			    String[] command = { "sh", "-c", "ps aux | grep ffmpeg |grep " + streamID + " | grep -v grep | awk '{print $2}' | xargs kill -9"};
+			    pb = new ProcessBuilder(command);
 			    pb.redirectErrorStream(true);
 			    pc = pb.start();
 			    inputFromShell = pc.getInputStream();
@@ -126,9 +126,9 @@ class FFmpegCallable implements Callable<Integer>{
 		pc = pb.start();
 		inputFromShell = pc.getInputStream();
 		BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
-		String string = null;
-		while((string = readFromShell.readLine()) != null){
-			System.out.println(string);
+		String tmp_in = null;
+		while((tmp_in = readFromShell.readLine()) != null){
+			System.out.println(tmp_in);
 		}
 		pc.destroy();
 		System.out.println("FFmpeg stoped");

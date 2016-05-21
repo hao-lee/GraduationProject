@@ -86,7 +86,7 @@ public class VideoListCallable implements Callable<Integer> {
 					public void run() {
 						mainPanel.add(videoPanel);
 						mainPanel.revalidate();
-						//mainPanel.repaint();//添加组件不许要调用repaint
+						//mainPanel.repaint();//添加组件不需要调用repaint
 					}
 				});
 			}

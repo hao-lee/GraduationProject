@@ -187,13 +187,8 @@ public class Client {
 					Future<Integer> future = executorService.submit(totalNumberCallable);
 					try {
 						totalNumber = future.get();
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								int numberOfPages = (totalNumber-1)/videoListStep+1;//页数自1计算
-								lblTotalNumber.setText("/"+numberOfPages+"页");
-							}
-						});
+						int numberOfPages = (totalNumber-1)/videoListStep+1;//页数自1计算
+						lblTotalNumber.setText("/"+numberOfPages+"页");
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
