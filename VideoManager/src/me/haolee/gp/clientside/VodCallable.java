@@ -47,6 +47,7 @@ public class VodCallable implements Callable<Integer>{
 			JOptionPane.showMessageDialog(null, "无法连接服务器", "错误", JOptionPane.ERROR_MESSAGE);
 			System.out.println("无法连接服务器"+serverIP+serverPort);
 		} finally {
+			System.out.println("流媒体点播正常结束");
 		}
 		return null;
 	}// function call

@@ -146,7 +146,7 @@ public class LiveCallable implements Callable<Integer> {
 				if(objectInputStream!=null)objectInputStream.close();
 				if(objectOutputStream!=null)objectOutputStream.close();
 				if (socketToServer != null)socketToServer.close();
-				System.out.println("All Has been closed! in GUICallable finally block");
+				System.out.println("流媒体直播正常结束");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

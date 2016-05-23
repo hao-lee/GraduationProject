@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class StreamManager {
-	private static HashMap<String, Integer> streamIDRefCounter = new HashMap<>();
+	private static ConcurrentHashMap<String, Integer> streamIDRefCounter = new ConcurrentHashMap<>();
 	private static ExecutorService executorService = Executors.newCachedThreadPool();
 	
 	public synchronized static void generateStream(String fileAbsolutePath) {

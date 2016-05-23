@@ -88,7 +88,7 @@ public class CatagoryListCallable implements Callable<Integer> {
 				if(objectOutputStream !=null)objectOutputStream.close();
 				if(objectInputStream != null) objectInputStream.close();
 				if (socketToServer != null)socketToServer.close();
-				System.out.println("All Has been closed! in GUICallable finally block");
+				System.out.println("分类列表获取完成");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

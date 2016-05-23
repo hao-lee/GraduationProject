@@ -100,7 +100,7 @@ public class VideoListCallable implements Callable<Integer> {
 				if(objectInputStream!=null)objectInputStream.close();
 				if(objectOutputStream!=null)objectOutputStream.close();
 				if (socketToServer != null)socketToServer.close();
-				System.out.println("All Has been closed! in GUICallable finally block");
+				System.out.println("视频列表获取完成");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

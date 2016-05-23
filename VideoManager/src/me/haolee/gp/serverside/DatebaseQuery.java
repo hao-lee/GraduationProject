@@ -50,7 +50,7 @@ class DatebaseQuery{
 		ArrayList<String> categoryList = new ArrayList<>();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			System.out.println("成功加载MySQL驱动程序");
+			//System.out.println("成功加载MySQL驱动程序");
 			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			sql = "select * from ";
@@ -80,11 +80,6 @@ class DatebaseQuery{
 	 */
 	public ArrayList<VideoInfo> getVideoSet(CommandWord mode, String category, 
 							int videoListStart,int videoListStep) {
-		/*
-		 * 数据库表名
-		 * */
-		String vodTable = "vod";
-		String liveTable = "live";
 		
 		Connection connection = null;
 		String sql = null;
@@ -93,7 +88,7 @@ class DatebaseQuery{
 		ArrayList<VideoInfo> videoInfoList = new ArrayList<>();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			System.out.println("成功加载MySQL驱动程序");
+			//System.out.println("成功加载MySQL驱动程序");
 			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 
@@ -144,13 +139,7 @@ class DatebaseQuery{
 	}
 
 	public int getTotalNumber(CommandWord mode, String category) {
-		
-		/*
-		 * 数据库表名
-		 * */
-		String vodTable = "vod";
-		String liveTable = "live";
-		
+
 		Connection connection = null;
 		Statement stmt = null;
 		ResultSet resultSet = null;
@@ -158,16 +147,16 @@ class DatebaseQuery{
 		
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
-			System.out.println("成功加载MySQL驱动程序");
+			//System.out.println("成功加载MySQL驱动程序");
 			connection = DriverManager.getConnection(dbURL);
 			stmt = connection.createStatement();
 			
 			if(mode == CommandWord.MODE_VOD)
 				resultSet = stmt.executeQuery("select count(*) from "
-							+vodTable+" WHERE CategoryName="+"\""+category+"\" ");
+							+"vod"+" WHERE CategoryName="+"\""+category+"\" ");
 			else
 				resultSet = stmt.executeQuery("select count(*) from "
-							+liveTable+" WHERE CategoryName="+"\""+category+"\" ");
+							+"live"+" WHERE CategoryName="+"\""+category+"\" ");
 			resultSet.next();
 			recordCount = resultSet.getInt(1);
 		}catch(Exception e){

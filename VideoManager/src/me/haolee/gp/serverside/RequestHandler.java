@@ -78,7 +78,7 @@ class RequestHandler implements Callable<Integer> {
 				System.out.println("Undefined Command: ");
 				break;
 			}
-
+		System.out.println(commandWord+" 请求处理完成");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Client and its socket have exited!");
@@ -89,7 +89,6 @@ class RequestHandler implements Callable<Integer> {
 				if (inputStream != null)inputStream.close();
 				if (outputStream != null)outputStream.close();
 				if (socketToClient != null)socketToClient.close();
-				System.out.println("All Has been closed! in communicateWithClient() finally block");
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}

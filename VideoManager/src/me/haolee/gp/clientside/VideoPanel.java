@@ -2,8 +2,11 @@ package me.haolee.gp.clientside;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 import me.haolee.gp.common.*;
 
@@ -43,7 +46,7 @@ class VideoPanel extends JPanel{
 	/**
 	 * 
 	 */
-	private int tnWidth = 300, tnHeight = 200;//缩略图面板大小，也是图片大小
+	private int tnWidth = 320, tnHeight = 240;//缩略图面板大小，也是图片大小
 	private int blockWidth = -1,blockHeight  = -1;//DisplayBlock显示块大小
 	private int padding = 10;//显示块面板与缩略图面板之间的内边距
 	private int infoHeight = 50;//信息显示区域的高度
@@ -51,7 +54,7 @@ class VideoPanel extends JPanel{
 	//计算主面板应该多高,主需要一个静态的即可，该函数只在添加主面板时使用一次
 	public static int getTotalHeight() {
 		//blockHeight = tnHeight+3*padding+infoHeight;
-		return 3*(200+3*10+50);//共显示3行，每行3个
+		return 3*(240+3*10+50);//共显示3行，每行3个
 	}
 	//返回当前视频显示块对象内的videoInfo对象
 	public VideoInfo getVideoInfo() {
@@ -91,6 +94,11 @@ class VideoPanel extends JPanel{
 				videoInfo.getResolution());
 		this.add(infoPanel);
 		infoPanel.setBounds(padding, tnHeight+2*padding, tnWidth,infoHeight);//定位信息面板的位置,同时设置大小
+		//新加一个很细的面板，遮住thumbnailPanel和infoPanel之间的那块背景色
+		JPanel gapPanel = new JPanel();
+		gapPanel.setBackground(new Color(166, 166, 166));
+		this.add(gapPanel);
+		gapPanel.setBounds(padding, tnHeight+padding, tnWidth, padding);
 	}
 }
 
@@ -131,14 +139,22 @@ class InfoPanel extends JPanel{
 	private static final long serialVersionUID = 2611671258325196571L;
 
 	public InfoPanel(String videoName,String duration,String resolution) {
-		this.setBackground(new Color(255, 204, 204));
-		this.setLayout(new GridLayout(3, 1, 0, 2));//行数 列数 水平间隔 竖直间隔
-		JLabel jLabelVideoName = new JLabel("VideoName:"+videoName);
-		JLabel jLabelDuration = new JLabel("Duration:"+duration);
-		JLabel jLabelResolution = new JLabel("Resolution:"+resolution);
+		this.setBackground(new Color(196,196,196));
+		//this.setLayout(new GridLayout(3, 1, 0, 3));//行数 列数 水平间隔 竖直间隔
+		this.setLayout(null);
+		JLabel jLabelVideoName = new JLabel("视频名："+videoName);
+		JLabel jLabelDuration = new JLabel("时长："+duration);
+		JLabel jLabelResolution = new JLabel("分辨率："+resolution);
+		jLabelVideoName.setFont(new Font("Dialog", Font.BOLD, 15));
+		jLabelDuration.setFont(new Font("Dialog", Font.BOLD, 15));
+		jLabelResolution.setFont(new Font("Dialog", Font.BOLD, 15));
 		this.add(jLabelVideoName);
 		this.add(jLabelDuration);
 		this.add(jLabelResolution);
+		//信息面板高50.宽320
+		jLabelVideoName.setBounds(2, 2, 320, 14);
+		jLabelDuration.setBounds(2, 18, 320, 14);
+		jLabelResolution.setBounds(2, 34, 320, 14);
 	}
 }
 
@@ -146,8 +162,8 @@ class InfoPanel extends JPanel{
 /*静态变量和全局方法，记录当前被选中的块*/
 class SelectedVideoPanel{
 	private static VideoPanel selectedVideoPanel = null;//被选择视频块对象的引用
-	private static Color noSelectionColor = new Color(199, 237, 204);//未选择时颜色
-	private static Color selectionColor = new Color(51, 85, 254);//被选择时颜色
+	private static Color noSelectionColor = new Color(184,184,184);//未选择时颜色
+	private static Color selectionColor = new Color(137,186,251);//被选择时颜色
 	/*获得被选择的视频块*/
 	public static VideoPanel getSelectedVideoPanel() {
 		return selectedVideoPanel;

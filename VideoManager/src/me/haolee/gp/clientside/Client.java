@@ -74,7 +74,7 @@ public class Client {
 
 	// 创建客户端主界面
 	private void createMainInterface() {
-		int windowWidth = 1000;//宽度
+		int windowWidth = 1060;//宽度
 		int windowHeight = 650;//高度
 		int mainPanelHeight = VideoPanel.getTotalHeight()+4*5;//行间距为5
 		// user-interface
@@ -94,27 +94,27 @@ public class Client {
 		 * */
 		/*设置菜单控件*/
 		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBounds(0, 0, windowWidth, 23);//大小和位置
+		menuBar.setBounds(0, 0, windowWidth, 25);//大小和位置
 		contentPane.add(menuBar);
 		
 		/*新建按钮上面板，存放分类列表、刷新按钮*/
 		JPanel upPanel = new JPanel();//绝对布局
 		/* 将按钮上面板加到内容面板上 */
 		contentPane.add(upPanel);
-		upPanel.setBounds(0, 23, windowWidth, 44);//大小和位置
+		upPanel.setBounds(0, 25, windowWidth, 40);//大小和位置
 		
 		/*新建按钮下面板，存放播放按钮、上下翻页按钮*/
 		JPanel downPanel = new JPanel();
 		downPanel.setLayout(null);
-		downPanel.setBounds(0, 568, windowWidth, 50);//大小和位置
+		downPanel.setBounds(0, 565, windowWidth, 50);//大小和位置
 		contentPane.add(downPanel);
 		
 		/*新建滚动面板,滚动面板唯一地做用是为主面板提供滚动条功能*/
 		JScrollPane jScrollPane = new JScrollPane();
 		/* 将滚动面板加到内容面板上 */
 		contentPane.add(jScrollPane);
-		/*滚动面板和内容面板（去掉菜单剩下的）一样高即可，宽度减去3为了让滚动条宽度更好看*/
-		jScrollPane.setBounds(3, 67, windowWidth-5, 501);//大小和位置
+		/*滚动面板和内容面板（去掉菜单剩下的）一样高即可*/
+		jScrollPane.setBounds(0, 65, windowWidth, 500);//大小和位置
 		
 		/*
 		 * 新建主面板，并使之具备滚动功能
@@ -130,10 +130,10 @@ public class Client {
 		ButtonGroup buttonGroup = new ButtonGroup();
 		JRadioButton liveRButton = new JRadioButton("直播");
 		liveRButton.setFont(new Font("Dialog", Font.BOLD, 15));
-		liveRButton.setBounds(89, 7, 69, 31);
+		liveRButton.setBounds(89, 5, 69, 30);
 		JRadioButton vodRButton = new JRadioButton("点播");
 		vodRButton.setFont(new Font("Dialog", Font.BOLD, 15));
-		vodRButton.setBounds(19, 6, 66, 32);
+		vodRButton.setBounds(19, 5, 66, 30);
 		buttonGroup.add(liveRButton);
 		upPanel.setLayout(null);
 		buttonGroup.add(vodRButton);
@@ -144,12 +144,12 @@ public class Client {
 		/*视频分类列表*/
 		JLabel lblCategoryLabel = new JLabel("视频分类");
 		lblCategoryLabel.setFont(new Font("Dialog", Font.BOLD, 15));
-		lblCategoryLabel.setBounds(180, 8, 86, 28);
+		lblCategoryLabel.setBounds(180, 5, 86, 30);
 		upPanel.add(lblCategoryLabel);
 		categoryListModel = new DefaultListModel<>();
 		categoryList = new JList<>(categoryListModel);
 		categoryList.setFont(new Font("Dialog", Font.BOLD, 20));
-		categoryList.setBounds(270, 7, 500, 29);
+		categoryList.setBounds(270, 5, 600, 30);
 		categoryList.setLayoutOrientation(JList.HORIZONTAL_WRAP);//水平显示，可以折行
 		categoryList.setVisibleRowCount(1);//最多折两行
 		categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -215,9 +215,9 @@ public class Client {
 		 * 刷新视频列表
 		 * */
 		JButton btnRefreshVideoList = new JButton(new ImageIcon(((new ImageIcon(
-	            "refresh.png").getImage().getScaledInstance(30, 30,
+	            "refresh.png").getImage().getScaledInstance(40, 40,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnRefreshVideoList.setBounds(842, 4, 38, 38);
+		btnRefreshVideoList.setBounds(900, 0, 40, 40);
 		//btnRefreshVideoList.setContentAreaFilled(false);
 		upPanel.add(btnRefreshVideoList);
 		btnRefreshVideoList.addActionListener(new ActionListener() {
@@ -248,9 +248,9 @@ public class Client {
 		 * 首页
 		 * */
 		JButton btnFirst = new JButton(new ImageIcon(((new ImageIcon(
-	            "firstpage.png").getImage().getScaledInstance(32, 32,
+	            "firstpage.png").getImage().getScaledInstance(35, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnFirst.setBounds(100, 5, 36, 36);
+		btnFirst.setBounds(205, 5, 35, 35);
 		downPanel.add(btnFirst);
 		btnFirst.addActionListener(new ActionListener() {
 			@Override
@@ -279,9 +279,9 @@ public class Client {
 		 * 末页
 		 * */
 		JButton btnLast = new JButton(new ImageIcon(((new ImageIcon(
-	            "lastpage.png").getImage().getScaledInstance(32, 32,
+	            "lastpage.png").getImage().getScaledInstance(35, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnLast.setBounds(759, 5, 36, 36);
+		btnLast.setBounds(810, 5, 35, 35);
 		downPanel.add(btnLast);
 		btnLast.addActionListener(new ActionListener() {
 			@Override
@@ -315,9 +315,9 @@ public class Client {
 		 * */
 		downPanel.setLayout(null);
 		JButton btnPrevious = new JButton(new ImageIcon(((new ImageIcon(
-	            "previouspage.gif").getImage().getScaledInstance(96, 32,
+	            "previouspage.gif").getImage().getScaledInstance(100, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnPrevious.setBounds(255, 5, 101, 36);
+		btnPrevious.setBounds(320, 5, 100, 35);
 		downPanel.add(btnPrevious);
 		btnPrevious.addActionListener(new ActionListener() {
 			@Override
@@ -357,9 +357,9 @@ public class Client {
 		 * 下一页
 		 * */
 		JButton btnNext = new JButton(new ImageIcon(((new ImageIcon(
-	            "nextpage.gif").getImage().getScaledInstance(96, 32,
+	            "nextpage.gif").getImage().getScaledInstance(100, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnNext.setBounds(614, 5, 101, 36);
+		btnNext.setBounds(630, 5, 100, 35);
 		downPanel.add(btnNext);
 		btnNext.addActionListener(new ActionListener() {
 			@Override
@@ -400,7 +400,7 @@ public class Client {
 		JButton btnPlayVideo = new JButton(new ImageIcon(((new ImageIcon(
 	            "play.png").getImage().getScaledInstance(50, 50,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnPlayVideo.setBounds(480, 0, 50, 50);
+		btnPlayVideo.setBounds(500, 0, 50, 50);
 		//btnPlayVideo.setContentAreaFilled(false);
 		downPanel.add(btnPlayVideo);
 		btnPlayVideo.addActionListener(new ActionListener() {
@@ -430,18 +430,18 @@ public class Client {
 		 * */
 		lblTotalNumber = new JLabel("/ 页");
 		lblTotalNumber.setFont(new Font("Dialog", Font.BOLD, 15));
-		lblTotalNumber.setBounds(939, 5, 50, 36);
+		lblTotalNumber.setBounds(1000, 5, 50, 35);
 		downPanel.add(lblTotalNumber);
 		
 		//跳页
 		JButton btnJumpPage = new JButton("跳到");
-		btnJumpPage.setFont(new Font("Dialog", Font.BOLD, 15));
-		btnJumpPage.setBounds(823, 5, 66, 36);
+		btnJumpPage.setFont(new Font("Dialog", Font.BOLD, 14));
+		btnJumpPage.setBounds(890, 5, 65, 35);
 		downPanel.add(btnJumpPage);
 		
 		//跳页输入框
 		tfPageNo = new JTextField();
-		tfPageNo.setBounds(894, 5, 41, 36);
+		tfPageNo.setBounds(965, 5, 35, 35);
 		downPanel.add(tfPageNo);
 		tfPageNo.setColumns(10);
 		

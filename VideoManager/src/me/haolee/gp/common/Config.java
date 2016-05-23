@@ -41,6 +41,6 @@ public class Config {
 	 * @return 返回对应的value
 	 */
 	public static String getValue(String key, String defaultValue) {
-		return properties.getProperty(key);
+		return properties.getProperty(key,defaultValue);
 	}
 }

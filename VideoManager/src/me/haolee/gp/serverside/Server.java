@@ -36,7 +36,8 @@ public class Server {
 			
 			serverSocket = new ServerSocket(listeningPort);// start
 			
-			System.out.println("Server started... Listening port "+listeningPort);
+			System.out.println("服务端启动成功，正在监听 "+listeningPort+" 端口！");
+			//System.out.println("Server started... Listening port "+listeningPort);
 		} catch (IOException e) {
 			e.printStackTrace();
 			try {
@@ -55,7 +56,7 @@ public class Server {
 				executorService.submit(new RequestHandler(socketToClient));
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println("Exception in listenAccetp!");
+				System.out.println("Exception in listenAccept!");
 			}
 
 		} // while
