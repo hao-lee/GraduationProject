@@ -74,7 +74,7 @@ public class Client {
 
 	// 创建客户端主界面
 	private void createMainInterface() {
-		int windowWidth = 1060;//宽度
+		int windowWidth = 1065;//宽度
 		int windowHeight = 650;//高度
 		int mainPanelHeight = VideoPanel.getTotalHeight()+4*5;//行间距为5
 		// user-interface
@@ -114,7 +114,7 @@ public class Client {
 		/* 将滚动面板加到内容面板上 */
 		contentPane.add(jScrollPane);
 		/*滚动面板和内容面板（去掉菜单剩下的）一样高即可*/
-		jScrollPane.setBounds(0, 65, windowWidth, 500);//大小和位置
+		jScrollPane.setBounds(0, 65, windowWidth-4, 500);//大小和位置
 		
 		/*
 		 * 新建主面板，并使之具备滚动功能
@@ -238,6 +238,8 @@ public class Client {
 				/*复位“记忆被选择视频块”的全局变量为null*/
 				SelectedVideoPanel.resetSelectedBlock();
 				
+				int currentPageNo = videoListStart/videoListStep+1;//页数自1计算
+				tfPageNo.setText(String.valueOf(currentPageNo));
 				VideoListCallable videoListCallable = new VideoListCallable(mode
 						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
@@ -250,7 +252,7 @@ public class Client {
 		JButton btnFirst = new JButton(new ImageIcon(((new ImageIcon(
 	            "firstpage.png").getImage().getScaledInstance(35, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnFirst.setBounds(205, 5, 35, 35);
+		btnFirst.setBounds(205, 8, 35, 35);
 		downPanel.add(btnFirst);
 		btnFirst.addActionListener(new ActionListener() {
 			@Override
@@ -269,6 +271,9 @@ public class Client {
 				/*复位“记忆被选择视频块”的全局变量为null*/
 				SelectedVideoPanel.resetSelectedBlock();
 				videoListStart = 0;//起点0
+				int currentPageNo = videoListStart/videoListStep+1;//页数自1计算
+				tfPageNo.setText(String.valueOf(currentPageNo));
+				
 				VideoListCallable videoListCallable = new VideoListCallable(mode
 						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
@@ -281,7 +286,7 @@ public class Client {
 		JButton btnLast = new JButton(new ImageIcon(((new ImageIcon(
 	            "lastpage.png").getImage().getScaledInstance(35, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnLast.setBounds(810, 5, 35, 35);
+		btnLast.setBounds(810, 8, 35, 35);
 		downPanel.add(btnLast);
 		btnLast.addActionListener(new ActionListener() {
 			@Override
@@ -304,6 +309,9 @@ public class Client {
 				int numberOfPages = (totalNumber-1)/videoListStep+1;//总页数
 				videoListStart = (numberOfPages-1)*videoListStep;
 				//至此，最后一页的起点已经确定
+				int currentPageNo = videoListStart/videoListStep+1;//页数自1计算
+				tfPageNo.setText(String.valueOf(currentPageNo));
+				
 				VideoListCallable videoListCallable = new VideoListCallable(mode
 						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
@@ -317,7 +325,7 @@ public class Client {
 		JButton btnPrevious = new JButton(new ImageIcon(((new ImageIcon(
 	            "previouspage.gif").getImage().getScaledInstance(100, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnPrevious.setBounds(320, 5, 100, 35);
+		btnPrevious.setBounds(320, 8, 100, 35);
 		downPanel.add(btnPrevious);
 		btnPrevious.addActionListener(new ActionListener() {
 			@Override
@@ -345,6 +353,8 @@ public class Client {
 				SelectedVideoPanel.resetSelectedBlock();
 				
 				videoListStart -= videoListStep;//起点减少
+				int currentPageNo = videoListStart/videoListStep+1;//页数自1计算
+				tfPageNo.setText(String.valueOf(currentPageNo));
 				
 				VideoListCallable videoListCallable = new VideoListCallable(mode
 						, selectedCategory,videoListStart,videoListStep,mainPanel);
@@ -359,7 +369,7 @@ public class Client {
 		JButton btnNext = new JButton(new ImageIcon(((new ImageIcon(
 	            "nextpage.gif").getImage().getScaledInstance(100, 35,
 	                    java.awt.Image.SCALE_SMOOTH)))));
-		btnNext.setBounds(630, 5, 100, 35);
+		btnNext.setBounds(630, 8, 100, 35);
 		downPanel.add(btnNext);
 		btnNext.addActionListener(new ActionListener() {
 			@Override
@@ -386,8 +396,10 @@ public class Client {
 				
 				/*复位“记忆被选择视频块”的全局变量为null*/
 				SelectedVideoPanel.resetSelectedBlock();
-				
 				videoListStart += videoListStep;//起点增加
+				int currentPageNo = videoListStart/videoListStep+1;//页数自1计算
+				tfPageNo.setText(String.valueOf(currentPageNo));
+				
 				VideoListCallable videoListCallable = new VideoListCallable(mode
 						, selectedCategory,videoListStart,videoListStep,mainPanel);
 				executorService.submit(videoListCallable);
@@ -430,18 +442,19 @@ public class Client {
 		 * */
 		lblTotalNumber = new JLabel("/ 页");
 		lblTotalNumber.setFont(new Font("Dialog", Font.BOLD, 15));
-		lblTotalNumber.setBounds(1000, 5, 50, 35);
+		lblTotalNumber.setBounds(1000, 8, 50, 35);
 		downPanel.add(lblTotalNumber);
 		
 		//跳页
 		JButton btnJumpPage = new JButton("跳到");
-		btnJumpPage.setFont(new Font("Dialog", Font.BOLD, 14));
-		btnJumpPage.setBounds(890, 5, 65, 35);
+		btnJumpPage.setFont(new Font("Dialog", Font.BOLD, 15));
+		btnJumpPage.setBounds(890, 8, 66, 35);
 		downPanel.add(btnJumpPage);
 		
 		//跳页输入框
 		tfPageNo = new JTextField();
-		tfPageNo.setBounds(965, 5, 35, 35);
+		tfPageNo.setFont(new Font("Dialog", Font.BOLD, 15));
+		tfPageNo.setBounds(965, 8, 35, 35);
 		downPanel.add(tfPageNo);
 		tfPageNo.setColumns(10);
 		

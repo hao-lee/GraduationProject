@@ -128,7 +128,7 @@ class FFmpegCallable implements Callable<Integer>{
 		BufferedReader readFromShell = new BufferedReader(new InputStreamReader(inputFromShell));
 		String tmp_in = null;
 		while((tmp_in = readFromShell.readLine()) != null){
-			System.out.println(tmp_in);
+			//System.out.println(tmp_in);
 		}
 		pc.destroy();
 		System.out.println("FFmpeg stoped");

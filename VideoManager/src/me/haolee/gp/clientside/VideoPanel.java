@@ -152,9 +152,9 @@ class InfoPanel extends JPanel{
 		this.add(jLabelDuration);
 		this.add(jLabelResolution);
 		//信息面板高50.宽320
-		jLabelVideoName.setBounds(2, 2, 320, 14);
-		jLabelDuration.setBounds(2, 18, 320, 14);
-		jLabelResolution.setBounds(2, 34, 320, 14);
+		jLabelVideoName.setBounds(2, 2, 320, 15);
+		jLabelDuration.setBounds(2, 18, 320, 15);
+		jLabelResolution.setBounds(2, 34, 320, 15);
 	}
 }
 
